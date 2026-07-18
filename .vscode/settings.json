@@ -1,0 +1,12 @@
+{
+  "folder-color.pathColors": [
+    {
+      "folderPath": "FarmStay\\backend\\",
+      "color": "foldercolorizer.color_00ffff"
+    },
+    {
+      "folderPath": "FarmStay\\portal\\",
+      "color": "foldercolorizer.color_d7ff5f"
+    }
+  ]
+}

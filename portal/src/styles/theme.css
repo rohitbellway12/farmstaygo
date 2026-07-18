@@ -1,0 +1,201 @@
+@theme {
+  /*
+  |--------------------------------------------------------------------------
+  | Typography
+  |--------------------------------------------------------------------------
+  */
+
+  --font-sans:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  --text-ui-2xs: 0.625rem;
+  --text-ui-xs: 0.6875rem;
+  --text-ui-sm: 0.75rem;
+  --text-ui-base: 0.8125rem;
+  --text-ui-md: 0.875rem;
+  --text-ui-lg: 1rem;
+  --text-ui-xl: 1.25rem;
+  --text-ui-2xl: 1.5rem;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Main Brand Green
+  |--------------------------------------------------------------------------
+  */
+
+  --color-primary-50: #eef8f3;
+  --color-primary-100: #dcefe5;
+  --color-primary-200: #b9dfca;
+  --color-primary-300: #87c9a4;
+  --color-primary-400: #4faa79;
+  --color-primary-500: #258c5e;
+  --color-primary-600: #107548;
+  --color-primary-700: #0b5f3b;
+  --color-primary-800: #094c32;
+  --color-primary-900: #073e2a;
+  --color-primary-950: #032319;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Dashboard Background & Surfaces
+  |--------------------------------------------------------------------------
+  */
+
+  --color-dashboard-bg: #f7f9f8;
+  --color-surface: #ffffff;
+  --color-surface-soft: #fafcfb;
+  --color-surface-muted: #f3f6f4;
+
+  --color-border: #e7ece9;
+  --color-border-strong: #d9e2dd;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Text Colors
+  |--------------------------------------------------------------------------
+  */
+
+  --color-text-main: #17211b;
+  --color-text-secondary: #46534b;
+  --color-text-muted: #748179;
+  --color-text-soft: #a0aaa4;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Sidebar & Header
+  |--------------------------------------------------------------------------
+  */
+
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-active: #eaf6ef;
+  --color-sidebar-hover: #f3f8f5;
+  --color-header-bg: #ffffff;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Graph & Analytics Colors
+  |--------------------------------------------------------------------------
+  */
+
+  --color-chart-green: #179c62;
+  --color-chart-green-light: #91d5ae;
+  --color-chart-green-soft: #e9f7ef;
+
+  --color-chart-blue: #2f80ed;
+  --color-chart-blue-light: #7eb4f5;
+  --color-chart-blue-soft: #edf5ff;
+
+  --color-chart-orange: #f79009;
+  --color-chart-orange-soft: #fff4e5;
+
+  --color-chart-red: #f04438;
+  --color-chart-red-soft: #fff0ee;
+
+  --color-chart-purple: #7a5af8;
+  --color-chart-purple-soft: #f2efff;
+
+  --color-chart-cyan: #4ea7d8;
+  --color-chart-gray: #cbd5d1;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Status Colors
+  |--------------------------------------------------------------------------
+  */
+
+  --color-success: #108a55;
+  --color-success-soft: #e9f7ef;
+
+  --color-warning: #dc7b08;
+  --color-warning-soft: #fff4e5;
+
+  --color-danger: #d92d20;
+  --color-danger-soft: #fff0ee;
+
+  --color-info: #2563eb;
+  --color-info-soft: #edf4ff;
+
+  --color-purple: #7047eb;
+  --color-purple-soft: #f2efff;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Border Radius
+  |--------------------------------------------------------------------------
+  */
+
+  --radius-control: 0.625rem;
+  --radius-dashboard-card: 0.875rem;
+  --radius-dashboard-panel: 1rem;
+  --radius-dashboard-large: 1.25rem;
+  --radius-pill: 9999px;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Shadows
+  |--------------------------------------------------------------------------
+  */
+
+  --shadow-dashboard-card:
+    0 1px 2px rgba(15, 40, 27, 0.02),
+    0 5px 18px rgba(15, 40, 27, 0.045);
+
+  --shadow-dashboard-card-hover:
+    0 3px 6px rgba(15, 40, 27, 0.04),
+    0 12px 30px rgba(15, 40, 27, 0.08);
+
+  --shadow-dashboard-header:
+    0 3px 16px rgba(15, 40, 27, 0.04);
+
+  --shadow-dashboard-dropdown:
+    0 18px 50px rgba(15, 40, 27, 0.14);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Global Custom Scrollbar
+|--------------------------------------------------------------------------
+*/
+
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color:
+      var(--color-primary-300)
+      var(--color-surface-muted);
+  }
+
+  *::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: var(--color-surface-muted);
+    border-radius: var(--radius-pill);
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--color-primary-300);
+    border: 2px solid var(--color-surface-muted);
+    border-radius: var(--radius-pill);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary-500);
+  }
+
+  *::-webkit-scrollbar-thumb:active {
+    background: var(--color-primary-700);
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: var(--color-surface-muted);
+  }
+}

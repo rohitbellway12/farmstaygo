@@ -1,0 +1,509 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  USER
+  VENDOR
+  ADMIN
+  STAFF_ADMIN
+  SUPPORT
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum KycStatus {
+  NOT_SUBMITTED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id             Int        @id @default(autoincrement())
+  firstName      String     @map("first_name")
+  lastName       String?    @map("last_name")
+  email          String     @unique
+  mobile         String?    @unique
+  password       String
+  role           UserRole   @default(USER)
+  status         UserStatus @default(ACTIVE)
+  emailVerified  Boolean    @default(false) @map("email_verified")
+  mobileVerified Boolean    @default(false) @map("mobile_verified")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  vendor Vendor?
+
+  @@map("users")
+}
+
+model Vendor {
+  id             Int       @id @default(autoincrement())
+  userId         Int       @unique @map("user_id")
+  businessName   String    @map("business_name")
+  kycStatus      KycStatus @default(NOT_SUBMITTED) @map("kyc_status")
+  commissionRate Decimal?  @map("commission_rate") @db.Decimal(5, 2)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  properties Property[]
+
+  @@map("vendors")
+}
+
+model PropertyCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  icon        String?
+  image       String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  properties Property[]
+
+  @@index([isActive, sortOrder])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Amenity Groups
+ * |--------------------------------------------------------------------------
+ */
+
+enum AmenityGroup {
+  POPULAR
+  BASIC
+  OUTDOOR
+  INDOOR
+  SAFETY
+  KITCHEN
+  ENTERTAINMENT
+  ACCESSIBILITY
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Property Booking Types
+ * |--------------------------------------------------------------------------
+ */
+
+enum PropertyBookingType {
+  ENTIRE_PROPERTY
+  ROOM_WISE
+  BOTH
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Property Status
+ * |--------------------------------------------------------------------------
+ */
+
+enum PropertyStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  INACTIVE
+  SUSPENDED
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Property Amenities
+ * |--------------------------------------------------------------------------
+ */
+
+model Amenity {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  description String?
+  icon        String?
+  image       String?
+  group       AmenityGroup @default(BASIC)
+  isActive    Boolean      @default(true)
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  propertyAmenities PropertyAmenity[]
+  roomAmenities     RoomAmenity[]
+
+  @@index([group, isActive, sortOrder])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Properties
+ * |--------------------------------------------------------------------------
+ */
+
+model Property {
+  id         String @id @default(cuid())
+  vendorId   Int
+  categoryId String
+
+  /**
+   * |--------------------------------------------------------------------------
+   * | Basic Information
+   * |--------------------------------------------------------------------------
+   */
+
+  title            String
+  slug             String              @unique
+  shortDescription String?
+  description      String?
+  bookingType      PropertyBookingType
+  status           PropertyStatus      @default(DRAFT)
+
+  /**
+   * |--------------------------------------------------------------------------
+   * | Property Capacity
+   * |--------------------------------------------------------------------------
+   */
+
+  maxGuests  Int?
+  bedrooms   Int?
+  bathrooms  Int?
+  beds       Int?
+  totalRooms Int?
+
+  /**
+   * |--------------------------------------------------------------------------
+   * | Property Location
+   * |--------------------------------------------------------------------------
+   */
+
+  addressLine1 String?
+  addressLine2 String?
+  landmark     String?
+  locality     String?
+  city         String?
+  state        String?
+  country      String   @default("India")
+  postalCode   String?
+  latitude     Decimal? @db.Decimal(10, 7)
+  longitude    Decimal? @db.Decimal(10, 7)
+
+  /**
+   * |--------------------------------------------------------------------------
+   * | Pricing
+   * |--------------------------------------------------------------------------
+   */
+
+  basePrice       Decimal? @db.Decimal(12, 2)
+  weekendPrice    Decimal? @db.Decimal(12, 2)
+  cleaningFee     Decimal? @db.Decimal(12, 2)
+  securityDeposit Decimal? @db.Decimal(12, 2)
+
+  /**
+   * |--------------------------------------------------------------------------
+   * | Stay Information
+   * |--------------------------------------------------------------------------
+   */
+
+  checkInTime  String?
+  checkOutTime String?
+  minimumStay  Int     @default(1)
+  instantBook  Boolean @default(false)
+
+  /**
+   * |--------------------------------------------------------------------------
+   * | Administration
+   * |--------------------------------------------------------------------------
+   */
+
+  rejectionReason String?
+  isFeatured      Boolean   @default(false)
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  /**
+   * |--------------------------------------------------------------------------
+   * | Relationships
+   * |--------------------------------------------------------------------------
+   */
+
+  vendor             Vendor                      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  category           PropertyCategory            @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  amenities          PropertyAmenity[]
+  images             PropertyImage[]
+  roomTypes          RoomType[]
+  availabilityBlocks PropertyAvailabilityBlock[]
+
+  @@index([vendorId, status])
+  @@index([categoryId, status])
+  @@index([city, status])
+  @@index([status, createdAt])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Property Amenities
+ * |--------------------------------------------------------------------------
+ * |
+ * | This table connects properties with their selected amenities.
+ * |
+ */
+
+model PropertyAmenity {
+  propertyId String
+  amenityId  String
+  createdAt  DateTime @default(now())
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  amenity  Amenity  @relation(fields: [amenityId], references: [id], onDelete: Restrict)
+
+  @@id([propertyId, amenityId])
+  @@index([amenityId])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Property Images
+ * |--------------------------------------------------------------------------
+ * |
+ * | Each property can contain one cover image and multiple gallery images.
+ * | Images are stored separately for ordering and management.
+ * |
+ */
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  propertyId String
+  image      String
+  altText    String?
+  isCover    Boolean  @default(false)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, sortOrder])
+  @@index([propertyId, isCover])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Room Types
+ * |--------------------------------------------------------------------------
+ * |
+ * | A Room Type represents a bookable category inside a ROOM_WISE or BOTH
+ * | property. Multiple identical physical rooms are managed using totalRooms.
+ * |
+ * | Example:
+ * | Deluxe Room - Total Quantity: 5
+ * |
+ */
+
+model RoomType {
+  id         String @id @default(cuid())
+  propertyId String
+
+  /**
+   * |--------------------------------------------------------------------------
+   * | Basic Information
+   * |--------------------------------------------------------------------------
+   */
+
+  name        String
+  slug        String
+  description String?
+
+  /**
+   * |--------------------------------------------------------------------------
+   * | Room Inventory
+   * |--------------------------------------------------------------------------
+   */
+
+  totalRooms Int @default(1)
+
+  /**
+   * |--------------------------------------------------------------------------
+   * | Guest Capacity
+   * |--------------------------------------------------------------------------
+   */
+
+  maxAdults   Int @default(1)
+  maxChildren Int @default(0)
+  maxGuests   Int @default(1)
+  beds        Int @default(1)
+  bathrooms   Int @default(1)
+
+  /**
+   * |--------------------------------------------------------------------------
+   * | Pricing
+   * |--------------------------------------------------------------------------
+   * |
+   * | Prices are stored per room per night.
+   * |
+   */
+
+  basePrice    Decimal  @db.Decimal(12, 2)
+  weekendPrice Decimal? @db.Decimal(12, 2)
+
+  /**
+   * |--------------------------------------------------------------------------
+   * | Management
+   * |--------------------------------------------------------------------------
+   */
+
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /**
+   * |--------------------------------------------------------------------------
+   * | Relationships
+   * |--------------------------------------------------------------------------
+   */
+
+  property           Property                @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  amenities          RoomAmenity[]
+  images             RoomImage[]
+  availabilityBlocks RoomAvailabilityBlock[]
+
+  /**
+   * Same room slug can be used in different properties,
+   * but it must remain unique inside one property.
+   */
+
+  @@unique([propertyId, slug])
+  @@index([propertyId, isActive, sortOrder])
+  @@index([propertyId, createdAt])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Room Amenities
+ * |--------------------------------------------------------------------------
+ * |
+ * | Connects Room Types with the existing Amenities master.
+ * |
+ */
+
+model RoomAmenity {
+  roomTypeId String
+  amenityId  String
+  createdAt  DateTime @default(now())
+
+  roomType RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  amenity  Amenity  @relation(fields: [amenityId], references: [id], onDelete: Restrict)
+
+  @@id([roomTypeId, amenityId])
+  @@index([amenityId])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Room Images
+ * |--------------------------------------------------------------------------
+ * |
+ * | Each Room Type can contain one cover image and multiple gallery images.
+ * |
+ */
+
+model RoomImage {
+  id         String   @id @default(cuid())
+  roomTypeId String
+  image      String
+  altText    String?
+  isCover    Boolean  @default(false)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  roomType RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+
+  @@index([roomTypeId, sortOrder])
+  @@index([roomTypeId, isCover])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Property Availability Blocks
+ * |--------------------------------------------------------------------------
+ * |
+ * | Default rule:
+ * |
+ * | If no record exists for a date, the property is available.
+ * |
+ * | A record in this table means that the complete property is manually
+ * | blocked for that night.
+ * |
+ * | This model is used for:
+ * |
+ * | ENTIRE_PROPERTY
+ * | BOTH
+ * |
+ */
+
+model PropertyAvailabilityBlock {
+  id         String   @id @default(cuid())
+  propertyId String
+  date       DateTime @db.Date
+  note       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, date])
+  @@index([date])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Room Availability Blocks
+ * |--------------------------------------------------------------------------
+ * |
+ * | Stores the number of rooms manually removed from availability for one
+ * | Room Type and one date.
+ * |
+ * | Example:
+ * |
+ * | Deluxe Room total inventory: 5
+ * | Manual blocked rooms: 2
+ * | Available inventory: 3
+ * |
+ * | This model is used for:
+ * |
+ * | ROOM_WISE
+ * | BOTH
+ * |
+ */
+
+model RoomAvailabilityBlock {
+  id           String   @id @default(cuid())
+  roomTypeId   String
+  date         DateTime @db.Date
+  blockedRooms Int
+  note         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  roomType RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([roomTypeId, date])
+  @@index([date])
+}

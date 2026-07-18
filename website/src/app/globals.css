@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #17231b;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter);
+
+  --color-brand-50: #eff8f0;
+  --color-brand-100: #dceedd;
+  --color-brand-200: #bdddbf;
+  --color-brand-300: #90c594;
+  --color-brand-400: #60aa66;
+  --color-brand-500: #3d8f45;
+  --color-brand-600: #2e7837;
+  --color-brand-700: #24632f;
+  --color-brand-800: #1e4f28;
+  --color-brand-900: #183f21;
+
+  --color-ink-50: #f8faf8;
+  --color-ink-100: #edf1ee;
+  --color-ink-200: #dce3dd;
+  --color-ink-300: #c2ccc4;
+  --color-ink-400: #91a094;
+  --color-ink-500: #68776b;
+  --color-ink-600: #4d5c50;
+  --color-ink-700: #354238;
+  --color-ink-800: #263129;
+  --color-ink-900: #17231b;
+
+  --color-gold-50: #fff9ea;
+  --color-gold-100: #fff0c5;
+  --color-gold-500: #d49a19;
+  --color-gold-600: #b77e0f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), Arial, Helvetica,
+    sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+::selection {
+  background: #bdddbf;
+  color: #183f21;
+}
+
+.site-container {
+  width: min(1180px, calc(100% - 32px));
+  margin-inline: auto;
+}
+
+.section-spacing {
+  padding-block: 56px;
+}
+
+.home-hero {
+  min-height: 520px;
+  background-position: center;
+  background-size: cover;
+}
+
+.soft-grid-background {
+  background-image:
+    linear-gradient(
+      rgba(255, 255, 255, 0.92),
+      rgba(255, 255, 255, 0.92)
+    ),
+    radial-gradient(
+      circle at 15% 20%,
+      rgba(61, 143, 69, 0.16),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 85% 75%,
+      rgba(212, 154, 25, 0.12),
+      transparent 26%
+    );
+}
+
+@media (max-width: 767px) {
+  .site-container {
+    width: min(100% - 24px, 1180px);
+  }
+
+  .section-spacing {
+    padding-block: 42px;
+  }
+
+  .home-hero {
+    min-height: auto;
+  }
+}
