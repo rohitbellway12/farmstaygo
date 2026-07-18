@@ -6,10 +6,6 @@ import {
   useState,
 } from "react";
 
-import {
-  useNavigate,
-} from "react-router-dom";
-
 import api from "../../shared/api/api";
 
 type KycStatus = "NOT_SUBMITTED" | "PENDING" | "APPROVED" | "REJECTED";
@@ -31,6 +27,19 @@ interface AdminVendor {
   id: number;
   businessName: string;
   kycStatus: KycStatus;
+  panNumber: string | null;
+  aadhaarNumber: string | null;
+  addressLine: string | null;
+  city: string | null;
+  state: string | null;
+  postalCode: string | null;
+  bankAccountName: string | null;
+  bankAccountNumber: string | null;
+  bankIfscCode: string | null;
+  gstNumber: string | null;
+  kycSubmittedAt: string | null;
+  kycReviewedAt: string | null;
+  kycRejectionReason: string | null;
   commissionRate: string | number | null;
   createdAt: string;
   updatedAt: string;
@@ -104,6 +113,14 @@ const getVendorName = (vendor: AdminVendor): string => {
   return vendor.businessName || fullName || "Vendor";
 };
 
+const maskValue = (
+  value?: string | null
+): string => {
+  if (!value) return "Not submitted";
+  if (value.length <= 4) return value;
+  return `${"*".repeat(Math.max(value.length - 4, 0))}${value.slice(-4)}`;
+};
+
 const getApiErrorMessage = (error: unknown, fallbackMessage: string): string => {
   if (axios.isAxiosError<ApiErrorResponse>(error)) {
     return error.response?.data?.message || error.message || fallbackMessage;
@@ -123,14 +140,6 @@ function SearchIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
       <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
-    </svg>
-  );
-}
-
-function RefreshIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M20 6v5h-5" /><path d="M4 18v-5h5" /><path d="M18.5 9A7 7 0 0 0 6.2 6.2L4 8" /><path d="M5.5 15A7 7 0 0 0 17.8 17.8L20 16" />
     </svg>
   );
 }
@@ -155,6 +164,15 @@ function TrashIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
       <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+  );
+}
+
+function EyeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+      <circle cx="12" cy="12" r="3" />
     </svg>
   );
 }
@@ -386,6 +404,92 @@ function RejectVendorModal({ open, onClose, vendor, onRejected }: { open: boolea
   );
 }
 
+function DetailItem({ label, value }: { label: string; value?: string | number | null }) {
+  return (
+    <div className="rounded-control border border-border bg-surface-soft p-3">
+      <span className="block text-xs font-bold uppercase tracking-wide text-text-muted">{label}</span>
+      <strong className="mt-1 block break-words text-sm text-text-main">{value || "Not submitted"}</strong>
+    </div>
+  );
+}
+
+function ViewKycModal({ open, onClose, vendor }: { open: boolean; onClose: () => void; vendor: AdminVendor | null }) {
+  if (!open || !vendor) return null;
+
+  const address = [
+    vendor.addressLine,
+    vendor.city,
+    vendor.state,
+    vendor.postalCode,
+  ].filter(Boolean).join(", ");
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+      <div className="max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-3xl border border-border bg-surface shadow-dashboard-dropdown">
+        <div className="flex items-start justify-between gap-4 border-b border-border p-5">
+          <div>
+            <h2 className="text-lg font-extrabold text-text-main">Vendor KYC Documents</h2>
+            <p className="mt-1 text-sm text-text-muted">{getVendorName(vendor)} - {vendor.businessName}</p>
+          </div>
+          <button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center rounded-lg border border-border text-text-secondary transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"><CloseIcon /></button>
+        </div>
+
+        <div className="max-h-[calc(90vh-82px)] overflow-y-auto p-5">
+          <div className="mb-5 flex flex-wrap items-center gap-2">
+            <StatusBadge status={vendor.kycStatus as KycStatusFilter} />
+            <span className={`rounded-full px-3 py-1.5 text-xs font-extrabold ${vendor.user.status === "ACTIVE" ? "bg-success-soft text-success" : vendor.user.status === "INACTIVE" ? "bg-warning-soft text-warning" : "bg-danger-soft text-danger"}`}>
+              Account: {vendor.user.status}
+            </span>
+          </div>
+
+          <section className="space-y-3">
+            <h3 className="text-sm font-extrabold text-text-main">Contact Details</h3>
+            <div className="grid gap-3 md:grid-cols-3">
+              <DetailItem label="Contact Person" value={[vendor.user.firstName, vendor.user.lastName].filter(Boolean).join(" ")} />
+              <DetailItem label="Email" value={vendor.user.email} />
+              <DetailItem label="Mobile" value={vendor.user.mobile} />
+            </div>
+          </section>
+
+          <section className="mt-6 space-y-3">
+            <h3 className="text-sm font-extrabold text-text-main">Identity KYC</h3>
+            <div className="grid gap-3 md:grid-cols-3">
+              <DetailItem label="PAN Number" value={vendor.panNumber} />
+              <DetailItem label="Aadhaar Number" value={vendor.aadhaarNumber} />
+              <DetailItem label="GST Number" value={vendor.gstNumber} />
+            </div>
+          </section>
+
+          <section className="mt-6 space-y-3">
+            <h3 className="text-sm font-extrabold text-text-main">Address</h3>
+            <div className="grid gap-3 md:grid-cols-2">
+              <DetailItem label="Full Address" value={address} />
+              <DetailItem label="Submitted At" value={formatDate(vendor.kycSubmittedAt)} />
+            </div>
+          </section>
+
+          <section className="mt-6 space-y-3">
+            <h3 className="text-sm font-extrabold text-text-main">Bank Details</h3>
+            <div className="grid gap-3 md:grid-cols-3">
+              <DetailItem label="Account Holder" value={vendor.bankAccountName} />
+              <DetailItem label="Account Number" value={vendor.bankAccountNumber} />
+              <DetailItem label="IFSC Code" value={vendor.bankIfscCode} />
+            </div>
+          </section>
+
+          <section className="mt-6 space-y-3">
+            <h3 className="text-sm font-extrabold text-text-main">Review Details</h3>
+            <div className="grid gap-3 md:grid-cols-2">
+              <DetailItem label="Reviewed At" value={formatDate(vendor.kycReviewedAt)} />
+              <DetailItem label="Rejection Reason" value={vendor.kycRejectionReason} />
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function VendorsPage() {
   const [vendors, setVendors] = useState<AdminVendor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -395,6 +499,7 @@ export default function VendorsPage() {
   const [toast, setToast] = useState<ToastState | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<AdminVendor | null>(null);
+  const [viewTarget, setViewTarget] = useState<AdminVendor | null>(null);
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
 
   const loadVendors = useCallback(async () => {
@@ -446,6 +551,61 @@ export default function VendorsPage() {
   const handleRejectClose = () => setRejectTarget(null);
   const handleRejected = async () => { setRejectTarget(null); setToast({ type: "success", message: "Vendor rejected successfully" }); await loadVendors(); };
 
+  const canApprove = (vendor: AdminVendor) =>
+    vendor.kycStatus === "PENDING";
+
+  const canReject = (vendor: AdminVendor) =>
+    vendor.kycStatus === "PENDING";
+
+  const canDeactivate = (vendor: AdminVendor) =>
+    vendor.kycStatus === "APPROVED" &&
+    vendor.user.status === "ACTIVE";
+
+  const canActivate = (vendor: AdminVendor) =>
+    vendor.kycStatus === "APPROVED" &&
+    vendor.user.status === "INACTIVE";
+
+  const handleToggleActive = async (vendor: AdminVendor) => {
+    const isActive = vendor.user.status === "ACTIVE";
+    const confirmed = window.confirm(
+      isActive
+        ? `Deactivate ${getVendorName(vendor)}? KYC will move to pending and they will not be able to log in.`
+        : `Activate ${getVendorName(vendor)}? They will be able to log in again.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setActionLoadingId(vendor.id);
+      await api.patch<VendorActionResponse>(`/admin/vendors/${vendor.id}/${isActive ? "deactivate" : "activate"}`);
+      setToast({ type: "success", message: isActive ? "Vendor deactivated successfully" : "Vendor activated successfully" });
+      await loadVendors();
+    } catch (error) {
+      setToast({ type: "error", message: getApiErrorMessage(error, "Unable to update vendor status") });
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleDeleteVendor = async (vendor: AdminVendor) => {
+    const confirmed = window.confirm(
+      `Delete ${getVendorName(vendor)} permanently? This will remove the vendor account and related vendor data.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setActionLoadingId(vendor.id);
+      await api.delete(`/admin/vendors/${vendor.id}`);
+      setToast({ type: "success", message: "Vendor deleted successfully" });
+      await loadVendors();
+    } catch (error) {
+      setToast({ type: "error", message: getApiErrorMessage(error, "Unable to delete vendor") });
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
   const clearFilters = () => { setSearch(""); setStatusFilter("ALL"); };
 
   return (
@@ -460,6 +620,7 @@ export default function VendorsPage() {
 
       <CreateVendorModal open={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onCreated={loadVendors} />
       <RejectVendorModal open={!!rejectTarget} onClose={handleRejectClose} vendor={rejectTarget} onRejected={handleRejected} />
+      <ViewKycModal open={!!viewTarget} onClose={() => setViewTarget(null)} vendor={viewTarget} />
 
       <section className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <div className="flex items-center gap-3">
@@ -536,6 +697,20 @@ export default function VendorsPage() {
                         <strong className="block max-w-[260px] truncate text-sm font-extrabold text-text-main">{getVendorName(vendor)}</strong>
                         <span className="mt-1 block text-xs font-bold text-primary-700">{vendor.businessName}</span>
                         <span className="mt-1 block max-w-[260px] truncate text-xs text-text-muted">{[vendor.user.firstName, vendor.user.lastName].filter(Boolean).join(" ") || "No name"}</span>
+                        <span className="mt-2 block max-w-[320px] truncate text-xs font-semibold text-text-secondary">
+                          PAN: {vendor.panNumber || "Not submitted"} | Bank: {maskValue(vendor.bankAccountNumber)}
+                        </span>
+                        <span className="mt-1 block max-w-[320px] truncate text-xs text-text-muted">
+                          Address: {[vendor.addressLine, vendor.city, vendor.state, vendor.postalCode].filter(Boolean).join(", ") || "Not submitted"}
+                        </span>
+                        {vendor.kycRejectionReason && (
+                          <span className="mt-1 block max-w-[320px] truncate text-xs font-semibold text-danger">
+                            Last rejection: {vendor.kycRejectionReason}
+                          </span>
+                        )}
+                        <span className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-extrabold ${vendor.user.status === "ACTIVE" ? "bg-success-soft text-success" : vendor.user.status === "INACTIVE" ? "bg-warning-soft text-warning" : "bg-danger-soft text-danger"}`}>
+                          Account: {vendor.user.status}
+                        </span>
                       </div>
                     </td>
                     <td className="px-5 py-4"><span className="flex items-center gap-1.5 text-sm text-text-secondary"><MailIcon />{vendor.user.email}</span></td>
@@ -544,21 +719,32 @@ export default function VendorsPage() {
                     <td className="px-5 py-4"><StatusBadge status={vendor.kycStatus as KycStatusFilter} /></td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-2">
-                        {vendor.kycStatus === "PENDING" && (
-                          <>
-                            <button type="button" onClick={() => void handleApprove(vendor)} disabled={actionLoadingId === vendor.id} className="inline-flex h-9 items-center justify-center gap-2 rounded-control bg-success px-3 text-xs font-bold text-white transition hover:bg-success/90 disabled:cursor-not-allowed disabled:opacity-60">
-                              <span className={actionLoadingId === vendor.id ? "animate-spin" : ""}><CheckIcon /></span> Approve
-                            </button>
-                            <button type="button" onClick={() => handleRejectClick(vendor)} disabled={actionLoadingId === vendor.id} className="inline-flex h-9 items-center justify-center gap-2 rounded-control bg-danger px-3 text-xs font-bold text-white transition hover:bg-danger/90 disabled:cursor-not-allowed disabled:opacity-60">
-                              <TrashIcon /> Reject
-                            </button>
-                          </>
-                        )}
-                        {vendor.kycStatus === "REJECTED" && (
+                        <button type="button" onClick={() => setViewTarget(vendor)} className="inline-flex h-9 items-center justify-center gap-2 rounded-control border border-info/30 bg-info-soft px-3 text-xs font-bold text-info transition hover:bg-info/10">
+                          <EyeIcon /> View
+                        </button>
+                        {canApprove(vendor) && (
                           <button type="button" onClick={() => void handleApprove(vendor)} disabled={actionLoadingId === vendor.id} className="inline-flex h-9 items-center justify-center gap-2 rounded-control bg-success px-3 text-xs font-bold text-white transition hover:bg-success/90 disabled:cursor-not-allowed disabled:opacity-60">
                             <span className={actionLoadingId === vendor.id ? "animate-spin" : ""}><CheckIcon /></span> Approve
                           </button>
                         )}
+                        {canReject(vendor) && (
+                          <button type="button" onClick={() => handleRejectClick(vendor)} disabled={actionLoadingId === vendor.id} className="inline-flex h-9 items-center justify-center gap-2 rounded-control bg-danger px-3 text-xs font-bold text-white transition hover:bg-danger/90 disabled:cursor-not-allowed disabled:opacity-60">
+                            <TrashIcon /> Reject
+                          </button>
+                        )}
+                        {canDeactivate(vendor) && (
+                          <button type="button" onClick={() => void handleToggleActive(vendor)} disabled={actionLoadingId === vendor.id} className="inline-flex h-9 items-center justify-center rounded-control border border-warning/30 bg-warning-soft px-3 text-xs font-bold text-warning transition hover:bg-warning/10 disabled:cursor-not-allowed disabled:opacity-60">
+                            Deactivate
+                          </button>
+                        )}
+                        {canActivate(vendor) && (
+                          <button type="button" onClick={() => void handleToggleActive(vendor)} disabled={actionLoadingId === vendor.id} className="inline-flex h-9 items-center justify-center rounded-control border border-success/30 bg-success-soft px-3 text-xs font-bold text-success transition hover:bg-success/10 disabled:cursor-not-allowed disabled:opacity-60">
+                            Activate
+                          </button>
+                        )}
+                        <button type="button" onClick={() => void handleDeleteVendor(vendor)} disabled={actionLoadingId === vendor.id} className="inline-flex h-9 items-center justify-center gap-2 rounded-control border border-danger/30 bg-danger-soft px-3 text-xs font-bold text-danger transition hover:bg-danger/10 disabled:cursor-not-allowed disabled:opacity-60">
+                          <TrashIcon /> Delete
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -585,17 +771,37 @@ export default function VendorsPage() {
                     <strong className="block truncate text-base font-extrabold text-text-main">{getVendorName(vendor)}</strong>
                     <span className="mt-1 block text-xs font-bold text-primary-700">{vendor.businessName}</span>
                     <span className="mt-1 block text-xs text-text-muted">{vendor.user.email}</span>
+                    <span className="mt-2 block text-xs font-semibold text-text-secondary">PAN: {vendor.panNumber || "Not submitted"}</span>
+                    <span className="mt-1 block text-xs text-text-muted">Bank: {maskValue(vendor.bankAccountNumber)}</span>
+                    <span className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-extrabold ${vendor.user.status === "ACTIVE" ? "bg-success-soft text-success" : vendor.user.status === "INACTIVE" ? "bg-warning-soft text-warning" : "bg-danger-soft text-danger"}`}>
+                      Account: {vendor.user.status}
+                    </span>
                     <div className="mt-2"><StatusBadge status={vendor.kycStatus as KycStatusFilter} /></div>
                   </div>
-                  {vendor.kycStatus === "PENDING" && (
+                  <div className="flex flex-col gap-2">
+                  <button type="button" onClick={() => setViewTarget(vendor)} className="inline-flex h-9 items-center justify-center gap-1 rounded-control border border-info/30 bg-info-soft px-3 text-xs font-bold text-info"><EyeIcon /> View</button>
+                  {(canApprove(vendor) || canReject(vendor)) && (
                     <div className="flex gap-2">
+                      {canApprove(vendor) && (
                       <button type="button" onClick={() => void handleApprove(vendor)} disabled={actionLoadingId === vendor.id} className="inline-flex h-9 items-center justify-center gap-1 rounded-control bg-success px-3 text-xs font-bold text-white"><CheckIcon /> Approve</button>
+                      )}
+                      {canReject(vendor) && (
                       <button type="button" onClick={() => handleRejectClick(vendor)} disabled={actionLoadingId === vendor.id} className="inline-flex h-9 items-center justify-center gap-1 rounded-control bg-danger px-3 text-xs font-bold text-white"><TrashIcon /> Reject</button>
+                      )}
                     </div>
                   )}
-                  {vendor.kycStatus === "REJECTED" && (
-                    <button type="button" onClick={() => void handleApprove(vendor)} disabled={actionLoadingId === vendor.id} className="inline-flex h-9 items-center justify-center gap-1 rounded-control bg-success px-3 text-xs font-bold text-white"><CheckIcon /> Approve</button>
+                  {canDeactivate(vendor) && (
+                    <button type="button" onClick={() => void handleToggleActive(vendor)} disabled={actionLoadingId === vendor.id} className="inline-flex h-9 items-center justify-center rounded-control border border-warning/30 bg-warning-soft px-3 text-xs font-bold text-warning">
+                      Deactivate
+                    </button>
                   )}
+                  {canActivate(vendor) && (
+                    <button type="button" onClick={() => void handleToggleActive(vendor)} disabled={actionLoadingId === vendor.id} className="inline-flex h-9 items-center justify-center rounded-control border border-success/30 bg-success-soft px-3 text-xs font-bold text-success">
+                      Activate
+                    </button>
+                  )}
+                  <button type="button" onClick={() => void handleDeleteVendor(vendor)} disabled={actionLoadingId === vendor.id} className="inline-flex h-9 items-center justify-center gap-1 rounded-control border border-danger/30 bg-danger-soft px-3 text-xs font-bold text-danger"><TrashIcon /> Delete</button>
+                  </div>
                 </div>
               </article>
             ))

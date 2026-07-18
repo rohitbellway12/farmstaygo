@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
+import {
+  getAuth,
+} from "../../shared/utils/auth";
 
 interface StatItem {
   title: string;
@@ -606,6 +609,47 @@ function ListingProgress() {
 }
 
 export default function VendorDashboardPage() {
+  const auth = getAuth();
+  const kycStatus =
+    auth?.vendor?.kycStatus ||
+    "NOT_SUBMITTED";
+
+  if (kycStatus !== "APPROVED") {
+    const title =
+      kycStatus === "PENDING"
+        ? "KYC submitted for admin review"
+        : kycStatus === "REJECTED"
+        ? "KYC needs correction"
+        : "Complete KYC to start listing";
+
+    const description =
+      kycStatus === "PENDING"
+        ? "You can access the vendor portal, but property creation will unlock after admin approves your KYC."
+        : "Submit identity, address and bank details. After admin approval, you can add your first property.";
+
+    return (
+      <div className="space-y-5">
+        <section className="rounded-dashboard-large border border-amber-200 bg-amber-50 p-6 shadow-dashboard">
+          <p className="text-sm font-bold uppercase tracking-[0.12em] text-amber-700">
+            Vendor Verification
+          </p>
+          <h1 className="mt-2 text-2xl font-extrabold text-amber-950">
+            {title}
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-amber-800">
+            {description}
+          </p>
+          <Link
+            to="/vendor/kyc-bank"
+            className="mt-5 inline-flex h-11 items-center justify-center rounded-control bg-amber-600 px-5 text-sm font-bold text-white"
+          >
+            Go to KYC & Bank Details
+          </Link>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">

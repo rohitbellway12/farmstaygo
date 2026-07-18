@@ -1301,10 +1301,6 @@ export type NullableIntFieldUpdateOperationsInput = {
   divide?: number
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type PropertyCreateNestedOneWithoutAmenitiesInput = {
   create?: Prisma.XOR<Prisma.PropertyCreateWithoutAmenitiesInput, Prisma.PropertyUncheckedCreateWithoutAmenitiesInput>
   connectOrCreate?: Prisma.PropertyCreateOrConnectWithoutAmenitiesInput

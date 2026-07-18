@@ -71,14 +71,6 @@ export default function VendorLoginPage() {
         return;
       }
 
-      if (authData.vendor?.kycStatus === "PENDING") {
-        setError(
-          "Your vendor account is pending approval. Please wait for admin verification."
-        );
-
-        return;
-      }
-
       saveAuth(authData);
 
       navigate("/vendor/dashboard", {

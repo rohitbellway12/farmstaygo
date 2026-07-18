@@ -343,26 +343,69 @@ export const approveAdminVendor = async (
       });
     }
 
+    if (existingVendor.kycStatus !== "PENDING") {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Vendor KYC must be submitted before approval",
+      });
+    }
+
     const approvedVendor =
-      await prisma.vendor.update({
-        where: {
-          id: vendorIdNumber,
-        },
-        data: {
-          kycStatus: "APPROVED",
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-              mobile: true,
-              status: true,
+      await prisma.$transaction(async (transaction) => {
+        const vendor = await transaction.vendor.update({
+          where: {
+            id: vendorIdNumber,
+          },
+          data: {
+            kycStatus: "APPROVED",
+            kycReviewedAt: new Date(),
+            kycRejectionReason: null,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                mobile: true,
+                status: true,
+              },
             },
           },
-        },
+        });
+
+        if (vendor.user.status !== "ACTIVE") {
+          await transaction.user.update({
+            where: {
+              id: vendor.user.id,
+            },
+            data: {
+              status: "ACTIVE",
+            },
+          });
+
+          return transaction.vendor.findUnique({
+            where: {
+              id: vendorIdNumber,
+            },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                  mobile: true,
+                  status: true,
+                },
+              },
+            },
+          });
+        }
+
+        return vendor;
       });
 
     return res.status(200).json({
@@ -379,6 +422,267 @@ export const approveAdminVendor = async (
     return res.status(500).json({
       success: false,
       message: "Unable to approve vendor",
+    });
+  }
+};
+
+/*
+|--------------------------------------------------------------------------
+| Admin: Deactivate Vendor
+|--------------------------------------------------------------------------
+*/
+
+export const deactivateAdminVendor = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    const vendorIdNumber = Number(
+      String(req.params.id || "").trim()
+    );
+
+    if (Number.isNaN(vendorIdNumber)) {
+      return res.status(422).json({
+        success: false,
+        message: "Invalid vendor ID",
+      });
+    }
+
+    const existingVendor =
+      await prisma.vendor.findUnique({
+        where: {
+          id: vendorIdNumber,
+        },
+        select: {
+          id: true,
+          userId: true,
+        },
+      });
+
+    if (!existingVendor) {
+      return res.status(404).json({
+        success: false,
+        message: "Vendor not found",
+      });
+    }
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: {
+          id: existingVendor.userId,
+        },
+        data: {
+          status: "INACTIVE",
+        },
+      }),
+      prisma.vendor.update({
+        where: {
+          id: existingVendor.id,
+        },
+        data: {
+          kycStatus: "PENDING",
+          kycReviewedAt: null,
+          kycRejectionReason:
+            "Vendor account was deactivated by admin.",
+        },
+      }),
+    ]);
+
+    await prisma.property.updateMany({
+      where: {
+        vendorId: existingVendor.id,
+        status: {
+          in: ["APPROVED", "PENDING_APPROVAL"],
+        },
+      },
+      data: {
+        status: "SUSPENDED",
+      },
+    });
+
+    const vendor = await prisma.vendor.findUnique({
+      where: {
+        id: vendorIdNumber,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            mobile: true,
+            status: true,
+            emailVerified: true,
+            mobileVerified: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Vendor deactivated successfully",
+      data: vendor,
+    });
+  } catch (error) {
+    console.error(
+      "Deactivate vendor error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to deactivate vendor",
+    });
+  }
+};
+
+/*
+|--------------------------------------------------------------------------
+| Admin: Activate Vendor
+|--------------------------------------------------------------------------
+*/
+
+export const activateAdminVendor = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    const vendorIdNumber = Number(
+      String(req.params.id || "").trim()
+    );
+
+    if (Number.isNaN(vendorIdNumber)) {
+      return res.status(422).json({
+        success: false,
+        message: "Invalid vendor ID",
+      });
+    }
+
+    const existingVendor =
+      await prisma.vendor.findUnique({
+        where: {
+          id: vendorIdNumber,
+        },
+        select: {
+          id: true,
+          userId: true,
+        },
+      });
+
+    if (!existingVendor) {
+      return res.status(404).json({
+        success: false,
+        message: "Vendor not found",
+      });
+    }
+
+    await prisma.user.update({
+      where: {
+        id: existingVendor.userId,
+      },
+      data: {
+        status: "ACTIVE",
+      },
+    });
+
+    const vendor = await prisma.vendor.findUnique({
+      where: {
+        id: vendorIdNumber,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            mobile: true,
+            status: true,
+            emailVerified: true,
+            mobileVerified: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Vendor activated successfully",
+      data: vendor,
+    });
+  } catch (error) {
+    console.error(
+      "Activate vendor error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to activate vendor",
+    });
+  }
+};
+
+/*
+|--------------------------------------------------------------------------
+| Admin: Delete Vendor
+|--------------------------------------------------------------------------
+*/
+
+export const deleteAdminVendor = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    const vendorIdNumber = Number(
+      String(req.params.id || "").trim()
+    );
+
+    if (Number.isNaN(vendorIdNumber)) {
+      return res.status(422).json({
+        success: false,
+        message: "Invalid vendor ID",
+      });
+    }
+
+    const existingVendor =
+      await prisma.vendor.findUnique({
+        where: {
+          id: vendorIdNumber,
+        },
+        select: {
+          id: true,
+          userId: true,
+        },
+      });
+
+    if (!existingVendor) {
+      return res.status(404).json({
+        success: false,
+        message: "Vendor not found",
+      });
+    }
+
+    await prisma.user.delete({
+      where: {
+        id: existingVendor.userId,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Vendor deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete vendor error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to delete vendor",
     });
   }
 };
@@ -465,6 +769,8 @@ export const rejectAdminVendor = async (
         },
         data: {
           kycStatus: "REJECTED",
+          kycReviewedAt: new Date(),
+          kycRejectionReason: reason,
         },
         include: {
           user: {

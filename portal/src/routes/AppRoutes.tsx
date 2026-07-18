@@ -28,6 +28,7 @@ import AddPropertyPage from "../vendor/pages/AddPropertyPage";
 import RoomInventoryPage from "../vendor/pages/RoomInventoryPage";
 import RoomFormPage from "../vendor/pages/RoomFormPage";
 import AvailabilityCalendarPage from "../vendor/pages/AvailabilityCalendarPage";
+import KycBankPage from "../vendor/pages/KycBankPage";
 
 
 function ModulePlaceholder({
@@ -391,12 +392,7 @@ export default function AppRoutes() {
 
           <Route
             path="kyc-bank"
-            element={
-              <ModulePlaceholder
-                title="KYC & Bank Details"
-                description="Manage verification and payout information."
-              />
-            }
+            element={<KycBankPage />}
           />
 
           <Route

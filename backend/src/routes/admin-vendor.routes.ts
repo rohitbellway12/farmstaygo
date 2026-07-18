@@ -2,6 +2,9 @@ import { Router } from "express";
 
 import {
   createAdminVendor,
+  deleteAdminVendor,
+  deactivateAdminVendor,
+  activateAdminVendor,
   getAdminVendors,
   rejectAdminVendor,
   approveAdminVendor,
@@ -105,6 +108,33 @@ adminVendorRoutes.patch(
 adminVendorRoutes.patch(
   "/:id/reject",
   rejectAdminVendor
+);
+
+/*
+|--------------------------------------------------------------------------
+| Activate / Deactivate Vendor
+|--------------------------------------------------------------------------
+*/
+
+adminVendorRoutes.patch(
+  "/:id/deactivate",
+  deactivateAdminVendor
+);
+
+adminVendorRoutes.patch(
+  "/:id/activate",
+  activateAdminVendor
+);
+
+/*
+|--------------------------------------------------------------------------
+| Delete Vendor
+|--------------------------------------------------------------------------
+*/
+
+adminVendorRoutes.delete(
+  "/:id",
+  deleteAdminVendor
 );
 
 export {

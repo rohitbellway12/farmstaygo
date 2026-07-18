@@ -49,13 +49,26 @@ model User {
 }
 
 model Vendor {
-  id             Int       @id @default(autoincrement())
-  userId         Int       @unique @map("user_id")
-  businessName   String    @map("business_name")
-  kycStatus      KycStatus @default(NOT_SUBMITTED) @map("kyc_status")
-  commissionRate Decimal?  @map("commission_rate") @db.Decimal(5, 2)
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  id                 Int       @id @default(autoincrement())
+  userId             Int       @unique @map("user_id")
+  businessName       String    @map("business_name")
+  kycStatus          KycStatus @default(NOT_SUBMITTED) @map("kyc_status")
+  panNumber          String?   @map("pan_number")
+  aadhaarNumber      String?   @map("aadhaar_number")
+  addressLine        String?   @map("address_line")
+  city               String?
+  state              String?
+  postalCode         String?   @map("postal_code")
+  bankAccountName    String?   @map("bank_account_name")
+  bankAccountNumber  String?   @map("bank_account_number")
+  bankIfscCode       String?   @map("bank_ifsc_code")
+  gstNumber          String?   @map("gst_number")
+  kycSubmittedAt     DateTime? @map("kyc_submitted_at")
+  kycReviewedAt      DateTime? @map("kyc_reviewed_at")
+  kycRejectionReason String?   @map("kyc_rejection_reason")
+  commissionRate     Decimal?  @map("commission_rate") @db.Decimal(5, 2)
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
 
   user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   properties Property[]

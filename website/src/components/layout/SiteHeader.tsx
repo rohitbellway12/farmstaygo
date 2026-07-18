@@ -8,25 +8,10 @@ import BrandLogo from "../common/BrandLogo";
 
 const navigation = [
   { label: "Home", href: "/" },
-  {
-    label: "Farmhouses",
-    href: "/properties?category=farmhouse",
-  },
-  {
-    label: "Villas",
-    href: "/properties?category=villa",
-  },
-  {
-    label: "Resorts",
-    href: "/properties?category=resort",
-  },
-  {
-    label: "Destinations",
-    href: "/properties",
-  },
+  { label: "All Stays", href: "/properties" },
   { label: "Blog", href: "/blog" },
   { label: "About Us", href: "/about" },
-  { label: "Contact Us", href: "/contact" },
+  { label: "Help", href: "/contact" },
 ];
 
 export default function SiteHeader() {
@@ -78,26 +63,26 @@ export default function SiteHeader() {
     "http://localhost:5173";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-black/5 bg-white/95 shadow-[0_4px_18px_rgba(22,52,35,0.06)] backdrop-blur">
-      <div className="site-container flex h-[72px] items-center gap-6">
+    <header className="sticky top-0 z-50 border-b border-ink-100 bg-white/95 shadow-[0_8px_28px_rgba(23,35,27,0.07)] backdrop-blur">
+      <div className="site-container flex h-[76px] items-center gap-5">
         <BrandLogo />
 
-        <nav className="ml-auto hidden items-center gap-6 xl:flex">
+        <nav className="ml-auto hidden items-center rounded-full border border-ink-100 bg-ink-50/70 p-1 xl:flex">
           {navigation.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="text-[13px] font-semibold text-ink-700 transition hover:text-brand-700"
+              className="rounded-full px-4 py-2 text-[13px] font-bold text-ink-600 transition hover:bg-white hover:text-brand-700 hover:shadow-sm"
             >
               {item.label}
             </Link>
           ))}
         </nav>
 
-        <div className="ml-auto hidden items-center gap-2 xl:ml-2 xl:flex">
+        <div className="hidden items-center gap-2 xl:flex">
           <Link
             href="/wishlist"
-            className="inline-flex h-10 items-center gap-2 rounded-lg px-3 text-[13px] font-semibold text-ink-700 hover:bg-brand-50 hover:text-brand-700"
+            className="inline-flex h-10 items-center gap-2 rounded-full px-3 text-[13px] font-bold text-ink-700 transition hover:bg-brand-50 hover:text-brand-700"
           >
             <svg
               viewBox="0 0 24 24"
@@ -113,21 +98,21 @@ export default function SiteHeader() {
           </Link>
 
           {isLoggedIn ? (
-            <span className="inline-flex h-10 items-center rounded-lg border border-ink-300 bg-white px-4 text-[13px] font-bold text-ink-800">
+            <span className="inline-flex h-10 max-w-[150px] items-center truncate rounded-full border border-ink-200 bg-white px-4 text-[13px] font-bold text-ink-800 shadow-sm">
               Hi, {customerName}
             </span>
           ) : (
             <Link
               href="/login"
-              className="inline-flex h-10 items-center rounded-lg border border-ink-300 bg-white px-4 text-[13px] font-bold text-ink-800 transition hover:border-brand-500 hover:text-brand-700"
+              className="inline-flex h-10 items-center rounded-full border border-ink-200 bg-white px-4 text-[13px] font-bold text-ink-800 shadow-sm transition hover:border-brand-500 hover:text-brand-700"
             >
-              Login / Signup
+              Login
             </Link>
           )}
 
           <a
             href={`${portalUrl}/vendor/login`}
-            className="inline-flex h-10 items-center rounded-lg bg-brand-700 px-4 text-[13px] font-bold text-white shadow-sm transition hover:bg-brand-800"
+            className="inline-flex h-10 items-center rounded-full bg-brand-700 px-5 text-[13px] font-extrabold text-white shadow-[0_8px_18px_rgba(36,99,47,0.20)] transition hover:bg-brand-800"
           >
             Become a Host
           </a>
@@ -138,7 +123,7 @@ export default function SiteHeader() {
           onClick={() =>
             setMobileOpen((value) => !value)
           }
-          className="ml-auto grid h-10 w-10 place-items-center rounded-lg border border-ink-200 text-ink-700 xl:hidden"
+          className="ml-auto grid h-11 w-11 place-items-center rounded-full border border-ink-200 bg-white text-ink-700 shadow-sm xl:hidden"
           aria-label="Toggle navigation"
           aria-expanded={mobileOpen}
         >
@@ -166,37 +151,45 @@ export default function SiteHeader() {
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-ink-100 bg-white px-4 py-4 xl:hidden">
-          <nav className="site-container grid gap-1">
+        <div className="border-t border-ink-100 bg-white px-4 py-4 shadow-[0_18px_30px_rgba(23,35,27,0.08)] xl:hidden">
+          <nav className="site-container grid gap-2">
             {navigation.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-semibold text-ink-700 hover:bg-brand-50 hover:text-brand-700"
+                className="rounded-xl px-4 py-3 text-sm font-bold text-ink-700 hover:bg-brand-50 hover:text-brand-700"
               >
                 {item.label}
               </Link>
             ))}
 
+            <Link
+              href="/wishlist"
+              onClick={() => setMobileOpen(false)}
+              className="rounded-xl px-4 py-3 text-sm font-bold text-ink-700 hover:bg-brand-50 hover:text-brand-700"
+            >
+              Wishlist
+            </Link>
+
             <div className="mt-3 grid grid-cols-2 gap-2 border-t border-ink-100 pt-4">
               {isLoggedIn ? (
-                <span className="inline-flex h-11 items-center justify-center rounded-lg border border-ink-300 text-sm font-bold text-ink-800">
+                <span className="inline-flex h-11 items-center justify-center truncate rounded-full border border-ink-200 px-4 text-sm font-bold text-ink-800">
                   Hi, {customerName}
                 </span>
               ) : (
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="inline-flex h-11 items-center justify-center rounded-lg border border-ink-300 text-sm font-bold text-ink-800"
+                  className="inline-flex h-11 items-center justify-center rounded-full border border-ink-200 text-sm font-bold text-ink-800"
                 >
-                  Login / Signup
+                  Login
                 </Link>
               )}
 
               <a
                 href={`${portalUrl}/vendor/login`}
-                className="inline-flex h-11 items-center justify-center rounded-lg bg-brand-700 text-sm font-bold text-white"
+                className="inline-flex h-11 items-center justify-center rounded-full bg-brand-700 px-4 text-sm font-extrabold text-white"
               >
                 Become a Host
               </a>

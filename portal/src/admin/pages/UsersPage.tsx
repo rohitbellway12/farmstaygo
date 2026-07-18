@@ -6,10 +6,6 @@ import {
   useState,
 } from "react";
 
-import {
-  useNavigate,
-} from "react-router-dom";
-
 import api from "../../shared/api/api";
 
 type UserRole = "USER" | "VENDOR" | "ADMIN" | "STAFF_ADMIN" | "SUPPORT";
@@ -106,14 +102,6 @@ function SearchIcon() {
   );
 }
 
-function RefreshIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M20 6v5h-5" /><path d="M4 18v-5h5" /><path d="M18.5 9A7 7 0 0 0 6.2 6.2L4 8" /><path d="M5.5 15A7 7 0 0 0 17.8 17.8L20 16" />
-    </svg>
-  );
-}
-
 function MailIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -146,7 +134,7 @@ function CloseIcon() {
   );
 }
 
-function StatusBadge({ status, config }: { status: string; config: { label: string; badgeClass: string; dotClass: string } }) {
+function StatusBadge({ config }: { config: { label: string; badgeClass: string; dotClass: string } }) {
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold ${config.badgeClass}`}>
       <span className={`h-2 w-2 rounded-full ${config.dotClass}`} />
@@ -326,8 +314,8 @@ export default function UsersPage() {
                     </td>
                     <td className="px-5 py-4"><span className="flex items-center gap-1.5 text-sm text-text-secondary"><MailIcon />{user.email}</span></td>
                     <td className="px-5 py-4"><span className="flex items-center gap-1.5 text-sm text-text-secondary"><PhoneIcon />{user.mobile || "Not added"}</span></td>
-                    <td className="px-5 py-4"><StatusBadge status={user.role} config={roleConfig[user.role] || roleConfig.USER} /></td>
-                    <td className="px-5 py-4"><StatusBadge status={user.status} config={statusConfig[user.status] || statusConfig.ACTIVE} /></td>
+                    <td className="px-5 py-4"><StatusBadge config={roleConfig[user.role] || roleConfig.USER} /></td>
+                    <td className="px-5 py-4"><StatusBadge config={statusConfig[user.status] || statusConfig.ACTIVE} /></td>
                     <td className="px-5 py-4"><span className="flex items-center gap-1.5 text-sm text-text-secondary"><CalendarIcon />{formatDate(user.createdAt)}</span></td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-end">
@@ -360,8 +348,8 @@ export default function UsersPage() {
                     <strong className="block truncate text-base font-extrabold text-text-main">{[user.firstName, user.lastName].filter(Boolean).join(" ") || "No name"}</strong>
                     <span className="mt-1 block text-xs text-text-muted">{user.email}</span>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      <StatusBadge status={user.role} config={roleConfig[user.role] || roleConfig.USER} />
-                      <StatusBadge status={user.status} config={statusConfig[user.status] || statusConfig.ACTIVE} />
+                      <StatusBadge config={roleConfig[user.role] || roleConfig.USER} />
+                      <StatusBadge config={statusConfig[user.status] || statusConfig.ACTIVE} />
                     </div>
                   </div>
                 </div>

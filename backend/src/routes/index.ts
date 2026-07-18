@@ -25,6 +25,10 @@ import {
 } from "./property.routes.js";
 
 import {
+  vendorKycRoutes,
+} from "./vendor-kyc.routes.js";
+
+import {
   wishlistRoutes,
 } from "./wishlist.routes.js";
 
@@ -184,6 +188,17 @@ router.use(
 router.use(
   "/vendor/amenities",
   vendorAmenityRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
+| Vendor KYC Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/vendor/kyc",
+  vendorKycRoutes
 );
 
 /*

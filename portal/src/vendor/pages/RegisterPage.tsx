@@ -81,7 +81,7 @@ export default function VendorRegisterPage() {
     setLoading(true);
 
     try {
-      const response = await api.post<RegisterResponse>(
+      await api.post<RegisterResponse>(
         "/auth/register-vendor",
         {
           firstName: firstName.trim(),
@@ -140,11 +140,11 @@ export default function VendorRegisterPage() {
               <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-success-soft text-success">
                 <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m5 12 4 4L19 6" /></svg>
               </div>
-              <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Pending Approval</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-500">Your vendor account is awaiting admin approval. You will be able to log in once it is verified.</p>
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Account Created</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-500">Your vendor account is created. Please log in and submit KYC details before adding properties.</p>
               <div className="mt-8">
                 <Link to="/vendor/login" className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#17634b] px-5 text-sm font-bold text-white transition hover:bg-[#104c39]">
-                  Back to Login
+                  Continue to Login
                 </Link>
               </div>
             </div>

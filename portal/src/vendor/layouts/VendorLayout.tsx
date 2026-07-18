@@ -277,7 +277,33 @@ export default function VendorLayout() {
     .join("")
     .toUpperCase();
 
-  const vendorCompany = "GreenStays Pvt. Ltd.";
+  const vendorCompany =
+    auth?.vendor?.businessName ||
+    "Vendor Account";
+
+  const kycStatus =
+    auth?.vendor?.kycStatus ||
+    "NOT_SUBMITTED";
+
+  const kycApproved =
+    kycStatus === "APPROVED";
+
+  const kycLabel =
+    kycStatus === "APPROVED"
+      ? "KYC Verified"
+      : kycStatus === "PENDING"
+      ? "KYC Pending"
+      : kycStatus === "REJECTED"
+      ? "KYC Rejected"
+      : "KYC Required";
+
+  const goToAddProperty = () => {
+    navigate(
+      kycApproved
+        ? "/vendor/properties/new"
+        : "/vendor/kyc-bank"
+    );
+  };
 
   const logout = () => {
     clearAuth();
@@ -395,10 +421,10 @@ export default function VendorLayout() {
             </span>
             <button
               type="button"
-              onClick={() => navigate("/vendor/properties/new")}
+            onClick={goToAddProperty}
               className="mt-3 inline-flex h-9 items-center gap-2 rounded-lg bg-primary-700 px-5 text-xs font-bold text-white hover:bg-primary-800"
             >
-              Add New Property
+              {kycApproved ? "Add New Property" : "Complete KYC"}
               <span>→</span>
             </button>
           </div>
@@ -505,7 +531,7 @@ export default function VendorLayout() {
                 className="flex h-9 items-center gap-2 rounded-lg bg-primary-700 px-4 text-xs font-bold text-white hover:bg-primary-800"
               >
                 <span className="text-base leading-none">+</span>
-                Add Property
+                {kycApproved ? "Add Property" : "Complete KYC"}
                 <svg
                   viewBox="0 0 24 24"
                   className={`h-4 w-4 transition ${addPropertyOpen ? "rotate-180" : ""}`}
@@ -521,10 +547,10 @@ export default function VendorLayout() {
                 <div className="absolute right-0 top-11 w-56 rounded-dashboard-card border border-border bg-surface p-2 shadow-dashboard-dropdown">
                   <button
                     type="button"
-                    onClick={() => navigate("/vendor/properties/new")}
+                    onClick={goToAddProperty}
                     className="block w-full rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-text-secondary hover:bg-primary-50 hover:text-primary-700"
                   >
-                    Add New Property
+                    {kycApproved ? "Add New Property" : "Complete KYC First"}
                   </button>
                   <button
                     type="button"
@@ -585,8 +611,14 @@ export default function VendorLayout() {
                   <small className="block text-xs text-text-muted">Vendor Partner</small>
                 </span>
 
-                <span className="hidden rounded-full bg-success-soft px-2.5 py-1 text-xs font-extrabold text-success 2xl:inline-flex">
-                  KYC Verified
+                <span className={`hidden rounded-full px-2.5 py-1 text-xs font-extrabold 2xl:inline-flex ${
+                  kycApproved
+                    ? "bg-success-soft text-success"
+                    : kycStatus === "PENDING"
+                    ? "bg-warning-soft text-warning"
+                    : "bg-danger-soft text-danger"
+                }`}>
+                  {kycLabel}
                 </span>
 
                 <svg
@@ -605,7 +637,13 @@ export default function VendorLayout() {
                   <div className="border-b border-border px-4 py-3.5">
                     <div className="flex items-center justify-between gap-2">
                       <strong className="block truncate text-sm text-text-main">{vendorCompany}</strong>
-                      <span className="rounded-full bg-success-soft px-2.5 py-1 text-xs font-extrabold text-success">Verified</span>
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${
+                        kycApproved
+                          ? "bg-success-soft text-success"
+                          : kycStatus === "PENDING"
+                          ? "bg-warning-soft text-warning"
+                          : "bg-danger-soft text-danger"
+                      }`}>{kycLabel}</span>
                     </div>
                     <span className="mt-1 block truncate text-xs text-text-muted">
                       {auth?.user.email || "vendor@farmstaygo.com"}

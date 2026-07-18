@@ -189,7 +189,7 @@ export const registerVendor = async (
         data: {
           userId: user.id,
           businessName,
-          kycStatus: "PENDING",
+          kycStatus: "NOT_SUBMITTED",
         },
       });
 
@@ -293,13 +293,6 @@ export const login = async (
       return res.status(403).json({
         success: false,
         message: "Your account is inactive",
-      });
-    }
-
-    if (user.role === "VENDOR" && user.vendor?.kycStatus === "PENDING") {
-      return res.status(403).json({
-        success: false,
-        message: "Your vendor account is pending approval. Please wait for admin verification.",
       });
     }
 

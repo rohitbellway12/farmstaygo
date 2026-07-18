@@ -16,6 +16,9 @@ import {
 } from "react-router-dom";
 
 import api from "../../shared/api/api";
+import {
+  getAuth,
+} from "../../shared/utils/auth";
 import PropertyFinalSteps from "../components/PropertyFinalSteps";
 
 /*
@@ -413,6 +416,7 @@ function FieldError({
 
 export default function AddPropertyPage() {
   const navigate = useNavigate();
+  const auth = getAuth();
 
   const { id: propertyId } = useParams<{
     id: string;
@@ -451,6 +455,16 @@ const activeStep:
     : 1;
 
   const isEditing = Boolean(propertyId);
+
+  useEffect(() => {
+    if (
+      auth?.vendor?.kycStatus !== "APPROVED"
+    ) {
+      navigate("/vendor/kyc-bank", {
+        replace: true,
+      });
+    }
+  }, [auth?.vendor?.kycStatus, navigate]);
 
   const [categories, setCategories] =
     useState<PropertyCategory[]>([]);

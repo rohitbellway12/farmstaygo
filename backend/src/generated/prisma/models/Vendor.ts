@@ -43,6 +43,19 @@ export type VendorMinAggregateOutputType = {
   userId: number | null
   businessName: string | null
   kycStatus: $Enums.KycStatus | null
+  panNumber: string | null
+  aadhaarNumber: string | null
+  addressLine: string | null
+  city: string | null
+  state: string | null
+  postalCode: string | null
+  bankAccountName: string | null
+  bankAccountNumber: string | null
+  bankIfscCode: string | null
+  gstNumber: string | null
+  kycSubmittedAt: Date | null
+  kycReviewedAt: Date | null
+  kycRejectionReason: string | null
   commissionRate: runtime.Decimal | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -53,6 +66,19 @@ export type VendorMaxAggregateOutputType = {
   userId: number | null
   businessName: string | null
   kycStatus: $Enums.KycStatus | null
+  panNumber: string | null
+  aadhaarNumber: string | null
+  addressLine: string | null
+  city: string | null
+  state: string | null
+  postalCode: string | null
+  bankAccountName: string | null
+  bankAccountNumber: string | null
+  bankIfscCode: string | null
+  gstNumber: string | null
+  kycSubmittedAt: Date | null
+  kycReviewedAt: Date | null
+  kycRejectionReason: string | null
   commissionRate: runtime.Decimal | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -63,6 +89,19 @@ export type VendorCountAggregateOutputType = {
   userId: number
   businessName: number
   kycStatus: number
+  panNumber: number
+  aadhaarNumber: number
+  addressLine: number
+  city: number
+  state: number
+  postalCode: number
+  bankAccountName: number
+  bankAccountNumber: number
+  bankIfscCode: number
+  gstNumber: number
+  kycSubmittedAt: number
+  kycReviewedAt: number
+  kycRejectionReason: number
   commissionRate: number
   createdAt: number
   updatedAt: number
@@ -87,6 +126,19 @@ export type VendorMinAggregateInputType = {
   userId?: true
   businessName?: true
   kycStatus?: true
+  panNumber?: true
+  aadhaarNumber?: true
+  addressLine?: true
+  city?: true
+  state?: true
+  postalCode?: true
+  bankAccountName?: true
+  bankAccountNumber?: true
+  bankIfscCode?: true
+  gstNumber?: true
+  kycSubmittedAt?: true
+  kycReviewedAt?: true
+  kycRejectionReason?: true
   commissionRate?: true
   createdAt?: true
   updatedAt?: true
@@ -97,6 +149,19 @@ export type VendorMaxAggregateInputType = {
   userId?: true
   businessName?: true
   kycStatus?: true
+  panNumber?: true
+  aadhaarNumber?: true
+  addressLine?: true
+  city?: true
+  state?: true
+  postalCode?: true
+  bankAccountName?: true
+  bankAccountNumber?: true
+  bankIfscCode?: true
+  gstNumber?: true
+  kycSubmittedAt?: true
+  kycReviewedAt?: true
+  kycRejectionReason?: true
   commissionRate?: true
   createdAt?: true
   updatedAt?: true
@@ -107,6 +172,19 @@ export type VendorCountAggregateInputType = {
   userId?: true
   businessName?: true
   kycStatus?: true
+  panNumber?: true
+  aadhaarNumber?: true
+  addressLine?: true
+  city?: true
+  state?: true
+  postalCode?: true
+  bankAccountName?: true
+  bankAccountNumber?: true
+  bankIfscCode?: true
+  gstNumber?: true
+  kycSubmittedAt?: true
+  kycReviewedAt?: true
+  kycRejectionReason?: true
   commissionRate?: true
   createdAt?: true
   updatedAt?: true
@@ -204,6 +282,19 @@ export type VendorGroupByOutputType = {
   userId: number
   businessName: string
   kycStatus: $Enums.KycStatus
+  panNumber: string | null
+  aadhaarNumber: string | null
+  addressLine: string | null
+  city: string | null
+  state: string | null
+  postalCode: string | null
+  bankAccountName: string | null
+  bankAccountNumber: string | null
+  bankIfscCode: string | null
+  gstNumber: string | null
+  kycSubmittedAt: Date | null
+  kycReviewedAt: Date | null
+  kycRejectionReason: string | null
   commissionRate: runtime.Decimal | null
   createdAt: Date
   updatedAt: Date
@@ -237,6 +328,19 @@ export type VendorWhereInput = {
   userId?: Prisma.IntFilter<"Vendor"> | number
   businessName?: Prisma.StringFilter<"Vendor"> | string
   kycStatus?: Prisma.EnumKycStatusFilter<"Vendor"> | $Enums.KycStatus
+  panNumber?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  aadhaarNumber?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  addressLine?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  city?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  state?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  postalCode?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  bankAccountName?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  bankAccountNumber?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  bankIfscCode?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  gstNumber?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  kycSubmittedAt?: Prisma.DateTimeNullableFilter<"Vendor"> | Date | string | null
+  kycReviewedAt?: Prisma.DateTimeNullableFilter<"Vendor"> | Date | string | null
+  kycRejectionReason?: Prisma.StringNullableFilter<"Vendor"> | string | null
   commissionRate?: Prisma.DecimalNullableFilter<"Vendor"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFilter<"Vendor"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Vendor"> | Date | string
@@ -249,6 +353,19 @@ export type VendorOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   kycStatus?: Prisma.SortOrder
+  panNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  aadhaarNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  addressLine?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
+  state?: Prisma.SortOrderInput | Prisma.SortOrder
+  postalCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  bankAccountName?: Prisma.SortOrderInput | Prisma.SortOrder
+  bankAccountNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  bankIfscCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  gstNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  kycSubmittedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  kycReviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  kycRejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   commissionRate?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -264,6 +381,19 @@ export type VendorWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.VendorWhereInput | Prisma.VendorWhereInput[]
   businessName?: Prisma.StringFilter<"Vendor"> | string
   kycStatus?: Prisma.EnumKycStatusFilter<"Vendor"> | $Enums.KycStatus
+  panNumber?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  aadhaarNumber?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  addressLine?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  city?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  state?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  postalCode?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  bankAccountName?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  bankAccountNumber?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  bankIfscCode?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  gstNumber?: Prisma.StringNullableFilter<"Vendor"> | string | null
+  kycSubmittedAt?: Prisma.DateTimeNullableFilter<"Vendor"> | Date | string | null
+  kycReviewedAt?: Prisma.DateTimeNullableFilter<"Vendor"> | Date | string | null
+  kycRejectionReason?: Prisma.StringNullableFilter<"Vendor"> | string | null
   commissionRate?: Prisma.DecimalNullableFilter<"Vendor"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFilter<"Vendor"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Vendor"> | Date | string
@@ -276,6 +406,19 @@ export type VendorOrderByWithAggregationInput = {
   userId?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   kycStatus?: Prisma.SortOrder
+  panNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  aadhaarNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  addressLine?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
+  state?: Prisma.SortOrderInput | Prisma.SortOrder
+  postalCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  bankAccountName?: Prisma.SortOrderInput | Prisma.SortOrder
+  bankAccountNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  bankIfscCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  gstNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  kycSubmittedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  kycReviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  kycRejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   commissionRate?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -294,6 +437,19 @@ export type VendorScalarWhereWithAggregatesInput = {
   userId?: Prisma.IntWithAggregatesFilter<"Vendor"> | number
   businessName?: Prisma.StringWithAggregatesFilter<"Vendor"> | string
   kycStatus?: Prisma.EnumKycStatusWithAggregatesFilter<"Vendor"> | $Enums.KycStatus
+  panNumber?: Prisma.StringNullableWithAggregatesFilter<"Vendor"> | string | null
+  aadhaarNumber?: Prisma.StringNullableWithAggregatesFilter<"Vendor"> | string | null
+  addressLine?: Prisma.StringNullableWithAggregatesFilter<"Vendor"> | string | null
+  city?: Prisma.StringNullableWithAggregatesFilter<"Vendor"> | string | null
+  state?: Prisma.StringNullableWithAggregatesFilter<"Vendor"> | string | null
+  postalCode?: Prisma.StringNullableWithAggregatesFilter<"Vendor"> | string | null
+  bankAccountName?: Prisma.StringNullableWithAggregatesFilter<"Vendor"> | string | null
+  bankAccountNumber?: Prisma.StringNullableWithAggregatesFilter<"Vendor"> | string | null
+  bankIfscCode?: Prisma.StringNullableWithAggregatesFilter<"Vendor"> | string | null
+  gstNumber?: Prisma.StringNullableWithAggregatesFilter<"Vendor"> | string | null
+  kycSubmittedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Vendor"> | Date | string | null
+  kycReviewedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Vendor"> | Date | string | null
+  kycRejectionReason?: Prisma.StringNullableWithAggregatesFilter<"Vendor"> | string | null
   commissionRate?: Prisma.DecimalNullableWithAggregatesFilter<"Vendor"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Vendor"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Vendor"> | Date | string
@@ -302,6 +458,19 @@ export type VendorScalarWhereWithAggregatesInput = {
 export type VendorCreateInput = {
   businessName: string
   kycStatus?: $Enums.KycStatus
+  panNumber?: string | null
+  aadhaarNumber?: string | null
+  addressLine?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  bankAccountName?: string | null
+  bankAccountNumber?: string | null
+  bankIfscCode?: string | null
+  gstNumber?: string | null
+  kycSubmittedAt?: Date | string | null
+  kycReviewedAt?: Date | string | null
+  kycRejectionReason?: string | null
   commissionRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -314,6 +483,19 @@ export type VendorUncheckedCreateInput = {
   userId: number
   businessName: string
   kycStatus?: $Enums.KycStatus
+  panNumber?: string | null
+  aadhaarNumber?: string | null
+  addressLine?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  bankAccountName?: string | null
+  bankAccountNumber?: string | null
+  bankIfscCode?: string | null
+  gstNumber?: string | null
+  kycSubmittedAt?: Date | string | null
+  kycReviewedAt?: Date | string | null
+  kycRejectionReason?: string | null
   commissionRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -323,6 +505,19 @@ export type VendorUncheckedCreateInput = {
 export type VendorUpdateInput = {
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   kycStatus?: Prisma.EnumKycStatusFieldUpdateOperationsInput | $Enums.KycStatus
+  panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aadhaarNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankIfscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kycSubmittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -335,6 +530,19 @@ export type VendorUncheckedUpdateInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   kycStatus?: Prisma.EnumKycStatusFieldUpdateOperationsInput | $Enums.KycStatus
+  panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aadhaarNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankIfscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kycSubmittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -346,6 +554,19 @@ export type VendorCreateManyInput = {
   userId: number
   businessName: string
   kycStatus?: $Enums.KycStatus
+  panNumber?: string | null
+  aadhaarNumber?: string | null
+  addressLine?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  bankAccountName?: string | null
+  bankAccountNumber?: string | null
+  bankIfscCode?: string | null
+  gstNumber?: string | null
+  kycSubmittedAt?: Date | string | null
+  kycReviewedAt?: Date | string | null
+  kycRejectionReason?: string | null
   commissionRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -354,6 +575,19 @@ export type VendorCreateManyInput = {
 export type VendorUpdateManyMutationInput = {
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   kycStatus?: Prisma.EnumKycStatusFieldUpdateOperationsInput | $Enums.KycStatus
+  panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aadhaarNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankIfscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kycSubmittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -364,6 +598,19 @@ export type VendorUncheckedUpdateManyInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   kycStatus?: Prisma.EnumKycStatusFieldUpdateOperationsInput | $Enums.KycStatus
+  panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aadhaarNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankIfscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kycSubmittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -379,6 +626,19 @@ export type VendorCountOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   kycStatus?: Prisma.SortOrder
+  panNumber?: Prisma.SortOrder
+  aadhaarNumber?: Prisma.SortOrder
+  addressLine?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  state?: Prisma.SortOrder
+  postalCode?: Prisma.SortOrder
+  bankAccountName?: Prisma.SortOrder
+  bankAccountNumber?: Prisma.SortOrder
+  bankIfscCode?: Prisma.SortOrder
+  gstNumber?: Prisma.SortOrder
+  kycSubmittedAt?: Prisma.SortOrder
+  kycReviewedAt?: Prisma.SortOrder
+  kycRejectionReason?: Prisma.SortOrder
   commissionRate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -395,6 +655,19 @@ export type VendorMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   kycStatus?: Prisma.SortOrder
+  panNumber?: Prisma.SortOrder
+  aadhaarNumber?: Prisma.SortOrder
+  addressLine?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  state?: Prisma.SortOrder
+  postalCode?: Prisma.SortOrder
+  bankAccountName?: Prisma.SortOrder
+  bankAccountNumber?: Prisma.SortOrder
+  bankIfscCode?: Prisma.SortOrder
+  gstNumber?: Prisma.SortOrder
+  kycSubmittedAt?: Prisma.SortOrder
+  kycReviewedAt?: Prisma.SortOrder
+  kycRejectionReason?: Prisma.SortOrder
   commissionRate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -405,6 +678,19 @@ export type VendorMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   kycStatus?: Prisma.SortOrder
+  panNumber?: Prisma.SortOrder
+  aadhaarNumber?: Prisma.SortOrder
+  addressLine?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  state?: Prisma.SortOrder
+  postalCode?: Prisma.SortOrder
+  bankAccountName?: Prisma.SortOrder
+  bankAccountNumber?: Prisma.SortOrder
+  bankIfscCode?: Prisma.SortOrder
+  gstNumber?: Prisma.SortOrder
+  kycSubmittedAt?: Prisma.SortOrder
+  kycReviewedAt?: Prisma.SortOrder
+  kycRejectionReason?: Prisma.SortOrder
   commissionRate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -457,6 +743,10 @@ export type EnumKycStatusFieldUpdateOperationsInput = {
   set?: $Enums.KycStatus
 }
 
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
+}
+
 export type NullableDecimalFieldUpdateOperationsInput = {
   set?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -482,6 +772,19 @@ export type VendorUpdateOneRequiredWithoutPropertiesNestedInput = {
 export type VendorCreateWithoutUserInput = {
   businessName: string
   kycStatus?: $Enums.KycStatus
+  panNumber?: string | null
+  aadhaarNumber?: string | null
+  addressLine?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  bankAccountName?: string | null
+  bankAccountNumber?: string | null
+  bankIfscCode?: string | null
+  gstNumber?: string | null
+  kycSubmittedAt?: Date | string | null
+  kycReviewedAt?: Date | string | null
+  kycRejectionReason?: string | null
   commissionRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -492,6 +795,19 @@ export type VendorUncheckedCreateWithoutUserInput = {
   id?: number
   businessName: string
   kycStatus?: $Enums.KycStatus
+  panNumber?: string | null
+  aadhaarNumber?: string | null
+  addressLine?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  bankAccountName?: string | null
+  bankAccountNumber?: string | null
+  bankIfscCode?: string | null
+  gstNumber?: string | null
+  kycSubmittedAt?: Date | string | null
+  kycReviewedAt?: Date | string | null
+  kycRejectionReason?: string | null
   commissionRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -517,6 +833,19 @@ export type VendorUpdateToOneWithWhereWithoutUserInput = {
 export type VendorUpdateWithoutUserInput = {
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   kycStatus?: Prisma.EnumKycStatusFieldUpdateOperationsInput | $Enums.KycStatus
+  panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aadhaarNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankIfscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kycSubmittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -527,6 +856,19 @@ export type VendorUncheckedUpdateWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   kycStatus?: Prisma.EnumKycStatusFieldUpdateOperationsInput | $Enums.KycStatus
+  panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aadhaarNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankIfscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kycSubmittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -536,6 +878,19 @@ export type VendorUncheckedUpdateWithoutUserInput = {
 export type VendorCreateWithoutPropertiesInput = {
   businessName: string
   kycStatus?: $Enums.KycStatus
+  panNumber?: string | null
+  aadhaarNumber?: string | null
+  addressLine?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  bankAccountName?: string | null
+  bankAccountNumber?: string | null
+  bankIfscCode?: string | null
+  gstNumber?: string | null
+  kycSubmittedAt?: Date | string | null
+  kycReviewedAt?: Date | string | null
+  kycRejectionReason?: string | null
   commissionRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -547,6 +902,19 @@ export type VendorUncheckedCreateWithoutPropertiesInput = {
   userId: number
   businessName: string
   kycStatus?: $Enums.KycStatus
+  panNumber?: string | null
+  aadhaarNumber?: string | null
+  addressLine?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  bankAccountName?: string | null
+  bankAccountNumber?: string | null
+  bankIfscCode?: string | null
+  gstNumber?: string | null
+  kycSubmittedAt?: Date | string | null
+  kycReviewedAt?: Date | string | null
+  kycRejectionReason?: string | null
   commissionRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -571,6 +939,19 @@ export type VendorUpdateToOneWithWhereWithoutPropertiesInput = {
 export type VendorUpdateWithoutPropertiesInput = {
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   kycStatus?: Prisma.EnumKycStatusFieldUpdateOperationsInput | $Enums.KycStatus
+  panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aadhaarNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankIfscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kycSubmittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -582,6 +963,19 @@ export type VendorUncheckedUpdateWithoutPropertiesInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   kycStatus?: Prisma.EnumKycStatusFieldUpdateOperationsInput | $Enums.KycStatus
+  panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aadhaarNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankIfscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kycSubmittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -623,6 +1017,19 @@ export type VendorSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   userId?: boolean
   businessName?: boolean
   kycStatus?: boolean
+  panNumber?: boolean
+  aadhaarNumber?: boolean
+  addressLine?: boolean
+  city?: boolean
+  state?: boolean
+  postalCode?: boolean
+  bankAccountName?: boolean
+  bankAccountNumber?: boolean
+  bankIfscCode?: boolean
+  gstNumber?: boolean
+  kycSubmittedAt?: boolean
+  kycReviewedAt?: boolean
+  kycRejectionReason?: boolean
   commissionRate?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -636,6 +1043,19 @@ export type VendorSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   userId?: boolean
   businessName?: boolean
   kycStatus?: boolean
+  panNumber?: boolean
+  aadhaarNumber?: boolean
+  addressLine?: boolean
+  city?: boolean
+  state?: boolean
+  postalCode?: boolean
+  bankAccountName?: boolean
+  bankAccountNumber?: boolean
+  bankIfscCode?: boolean
+  gstNumber?: boolean
+  kycSubmittedAt?: boolean
+  kycReviewedAt?: boolean
+  kycRejectionReason?: boolean
   commissionRate?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -647,6 +1067,19 @@ export type VendorSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   userId?: boolean
   businessName?: boolean
   kycStatus?: boolean
+  panNumber?: boolean
+  aadhaarNumber?: boolean
+  addressLine?: boolean
+  city?: boolean
+  state?: boolean
+  postalCode?: boolean
+  bankAccountName?: boolean
+  bankAccountNumber?: boolean
+  bankIfscCode?: boolean
+  gstNumber?: boolean
+  kycSubmittedAt?: boolean
+  kycReviewedAt?: boolean
+  kycRejectionReason?: boolean
   commissionRate?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -658,12 +1091,25 @@ export type VendorSelectScalar = {
   userId?: boolean
   businessName?: boolean
   kycStatus?: boolean
+  panNumber?: boolean
+  aadhaarNumber?: boolean
+  addressLine?: boolean
+  city?: boolean
+  state?: boolean
+  postalCode?: boolean
+  bankAccountName?: boolean
+  bankAccountNumber?: boolean
+  bankIfscCode?: boolean
+  gstNumber?: boolean
+  kycSubmittedAt?: boolean
+  kycReviewedAt?: boolean
+  kycRejectionReason?: boolean
   commissionRate?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type VendorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "businessName" | "kycStatus" | "commissionRate" | "createdAt" | "updatedAt", ExtArgs["result"]["vendor"]>
+export type VendorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "businessName" | "kycStatus" | "panNumber" | "aadhaarNumber" | "addressLine" | "city" | "state" | "postalCode" | "bankAccountName" | "bankAccountNumber" | "bankIfscCode" | "gstNumber" | "kycSubmittedAt" | "kycReviewedAt" | "kycRejectionReason" | "commissionRate" | "createdAt" | "updatedAt", ExtArgs["result"]["vendor"]>
 export type VendorInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   properties?: boolean | Prisma.Vendor$propertiesArgs<ExtArgs>
@@ -687,6 +1133,19 @@ export type $VendorPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     userId: number
     businessName: string
     kycStatus: $Enums.KycStatus
+    panNumber: string | null
+    aadhaarNumber: string | null
+    addressLine: string | null
+    city: string | null
+    state: string | null
+    postalCode: string | null
+    bankAccountName: string | null
+    bankAccountNumber: string | null
+    bankIfscCode: string | null
+    gstNumber: string | null
+    kycSubmittedAt: Date | null
+    kycReviewedAt: Date | null
+    kycRejectionReason: string | null
     commissionRate: runtime.Decimal | null
     createdAt: Date
     updatedAt: Date
@@ -1119,6 +1578,19 @@ export interface VendorFieldRefs {
   readonly userId: Prisma.FieldRef<"Vendor", 'Int'>
   readonly businessName: Prisma.FieldRef<"Vendor", 'String'>
   readonly kycStatus: Prisma.FieldRef<"Vendor", 'KycStatus'>
+  readonly panNumber: Prisma.FieldRef<"Vendor", 'String'>
+  readonly aadhaarNumber: Prisma.FieldRef<"Vendor", 'String'>
+  readonly addressLine: Prisma.FieldRef<"Vendor", 'String'>
+  readonly city: Prisma.FieldRef<"Vendor", 'String'>
+  readonly state: Prisma.FieldRef<"Vendor", 'String'>
+  readonly postalCode: Prisma.FieldRef<"Vendor", 'String'>
+  readonly bankAccountName: Prisma.FieldRef<"Vendor", 'String'>
+  readonly bankAccountNumber: Prisma.FieldRef<"Vendor", 'String'>
+  readonly bankIfscCode: Prisma.FieldRef<"Vendor", 'String'>
+  readonly gstNumber: Prisma.FieldRef<"Vendor", 'String'>
+  readonly kycSubmittedAt: Prisma.FieldRef<"Vendor", 'DateTime'>
+  readonly kycReviewedAt: Prisma.FieldRef<"Vendor", 'DateTime'>
+  readonly kycRejectionReason: Prisma.FieldRef<"Vendor", 'String'>
   readonly commissionRate: Prisma.FieldRef<"Vendor", 'Decimal'>
   readonly createdAt: Prisma.FieldRef<"Vendor", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Vendor", 'DateTime'>
