@@ -43,6 +43,7 @@ model User {
   updatedAt      DateTime   @updatedAt @map("updated_at")
 
   vendor Vendor?
+  wishlists Wishlist[]
 
   @@map("users")
 }
@@ -248,6 +249,7 @@ model Property {
   images             PropertyImage[]
   roomTypes          RoomType[]
   availabilityBlocks PropertyAvailabilityBlock[]
+  wishlists          Wishlist[]
 
   @@index([vendorId, status])
   @@index([categoryId, status])
@@ -498,7 +500,7 @@ model RoomAvailabilityBlock {
   roomTypeId   String
   date         DateTime @db.Date
   blockedRooms Int
-  note         String?
+  note       String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -506,4 +508,18 @@ model RoomAvailabilityBlock {
 
   @@unique([roomTypeId, date])
   @@index([date])
+}
+
+model Wishlist {
+  id         String   @id @default(cuid())
+  userId     Int      @map("user_id")
+  propertyId String   @map("property_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([propertyId])
 }

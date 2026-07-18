@@ -62,7 +62,8 @@ export const ModelName = {
   RoomAmenity: 'RoomAmenity',
   RoomImage: 'RoomImage',
   PropertyAvailabilityBlock: 'PropertyAvailabilityBlock',
-  RoomAvailabilityBlock: 'RoomAvailabilityBlock'
+  RoomAvailabilityBlock: 'RoomAvailabilityBlock',
+  Wishlist: 'Wishlist'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -281,6 +282,16 @@ export const RoomAvailabilityBlockScalarFieldEnum = {
 } as const
 
 export type RoomAvailabilityBlockScalarFieldEnum = (typeof RoomAvailabilityBlockScalarFieldEnum)[keyof typeof RoomAvailabilityBlockScalarFieldEnum]
+
+
+export const WishlistScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  propertyId: 'propertyId',
+  createdAt: 'createdAt'
+} as const
+
+export type WishlistScalarFieldEnum = (typeof WishlistScalarFieldEnum)[keyof typeof WishlistScalarFieldEnum]
 
 
 export const SortOrder = {

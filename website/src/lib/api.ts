@@ -21,12 +21,30 @@ export async function apiFetch<T>(
     ? path
     : `/${path}`;
 
+  const authData =
+    typeof window !== "undefined"
+      ? localStorage.getItem("farmstaygo_customer_auth")
+      : null;
+  let authHeader: Record<string, string> = {};
+  if (authData) {
+    try {
+      const parsed = JSON.parse(authData);
+      const token = parsed?.data?.token;
+      if (token) {
+        authHeader = { Authorization: `Bearer ${token}` };
+      }
+    } catch {
+      // Ignore invalid auth data
+    }
+  }
+
   const response = await fetch(
     `${apiBaseUrl}${normalizedPath}`,
     {
       ...options,
       headers: {
         Accept: "application/json",
+        ...authHeader,
         ...options.headers,
       },
       cache: options.cache ?? "no-store",

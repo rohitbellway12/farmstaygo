@@ -5,7 +5,7 @@ import {
 } from "react";
 
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 import api from "../../shared/api/api";
 
@@ -71,6 +71,14 @@ export default function VendorLoginPage() {
         return;
       }
 
+      if (authData.vendor?.kycStatus === "PENDING") {
+        setError(
+          "Your vendor account is pending approval. Please wait for admin verification."
+        );
+
+        return;
+      }
+
       saveAuth(authData);
 
       navigate("/vendor/dashboard", {
@@ -99,7 +107,7 @@ export default function VendorLoginPage() {
   return (
     <main className="grid min-h-screen bg-white lg:grid-cols-2">
       {/* Left Branding Section */}
-      <section className="relative hidden overflow-hidden bg-gradient-to-br from-[#123d31] via-[#17634b] to-[#22946d] p-14 text-white lg:flex lg:items-end xl:p-20">
+      <section className="relative hidden overflow-hidden bg-gradient-to-br from-[#123d31] via-[#17634b] to-[#22946d] p-14 text-white lg:flex lg:items-center xl:p-20">
         <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-2xl" />
 
         <div className="absolute bottom-20 left-16 h-40 w-40 rounded-full bg-emerald-300/10 blur-3xl" />
@@ -314,12 +322,12 @@ export default function VendorLoginPage() {
 
             <p className="text-center text-sm text-slate-500">
               Not registered as a vendor?{" "}
-              <button
-                type="button"
+              <Link
+                to="/vendor/register"
                 className="font-bold text-emerald-700 hover:text-emerald-800"
               >
-                List your property
-              </button>
+                Register here
+              </Link>
             </p>
           </div>
 

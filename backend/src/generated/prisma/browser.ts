@@ -77,3 +77,8 @@ export type PropertyAvailabilityBlock = Prisma.PropertyAvailabilityBlockModel
  * 
  */
 export type RoomAvailabilityBlock = Prisma.RoomAvailabilityBlockModel
+/**
+ * Model Wishlist
+ * 
+ */
+export type Wishlist = Prisma.WishlistModel

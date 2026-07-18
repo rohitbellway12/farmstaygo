@@ -4,7 +4,7 @@ import PropertyListingClient from "@/components/property/PropertyListingClient";
 
 function PropertyListingFallback() {
   return (
-    <div className="min-h-[70vh] bg-[#f8faf8]">
+    <div className="min-h-[70vh]  bg-[#f8faf8]">
       <section className="border-b border-ink-100 bg-white">
         <div className="site-container py-8">
           <div className="h-5 w-28 animate-pulse rounded bg-ink-100" />

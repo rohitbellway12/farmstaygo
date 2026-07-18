@@ -112,6 +112,14 @@ interface PropertyApprovalListResponse {
   message: string;
   data: AdminApprovalProperty[];
   total: number;
+  statistics?: PropertyApprovalStatistics;
+}
+
+interface PropertyApprovalStatistics {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
 }
 
 interface ApiErrorResponse {
@@ -209,6 +217,13 @@ const bookingTypeLabels: Record<
   ENTIRE_PROPERTY: "Entire Property",
   ROOM_WISE: "Room-wise",
   BOTH: "Entire + Room-wise",
+};
+
+const emptyStatistics: PropertyApprovalStatistics = {
+  total: 0,
+  pending: 0,
+  approved: 0,
+  rejected: 0,
 };
 
 /*
@@ -591,6 +606,11 @@ export default function PropertyApprovalsPage() {
   const [properties, setProperties] =
     useState<AdminApprovalProperty[]>([]);
 
+  const [statistics, setStatistics] =
+    useState<PropertyApprovalStatistics>(
+      emptyStatistics
+    );
+
   const [loading, setLoading] =
     useState(true);
 
@@ -676,6 +696,20 @@ export default function PropertyApprovalsPage() {
         );
 
         setProperties(combinedProperties);
+        setStatistics(
+          pendingResponse.data.statistics ||
+            approvedResponse.data.statistics ||
+            rejectedResponse.data.statistics ||
+            {
+              total: combinedProperties.length,
+              pending:
+                pendingResponse.data.total || 0,
+              approved:
+                approvedResponse.data.total || 0,
+              rejected:
+                rejectedResponse.data.total || 0,
+            }
+        );
       } catch (error) {
         setPageError(
           getApiErrorMessage(
@@ -691,41 +725,6 @@ export default function PropertyApprovalsPage() {
   useEffect(() => {
     void loadProperties();
   }, [loadProperties]);
-
-  /*
-  |--------------------------------------------------------------------------
-  | Statistics
-  |--------------------------------------------------------------------------
-  */
-
-  const statistics = useMemo(() => {
-    const pending = properties.filter(
-      (property) =>
-        property.status ===
-        "PENDING_APPROVAL"
-    ).length;
-
-    const approved = properties.filter(
-      (property) =>
-        property.status === "APPROVED"
-    ).length;
-
-    const rejected = properties.filter(
-      (property) =>
-        property.status === "REJECTED"
-    ).length;
-
-    return {
-      total:
-        pending +
-        approved +
-        rejected,
-
-      pending,
-      approved,
-      rejected,
-    };
-  }, [properties]);
 
   /*
   |--------------------------------------------------------------------------

@@ -95,3 +95,110 @@ export interface PublicPropertiesResponse {
     hasNextPage: boolean;
   };
 }
+
+export interface PublicAmenity {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon: string | null;
+  image: string | null;
+  group: string;
+}
+
+export interface PublicRoomType {
+  id: string;
+  name: string;
+  description: string | null;
+
+  inventory: {
+    totalRooms: number;
+    minimumAvailableRooms: number;
+  };
+
+  capacity: {
+    maxAdults: number;
+    maxChildren: number;
+    maxGuests: number;
+    beds: number;
+    bathrooms: number;
+  };
+
+  pricing: {
+    basePrice: number | null;
+    weekendPrice: number | null;
+    unit: "PER_ROOM_PER_NIGHT";
+  };
+
+  images: PublicImage[];
+  amenities: PublicAmenity[];
+
+  availability: {
+    available: boolean;
+    minimumAvailableRooms: number;
+  };
+}
+
+export interface PublicPropertyDetail
+  extends Omit<
+    PublicPropertyCard,
+    | "coverImage"
+    | "imageCount"
+    | "amenityCount"
+    | "roomTypeCount"
+    | "pricing"
+    | "availability"
+  > {
+  description: string | null;
+
+  location: PublicPropertyCard["location"] & {
+    exactLocationProtected: boolean;
+  };
+
+  stayInformation: {
+    checkInTime: string | null;
+    checkOutTime: string | null;
+    minimumStay: number;
+    instantBook: boolean;
+  };
+
+  pricing: {
+    startingPrice: number | null;
+    entireProperty: {
+      basePrice: number | null;
+      weekendPrice: number | null;
+      cleaningFee: number | null;
+      securityDeposit: number | null;
+      unit: "PER_NIGHT";
+    };
+    currency: "INR";
+  };
+
+  images: PublicImage[];
+  amenities: PublicAmenity[];
+  roomTypes: PublicRoomType[];
+
+  availability: PublicPropertyCard["availability"] & {
+    dateRange: {
+      checkIn: string;
+      checkOut: string;
+      totalNights: number;
+    } | null;
+    requestedGuests: number;
+    requestedRooms: number;
+  };
+
+  privacy: {
+    exactPropertyNameProtected: boolean;
+    fullAddressProtected: boolean;
+    mapCoordinatesProtected: boolean;
+    vendorContactProtected: boolean;
+    revealAfterSuccessfulBooking: boolean;
+  };
+}
+
+export interface PublicPropertyDetailResponse {
+  success: boolean;
+  message: string;
+  data: PublicPropertyDetail;
+}

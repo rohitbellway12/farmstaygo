@@ -47,7 +47,10 @@ export const registerUser = async (
       });
     }
 
-    const { firstName, lastName, email, mobile, password } = validation.data;
+    const { firstName, lastName, mobile, password } = validation.data;
+
+    const email =
+      validation.data.email.toLowerCase();
 
     const emailExists = await prisma.user.findUnique({
       where: {
@@ -148,10 +151,12 @@ export const registerVendor = async (
       firstName,
       lastName,
       businessName,
-      email,
       mobile,
       password,
     } = validation.data;
+
+    const email =
+      validation.data.email.toLowerCase();
 
     const existingUser = await prisma.user.findFirst({
       where: {
@@ -184,6 +189,7 @@ export const registerVendor = async (
         data: {
           userId: user.id,
           businessName,
+          kycStatus: "PENDING",
         },
       });
 
@@ -246,7 +252,10 @@ export const login = async (
       });
     }
 
-    const { email, password } = validation.data;
+    const { password } = validation.data;
+
+    const email =
+      validation.data.email.toLowerCase();
 
     const user = await prisma.user.findUnique({
       where: {
@@ -284,6 +293,13 @@ export const login = async (
       return res.status(403).json({
         success: false,
         message: "Your account is inactive",
+      });
+    }
+
+    if (user.role === "VENDOR" && user.vendor?.kycStatus === "PENDING") {
+      return res.status(403).json({
+        success: false,
+        message: "Your vendor account is pending approval. Please wait for admin verification.",
       });
     }
 

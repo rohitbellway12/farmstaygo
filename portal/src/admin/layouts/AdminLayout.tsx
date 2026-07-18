@@ -16,14 +16,22 @@ import {
   clearAuth,
   getAuth,
 } from "../../shared/utils/auth";
+import api from "../../shared/api/api";
 
 interface MenuItem {
   label: string;
   path: string;
   icon: ReactNode;
   badge?: string;
+  badgeKey?: "vendors" | "propertyApprovals" | "properties";
   badgeType?: "success" | "danger";
   end?: boolean;
+}
+
+interface AdminSidebarCounts {
+  vendors: number;
+  propertyApprovals: number;
+  properties: number;
 }
 
 const iconClass = "h-[17px] w-[17px] shrink-0";
@@ -68,7 +76,7 @@ const menuItems: MenuItem[] = [
   {
     label: "Vendors",
     path: "/admin/vendors",
-    badge: "128",
+    badgeKey: "vendors",
     badgeType: "success",
     icon: (
       <svg
@@ -87,7 +95,7 @@ const menuItems: MenuItem[] = [
   {
     label: "Property Approvals",
     path: "/admin/property-approvals",
-    badge: "23",
+    badgeKey: "propertyApprovals",
     badgeType: "danger",
     icon: (
       <svg
@@ -149,6 +157,8 @@ const menuItems: MenuItem[] = [
   {
     label: "Properties",
     path: "/admin/properties",
+    badgeKey: "properties",
+    badgeType: "success",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -365,6 +375,77 @@ export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
+  const [sidebarCounts, setSidebarCounts] =
+    useState<AdminSidebarCounts>({
+      vendors: 0,
+      propertyApprovals: 0,
+      properties: 0,
+    });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadSidebarCounts = async () => {
+      try {
+        const [
+          vendorsResponse,
+          propertyApprovalsResponse,
+          propertiesResponse,
+        ] = await Promise.all([
+          api.get<{
+            total: number;
+          }>("/admin/vendors"),
+          api.get<{
+            total: number;
+            statistics?: {
+              pending?: number;
+            };
+          }>("/admin/property-approvals", {
+            params: {
+              status: "PENDING_APPROVAL",
+            },
+          }),
+          api.get<{
+            statistics?: {
+              total?: number;
+            };
+            total: number;
+          }>("/admin/properties", {
+            params: {
+              status: "ALL",
+            },
+          }),
+        ]);
+
+        if (cancelled) {
+          return;
+        }
+
+        setSidebarCounts({
+          vendors:
+            vendorsResponse.data.total || 0,
+          propertyApprovals:
+            propertyApprovalsResponse.data.statistics?.pending ||
+            propertyApprovalsResponse.data.total ||
+            0,
+          properties:
+            propertiesResponse.data.statistics?.total ||
+            propertiesResponse.data.total ||
+            0,
+        });
+      } catch {
+        if (!cancelled) {
+          setSidebarCounts({
+            vendors: 0,
+            propertyApprovals: 0,
+            properties: 0,
+          });
+        }
+      }
+    };
+
+    void loadSidebarCounts();
+  }, [location.pathname]);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -476,6 +557,9 @@ const currentTitle = useMemo(() => {
             >
               {({ isActive }) => (
                 <>
+                  {/*
+                    Sidebar badges are loaded from the live admin APIs.
+                  */}
                   <span
                     className={
                       isActive
@@ -490,7 +574,11 @@ const currentTitle = useMemo(() => {
                     {item.label}
                   </span>
 
-                  {item.badge && (
+                  {(item.badge ||
+                    (
+                      item.badgeKey &&
+                      sidebarCounts[item.badgeKey] > 0
+                    )) && (
                     <span
                       className={
                         item.badgeType === "danger"
@@ -498,7 +586,14 @@ const currentTitle = useMemo(() => {
                           : "rounded-full bg-success-soft px-2 py-0.5 text-[9px] font-extrabold text-success"
                       }
                     >
-                      {item.badge}
+                      {item.badge ||
+                        (
+                          item.badgeKey
+                            ? sidebarCounts[
+                                item.badgeKey
+                              ]
+                            : ""
+                        )}
                     </span>
                   )}
                 </>

@@ -38,6 +38,58 @@ const isPropertyStatus = (
   );
 };
 
+const approvalStatuses = [
+  PropertyStatus.PENDING_APPROVAL,
+  PropertyStatus.APPROVED,
+  PropertyStatus.REJECTED,
+] as const;
+
+const getApprovalStatistics = async () => {
+  const statusCounts =
+    await prisma.property.groupBy({
+      by: ["status"],
+
+      where: {
+        status: {
+          in: [...approvalStatuses],
+        },
+      },
+
+      _count: {
+        _all: true,
+      },
+    });
+
+  const statistics = {
+    total: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+  };
+
+  statusCounts.forEach((statusItem) => {
+    const count = statusItem._count._all;
+
+    statistics.total += count;
+
+    switch (statusItem.status) {
+      case PropertyStatus.PENDING_APPROVAL:
+        statistics.pending = count;
+        break;
+
+      case PropertyStatus.APPROVED:
+        statistics.approved = count;
+        break;
+
+      case PropertyStatus.REJECTED:
+        statistics.rejected = count;
+        break;
+    }
+  });
+
+  return statistics;
+};
+
 /*
 |--------------------------------------------------------------------------
 | Admin: Get Property Approval List
@@ -99,7 +151,11 @@ export const getAdminPropertyApprovals =
       |--------------------------------------------------------------------------
       */
 
-      if (requestedStatus !== "ALL") {
+      if (requestedStatus === "ALL") {
+        where.status = {
+          in: [...approvalStatuses],
+        };
+      } else {
         where.status =
           requestedStatus as PropertyStatus;
       }
@@ -255,12 +311,16 @@ export const getAdminPropertyApprovals =
           },
         });
 
+      const statistics =
+        await getApprovalStatistics();
+
       return res.status(200).json({
         success: true,
         message:
           "Property approval list fetched successfully",
         data: properties,
         total: properties.length,
+        statistics,
       });
     } catch (error) {
       console.error(

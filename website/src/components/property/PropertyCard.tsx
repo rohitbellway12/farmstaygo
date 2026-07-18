@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 import { getAssetUrl } from "@/lib/assets";
+import { apiFetch, ApiRequestError } from "@/lib/api";
 import type {
   PublicPropertyCard as Property,
 } from "@/types/public";
@@ -22,6 +27,20 @@ function formatPrice(
   ).format(price);
 }
 
+function HeartIcon({ filled = false }: { filled?: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-[18px] w-[18px]"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
+    </svg>
+  );
+}
+
 export default function PropertyCard({
   property,
   href,
@@ -29,6 +48,7 @@ export default function PropertyCard({
   property: Property;
   href?: string;
 }) {
+  const router = useRouter();
   const imageUrl = getAssetUrl(
     property.coverImage?.image
   );
@@ -45,6 +65,111 @@ export default function PropertyCard({
   const detailsHref =
     href ||
     `/properties/${property.publicId}`;
+
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const authData = localStorage.getItem("farmstaygo_customer_auth");
+
+      if (!authData) {
+        setIsLoggedIn(false);
+        setIsWishlisted(false);
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(authData);
+        setIsLoggedIn(Boolean(parsed?.data?.user));
+      } catch {
+        localStorage.removeItem("farmstaygo_customer_auth");
+        setIsLoggedIn(false);
+        setIsWishlisted(false);
+      }
+    };
+
+    checkAuth();
+    window.addEventListener("auth-change", checkAuth);
+    window.addEventListener("storage", checkAuth);
+
+    return () => {
+      window.removeEventListener("auth-change", checkAuth);
+      window.removeEventListener("storage", checkAuth);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadWishlistState = async () => {
+      try {
+        const response = await apiFetch<{
+          data: Array<{
+            publicId: string;
+          }>;
+        }>("/wishlist");
+
+        if (!cancelled) {
+          setIsWishlisted(
+            response.data.some(
+              (item) =>
+                item.publicId === property.publicId
+            )
+          );
+        }
+      } catch {
+        if (!cancelled) {
+          setIsWishlisted(false);
+        }
+      }
+    };
+
+    void loadWishlistState();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoggedIn, property.publicId]);
+
+  const toggleWishlist = async () => {
+    if (!isLoggedIn) {
+      router.push(
+        `/login?next=${encodeURIComponent(detailsHref)}`
+      );
+      return;
+    }
+
+    setWishlistLoading(true);
+    try {
+      if (isWishlisted) {
+        await apiFetch("/wishlist", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ propertyId: property.publicId }),
+        });
+        setIsWishlisted(false);
+      } else {
+        await apiFetch("/wishlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ propertyId: property.publicId }),
+        });
+        setIsWishlisted(true);
+      }
+    } catch (error) {
+      if (error instanceof ApiRequestError) {
+        console.error("Wishlist error:", error.message);
+      }
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
 
   return (
     <article className="group overflow-hidden rounded-xl border border-ink-100 bg-white shadow-[0_8px_28px_rgba(27,58,39,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(27,58,39,0.14)]">
@@ -79,17 +204,19 @@ export default function PropertyCard({
           {property.category.name}
         </span>
 
-        <span className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-ink-700 shadow-sm">
-          <svg
-            viewBox="0 0 24 24"
-            className="h-[18px] w-[18px]"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-          >
-            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
-          </svg>
-        </span>
+        <button
+          type="button"
+          onClick={toggleWishlist}
+          disabled={wishlistLoading}
+          className={`absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/90 shadow-sm transition hover:bg-white ${
+            isWishlisted ? "text-red-500" : "text-ink-700"
+          } disabled:cursor-not-allowed disabled:opacity-60`}
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          <span className={wishlistLoading ? "animate-pulse" : ""}>
+            <HeartIcon filled={isWishlisted} />
+          </span>
+        </button>
       </div>
 
       <div className="p-4">

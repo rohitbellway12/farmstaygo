@@ -15,8 +15,11 @@ import AmenitiesPage from "../admin/pages/AmenitiesPage";
 import PropertyApprovalsPage from "../admin/pages/PropertyApprovalsPage";
 import PropertyApprovalReviewPage from "../admin/pages/PropertyApprovalReviewPage";
 import AdminPropertiesPage from "../admin/pages/PropertiesPage";
+import VendorsPage from "../admin/pages/VendorsPage";
+import UsersPage from "../admin/pages/UsersPage";
 
 import VendorLoginPage from "../vendor/pages/LoginPage";
+import VendorRegisterPage from "../vendor/pages/RegisterPage";
 import VendorDashboardPage from "../vendor/pages/DashboardPage";
 import VendorLayout from "../vendor/layouts/VendorLayout";
 
@@ -74,6 +77,11 @@ export default function AppRoutes() {
         element={<VendorLoginPage />}
       />
 
+      <Route
+        path="/vendor/register"
+        element={<VendorRegisterPage />}
+      />
+
       {/* Admin Protected Routes */}
       <Route
         element={
@@ -108,29 +116,18 @@ export default function AppRoutes() {
 
           <Route
             path="users"
-            element={
-              <ModulePlaceholder
-                title="Users"
-                description="Manage customers and platform users."
-              />
-            }
+            element={<UsersPage />}
           />
 
           <Route
             path="vendors"
-            element={
-              <ModulePlaceholder
-                title="Vendors"
-                description="Manage vendor accounts and verification."
-              />
-            }
+            element={<VendorsPage />}
           />
-          
 
-         <Route
-  path="property-approvals"
-  element={<PropertyApprovalsPage />}
-/>
+          <Route
+            path="property-approvals"
+            element={<PropertyApprovalsPage />}
+          />
 
 <Route
   path="property-approvals/:id"

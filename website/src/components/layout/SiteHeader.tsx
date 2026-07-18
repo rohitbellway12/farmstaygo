@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import Link from "next/link";
-import { useState } from "react";
 
 import BrandLogo from "../common/BrandLogo";
 
@@ -31,6 +32,46 @@ const navigation = [
 export default function SiteHeader() {
   const [mobileOpen, setMobileOpen] =
     useState(false);
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const authData = localStorage.getItem("farmstaygo_customer_auth");
+      if (authData) {
+        try {
+          const parsed = JSON.parse(authData);
+          if (parsed?.data?.user) {
+            setIsLoggedIn(true);
+            const firstName = parsed.data.user.firstName;
+            const lastName = parsed.data.user.lastName;
+            setCustomerName([firstName, lastName].filter(Boolean).join(" ") || "Account");
+            return;
+          }
+        } catch {
+          localStorage.removeItem("farmstaygo_customer_auth");
+        }
+      }
+      setIsLoggedIn(false);
+      setCustomerName("");
+    };
+
+    checkAuth();
+
+    const handleAuthChange = () => checkAuth();
+    window.addEventListener("auth-change", handleAuthChange);
+    window.addEventListener("storage", handleAuthChange);
+
+    const handleFocus = () => checkAuth();
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("auth-change", handleAuthChange);
+      window.removeEventListener("storage", handleAuthChange);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, []);
 
   const portalUrl =
     process.env.NEXT_PUBLIC_PORTAL_URL ||
@@ -71,12 +112,18 @@ export default function SiteHeader() {
             Wishlist
           </Link>
 
-          <Link
-            href="/login"
-            className="inline-flex h-10 items-center rounded-lg border border-ink-300 bg-white px-4 text-[13px] font-bold text-ink-800 transition hover:border-brand-500 hover:text-brand-700"
-          >
-            Login / Signup
-          </Link>
+          {isLoggedIn ? (
+            <span className="inline-flex h-10 items-center rounded-lg border border-ink-300 bg-white px-4 text-[13px] font-bold text-ink-800">
+              Hi, {customerName}
+            </span>
+          ) : (
+            <Link
+              href="/login"
+              className="inline-flex h-10 items-center rounded-lg border border-ink-300 bg-white px-4 text-[13px] font-bold text-ink-800 transition hover:border-brand-500 hover:text-brand-700"
+            >
+              Login / Signup
+            </Link>
+          )}
 
           <a
             href={`${portalUrl}/vendor/login`}
@@ -133,12 +180,19 @@ export default function SiteHeader() {
             ))}
 
             <div className="mt-3 grid grid-cols-2 gap-2 border-t border-ink-100 pt-4">
-              <Link
-                href="/login"
-                className="inline-flex h-11 items-center justify-center rounded-lg border border-ink-300 text-sm font-bold text-ink-800"
-              >
-                Login / Signup
-              </Link>
+              {isLoggedIn ? (
+                <span className="inline-flex h-11 items-center justify-center rounded-lg border border-ink-300 text-sm font-bold text-ink-800">
+                  Hi, {customerName}
+                </span>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="inline-flex h-11 items-center justify-center rounded-lg border border-ink-300 text-sm font-bold text-ink-800"
+                >
+                  Login / Signup
+                </Link>
+              )}
 
               <a
                 href={`${portalUrl}/vendor/login`}

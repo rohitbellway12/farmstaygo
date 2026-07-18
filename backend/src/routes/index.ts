@@ -25,8 +25,20 @@ import {
 } from "./property.routes.js";
 
 import {
+  wishlistRoutes,
+} from "./wishlist.routes.js";
+
+import {
   adminPropertyApprovalRoutes,
 } from "./admin-property-approval.routes.js";
+
+import {
+  adminVendorRoutes,
+} from "./admin-vendor.routes.js";
+
+import {
+  adminUserRoutes,
+} from "./admin-user.routes.js";
 
 import {
   adminPropertyRoutes,
@@ -132,6 +144,28 @@ router.use(
 
 /*
 |--------------------------------------------------------------------------
+| Admin Vendor Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/admin/vendors",
+  adminVendorRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
+| Admin User Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/admin/users",
+  adminUserRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
 | Vendor Property Category Routes
 |--------------------------------------------------------------------------
 */
@@ -161,6 +195,17 @@ router.use(
 router.use(
   "/vendor/properties",
   vendorPropertyRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
+| Wishlist Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/wishlist",
+  wishlistRoutes
 );
 
 export default router;
