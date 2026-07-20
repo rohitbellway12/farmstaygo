@@ -118,7 +118,26 @@ export const getAdminVendors = async (
       orderBy: {
         createdAt: "desc",
       },
-      include: {
+      select: {
+        id: true,
+        businessName: true,
+        kycStatus: true,
+        panNumber: true,
+        aadhaarNumber: true,
+        addressLine: true,
+        city: true,
+        state: true,
+        postalCode: true,
+        bankAccountName: true,
+        bankAccountNumber: true,
+        bankIfscCode: true,
+        gstNumber: true,
+        commissionRate: true,
+        kycSubmittedAt: true,
+        kycReviewedAt: true,
+        kycRejectionReason: true,
+        createdAt: true,
+        updatedAt: true,
         user: {
           select: {
             id: true,

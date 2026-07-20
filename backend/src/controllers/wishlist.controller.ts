@@ -37,13 +37,19 @@ const toNumber = (
 const buildPublicDisplayTitle = (
   property: WishlistPropertyRecord
 ): string => {
+  const title = property.title.trim();
+
+  if (title) {
+    return title;
+  }
+
   const approximateLocation =
     property.locality ||
     property.city ||
     property.state ||
     "a peaceful destination";
 
-  return `Premium ${property.category.name} near ${approximateLocation}`;
+  return `${property.category.name} near ${approximateLocation}`;
 };
 
 const roomIsPublicReady = (

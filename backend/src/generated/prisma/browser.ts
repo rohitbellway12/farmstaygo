@@ -82,3 +82,8 @@ export type RoomAvailabilityBlock = Prisma.RoomAvailabilityBlockModel
  * 
  */
 export type Wishlist = Prisma.WishlistModel
+/**
+ * Model Booking
+ * 
+ */
+export type Booking = Prisma.BookingModel

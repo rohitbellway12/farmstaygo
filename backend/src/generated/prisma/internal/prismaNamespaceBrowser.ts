@@ -63,7 +63,8 @@ export const ModelName = {
   RoomImage: 'RoomImage',
   PropertyAvailabilityBlock: 'PropertyAvailabilityBlock',
   RoomAvailabilityBlock: 'RoomAvailabilityBlock',
-  Wishlist: 'Wishlist'
+  Wishlist: 'Wishlist',
+  Booking: 'Booking'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -305,6 +306,31 @@ export const WishlistScalarFieldEnum = {
 } as const
 
 export type WishlistScalarFieldEnum = (typeof WishlistScalarFieldEnum)[keyof typeof WishlistScalarFieldEnum]
+
+
+export const BookingScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  propertyId: 'propertyId',
+  roomTypeId: 'roomTypeId',
+  bookingMode: 'bookingMode',
+  status: 'status',
+  checkIn: 'checkIn',
+  checkOut: 'checkOut',
+  guests: 'guests',
+  rooms: 'rooms',
+  totalNights: 'totalNights',
+  estimatedTotal: 'estimatedTotal',
+  currency: 'currency',
+  guestName: 'guestName',
+  guestEmail: 'guestEmail',
+  guestMobile: 'guestMobile',
+  specialRequest: 'specialRequest',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
 
 
 export const SortOrder = {

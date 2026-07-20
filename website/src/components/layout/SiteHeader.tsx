@@ -97,6 +97,34 @@ export default function SiteHeader() {
             Wishlist
           </Link>
 
+          {isLoggedIn && (
+            <Link
+              href="/bookings"
+              className="inline-flex h-10 items-center gap-2 rounded-full px-3 text-[13px] font-bold text-ink-700 transition hover:bg-brand-50 hover:text-brand-700"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="h-[18px] w-[18px]"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                aria-hidden="true"
+              >
+                <rect
+                  x="3"
+                  y="5"
+                  width="18"
+                  height="16"
+                  rx="2"
+                />
+                <path d="M8 3v4" />
+                <path d="M16 3v4" />
+                <path d="M3 10h18" />
+              </svg>
+              My Bookings
+            </Link>
+          )}
+
           {isLoggedIn ? (
             <span className="inline-flex h-10 max-w-[150px] items-center truncate rounded-full border border-ink-200 bg-white px-4 text-[13px] font-bold text-ink-800 shadow-sm">
               Hi, {customerName}
@@ -171,6 +199,18 @@ export default function SiteHeader() {
             >
               Wishlist
             </Link>
+
+            {isLoggedIn && (
+              <Link
+                href="/bookings"
+                onClick={() =>
+                  setMobileOpen(false)
+                }
+                className="rounded-xl px-4 py-3 text-sm font-bold text-ink-700 hover:bg-brand-50 hover:text-brand-700"
+              >
+                My Bookings
+              </Link>
+            )}
 
             <div className="mt-3 grid grid-cols-2 gap-2 border-t border-ink-100 pt-4">
               {isLoggedIn ? (

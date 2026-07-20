@@ -111,6 +111,15 @@ interface PropertyAmenity {
   amenity: Amenity;
 }
 
+interface AdminRoomType {
+  id: string;
+  name: string;
+  totalRooms: number;
+  basePrice: string | number;
+  weekendPrice: string | number | null;
+  isActive: boolean;
+}
+
 interface AdminProperty {
   id: string;
   vendorId: number;
@@ -161,12 +170,14 @@ interface AdminProperty {
   category: PropertyCategory;
   vendor: PropertyVendor;
   images: PropertyImage[];
+  roomTypes?: AdminRoomType[];
 
   amenities?: PropertyAmenity[];
 
   _count: {
     images: number;
     amenities: number;
+    roomTypes?: number;
   };
 }
 
@@ -374,6 +385,59 @@ const formatPrice = (
   }).format(parsedValue);
 };
 
+const getLowestRoomPrice = (
+  property: AdminProperty
+): string | number | null => {
+  const prices = (property.roomTypes || [])
+    .filter((room) => room.isActive)
+    .map((room) => Number(room.basePrice))
+    .filter((price) =>
+      Number.isFinite(price) &&
+      price > 0
+    );
+
+  if (prices.length === 0) {
+    return null;
+  }
+
+  return Math.min(...prices);
+};
+
+const getPriceSummary = (
+  property: AdminProperty
+): {
+  primaryLabel: string;
+  primaryValue: string | number | null | undefined;
+  secondaryLabel?: string;
+  secondaryValue?: string | number | null;
+} => {
+  if (property.bookingType === "BOTH") {
+    return {
+      primaryLabel: "Full stay",
+      primaryValue: property.basePrice,
+      secondaryLabel: "Rooms from",
+      secondaryValue:
+        getLowestRoomPrice(property),
+    };
+  }
+
+  if (
+    property.bookingType ===
+    "ROOM_WISE"
+  ) {
+    return {
+      primaryLabel: "Rooms from",
+      primaryValue:
+        getLowestRoomPrice(property),
+    };
+  }
+
+  return {
+    primaryLabel: "Full stay",
+    primaryValue: property.basePrice,
+  };
+};
+
 const formatDate = (
   value?: string | null
 ): string => {
@@ -520,6 +584,50 @@ const isManageableStatus = (
     "INACTIVE",
     "SUSPENDED",
   ].includes(status);
+};
+
+const getStatisticsKeyForStatus = (
+  status: PropertyStatus
+):
+  | "draft"
+  | "pendingApproval"
+  | "approved"
+  | "rejected"
+  | "inactive"
+  | "suspended" => {
+  switch (status) {
+    case "DRAFT":
+      return "draft";
+
+    case "PENDING_APPROVAL":
+      return "pendingApproval";
+
+    case "APPROVED":
+      return "approved";
+
+    case "REJECTED":
+      return "rejected";
+
+    case "INACTIVE":
+      return "inactive";
+
+    case "SUSPENDED":
+      return "suspended";
+  }
+};
+
+const getStatusActionLabel = (
+  status: ManageablePropertyStatus
+): string => {
+  if (status === "APPROVED") {
+    return "Activate Property";
+  }
+
+  if (status === "INACTIVE") {
+    return "Mark Inactive";
+  }
+
+  return "Suspend Property";
 };
 
 /*
@@ -956,6 +1064,11 @@ export default function PropertiesPage() {
   ] = useState(false);
 
   const [
+    approvingPropertyId,
+    setApprovingPropertyId,
+  ] = useState<string | null>(null);
+
+  const [
     statusError,
     setStatusError,
   ] = useState("");
@@ -1310,6 +1423,108 @@ export default function PropertiesPage() {
     setStatusError("");
   };
 
+  const handleApprovePendingProperty =
+    async (
+      property: AdminProperty
+    ) => {
+      if (
+        property.status !==
+        "PENDING_APPROVAL"
+      ) {
+        openStatusModal(property);
+        return;
+      }
+
+      try {
+        setApprovingPropertyId(
+          property.id
+        );
+
+        const response =
+          await api.patch<PropertyActionResponse>(
+            `/admin/property-approvals/${property.id}/approve`
+          );
+
+        const approvedAt =
+          response.data.data.approvedAt ||
+          new Date().toISOString();
+
+        const updatedAt =
+          response.data.data.updatedAt ||
+          approvedAt;
+
+        setProperties(
+          (currentProperties) =>
+            currentProperties.map(
+              (currentProperty) =>
+                currentProperty.id ===
+                property.id
+                  ? {
+                      ...currentProperty,
+                      status: "APPROVED",
+                      approvedAt,
+                      rejectionReason: null,
+                      updatedAt,
+                    }
+                  : currentProperty
+            )
+        );
+
+        setStatistics(
+          (currentStatistics) => ({
+            ...currentStatistics,
+            pendingApproval: Math.max(
+              currentStatistics.pendingApproval -
+                1,
+              0
+            ),
+            approved:
+              currentStatistics.approved + 1,
+          })
+        );
+
+        setDetailsProperty(
+          (currentProperty) =>
+            currentProperty?.id ===
+            property.id
+              ? {
+                  ...currentProperty,
+                  status: "APPROVED",
+                  approvedAt,
+                  rejectionReason: null,
+                  updatedAt,
+                }
+              : currentProperty
+        );
+
+        if (
+          statusFilter !== "ALL" &&
+          statusFilter !== "APPROVED"
+        ) {
+          setStatusFilter("ALL");
+        }
+
+        setToast({
+          type: "success",
+          message:
+            response.data.message ||
+            "Property approved successfully.",
+        });
+
+        await loadProperties(false);
+      } catch (error) {
+        setToast({
+          type: "error",
+          message: getApiErrorMessage(
+            error,
+            "Unable to approve property."
+          ),
+        });
+      } finally {
+        setApprovingPropertyId(null);
+      }
+    };
+
   const handleStatusUpdate =
     async () => {
       if (
@@ -1318,6 +1533,16 @@ export default function PropertiesPage() {
       ) {
         return;
       }
+
+      const previousStatus =
+        statusTarget.status;
+
+      const nextStatus =
+        selectedStatus;
+
+      const removesFeatured =
+        nextStatus !== "APPROVED" &&
+        statusTarget.isFeatured;
 
       try {
         setStatusSubmitting(true);
@@ -1331,6 +1556,102 @@ export default function PropertiesPage() {
             }
           );
 
+        const updatedAt =
+          response.data.data.updatedAt ||
+          new Date().toISOString();
+
+        setProperties(
+          (currentProperties) =>
+            currentProperties.map(
+              (currentProperty) =>
+                currentProperty.id ===
+                statusTarget.id
+                  ? {
+                      ...currentProperty,
+                      status: nextStatus,
+                      isFeatured:
+                        nextStatus ===
+                        "APPROVED"
+                          ? currentProperty.isFeatured
+                          : false,
+                      approvedAt:
+                        nextStatus ===
+                        "APPROVED"
+                          ? currentProperty.approvedAt ||
+                            updatedAt
+                          : currentProperty.approvedAt,
+                      updatedAt,
+                    }
+                  : currentProperty
+            )
+        );
+
+        setStatistics(
+          (currentStatistics) => {
+            const previousKey =
+              getStatisticsKeyForStatus(
+                previousStatus
+              );
+
+            const nextKey =
+              getStatisticsKeyForStatus(
+                nextStatus
+              );
+
+            return {
+              ...currentStatistics,
+              [previousKey]: Math.max(
+                currentStatistics[
+                  previousKey
+                ] - 1,
+                0
+              ),
+              [nextKey]:
+                currentStatistics[
+                  nextKey
+                ] + 1,
+              featured:
+                currentStatistics.featured -
+                (removesFeatured ? 1 : 0),
+            };
+          }
+        );
+
+        setDetailsProperty(
+          (currentProperty) =>
+            currentProperty?.id ===
+            statusTarget.id
+              ? {
+                  ...currentProperty,
+                  status: nextStatus,
+                  isFeatured:
+                    nextStatus === "APPROVED"
+                      ? currentProperty.isFeatured
+                      : false,
+                  approvedAt:
+                    nextStatus === "APPROVED"
+                      ? currentProperty.approvedAt ||
+                        updatedAt
+                      : currentProperty.approvedAt,
+                  updatedAt,
+                }
+              : currentProperty
+        );
+
+        if (
+          statusFilter !== "ALL" &&
+          statusFilter !== nextStatus
+        ) {
+          setStatusFilter("ALL");
+        }
+
+        if (
+          featuredFilter === "FEATURED" &&
+          removesFeatured
+        ) {
+          setFeaturedFilter("ALL");
+        }
+
         setToast({
           type: "success",
           message:
@@ -1342,15 +1663,6 @@ export default function PropertiesPage() {
         setSelectedStatus("");
 
         await loadProperties(false);
-
-        if (
-          detailsProperty?.id ===
-          statusTarget.id
-        ) {
-          await openPropertyDetails(
-            statusTarget.id
-          );
-        }
       } catch (error) {
         setStatusError(
           getApiErrorMessage(
@@ -1901,13 +2213,35 @@ export default function PropertiesPage() {
                       <td className="px-5 py-4">
                         <strong className="block text-sm font-extrabold text-text-main">
                           {formatPrice(
-                            property.basePrice
+                            getPriceSummary(
+                              property
+                            ).primaryValue
                           )}
                         </strong>
 
                         <span className="mt-1 block text-xs text-text-muted">
-                          Base price
+                          {
+                            getPriceSummary(
+                              property
+                            ).primaryLabel
+                          }
                         </span>
+                        {getPriceSummary(property)
+                          .secondaryLabel && (
+                          <span className="mt-1 block text-xs font-semibold text-primary-700">
+                            {
+                              getPriceSummary(
+                                property
+                              ).secondaryLabel
+                            }
+                            :{" "}
+                            {formatPrice(
+                              getPriceSummary(
+                                property
+                              ).secondaryValue
+                            )}
+                          </span>
+                        )}
                       </td>
 
                       <td className="px-5 py-4">
@@ -1984,23 +2318,48 @@ export default function PropertiesPage() {
                             <EyeIcon />
                           </button>
 
-                          <button
-                            type="button"
-                            disabled={
-                              !isManageableStatus(
-                                property.status
-                              )
-                            }
-                            onClick={() =>
-                              openStatusModal(
-                                property
-                              )
-                            }
-                            className="grid h-9 w-9 place-items-center rounded-lg border border-border bg-surface text-text-secondary transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700 disabled:cursor-not-allowed disabled:opacity-40"
-                            aria-label={`Manage ${property.title}`}
-                          >
-                            <SettingsIcon />
-                          </button>
+                          {property.status ===
+                          "PENDING_APPROVAL" ? (
+                            <button
+                              type="button"
+                              disabled={
+                                approvingPropertyId ===
+                                property.id
+                              }
+                              onClick={() =>
+                                void handleApprovePendingProperty(
+                                  property
+                                )
+                              }
+                              className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-success/30 bg-success-soft px-3 text-xs font-bold text-success transition hover:border-success hover:bg-success/10 disabled:cursor-not-allowed disabled:opacity-40"
+                              aria-label={`Approve ${property.title}`}
+                            >
+                              <CheckIcon />
+                              {approvingPropertyId ===
+                              property.id
+                                ? "Approving"
+                                : "Approve"}
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              disabled={
+                                !isManageableStatus(
+                                  property.status
+                                )
+                              }
+                              onClick={() =>
+                                openStatusModal(
+                                  property
+                                )
+                              }
+                              className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 text-xs font-bold text-text-secondary transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700 disabled:cursor-not-allowed disabled:opacity-40"
+                              aria-label={`Manage ${property.title}`}
+                            >
+                              <SettingsIcon />
+                              Status
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -2092,10 +2451,34 @@ export default function PropertiesPage() {
                     />
 
                     <DetailItem
-                      label="Base Price"
-                      value={formatPrice(
-                        property.basePrice
-                      )}
+                      label={
+                        getPriceSummary(
+                          property
+                        ).secondaryLabel
+                          ? "Pricing"
+                          : getPriceSummary(
+                              property
+                            ).primaryLabel
+                      }
+                      value={
+                        getPriceSummary(
+                          property
+                        ).secondaryLabel
+                          ? `${getPriceSummary(property).primaryLabel}: ${formatPrice(
+                              getPriceSummary(
+                                property
+                              ).primaryValue
+                            )} | ${getPriceSummary(property).secondaryLabel}: ${formatPrice(
+                              getPriceSummary(
+                                property
+                              ).secondaryValue
+                            )}`
+                          : formatPrice(
+                              getPriceSummary(
+                                property
+                              ).primaryValue
+                            )
+                      }
                     />
 
                     <DetailItem
@@ -2162,22 +2545,42 @@ export default function PropertiesPage() {
                         View
                       </button>
 
-                      <button
-                        type="button"
-                        disabled={
-                          !isManageableStatus(
-                            property.status
-                          )
-                        }
-                        onClick={() =>
-                          openStatusModal(
-                            property
-                          )
-                        }
-                        className="grid h-10 w-10 place-items-center rounded-control bg-primary-700 text-white disabled:opacity-40"
-                      >
-                        <SettingsIcon />
-                      </button>
+                      {property.status ===
+                      "PENDING_APPROVAL" ? (
+                        <button
+                          type="button"
+                          disabled={
+                            approvingPropertyId ===
+                            property.id
+                          }
+                          onClick={() =>
+                            void handleApprovePendingProperty(
+                              property
+                            )
+                          }
+                          className="grid h-10 w-10 place-items-center rounded-control bg-success text-white disabled:opacity-40"
+                          aria-label={`Approve ${property.title}`}
+                        >
+                          <CheckIcon />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={
+                            !isManageableStatus(
+                              property.status
+                            )
+                          }
+                          onClick={() =>
+                            openStatusModal(
+                              property
+                            )
+                          }
+                          className="grid h-10 w-10 place-items-center rounded-control bg-primary-700 text-white disabled:opacity-40"
+                        >
+                          <SettingsIcon />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </article>
@@ -2317,23 +2720,46 @@ export default function PropertiesPage() {
                             : "Mark Featured"}
                         </button>
 
-                        <button
-                          type="button"
-                          disabled={
-                            !isManageableStatus(
-                              detailsProperty.status
-                            )
-                          }
-                          onClick={() =>
-                            openStatusModal(
-                              detailsProperty
-                            )
-                          }
-                          className="inline-flex h-10 items-center justify-center gap-2 rounded-control bg-primary-700 px-4 text-sm font-bold text-white disabled:opacity-40"
-                        >
-                          <SettingsIcon />
-                          Manage Status
-                        </button>
+                        {detailsProperty.status ===
+                        "PENDING_APPROVAL" ? (
+                          <button
+                            type="button"
+                            disabled={
+                              approvingPropertyId ===
+                              detailsProperty.id
+                            }
+                            onClick={() =>
+                              void handleApprovePendingProperty(
+                                detailsProperty
+                              )
+                            }
+                            className="inline-flex h-10 items-center justify-center gap-2 rounded-control bg-success px-4 text-sm font-bold text-white disabled:opacity-40"
+                          >
+                            <CheckIcon />
+                            {approvingPropertyId ===
+                            detailsProperty.id
+                              ? "Approving"
+                              : "Approve Property"}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={
+                              !isManageableStatus(
+                                detailsProperty.status
+                              )
+                            }
+                            onClick={() =>
+                              openStatusModal(
+                                detailsProperty
+                              )
+                            }
+                            className="inline-flex h-10 items-center justify-center gap-2 rounded-control bg-primary-700 px-4 text-sm font-bold text-white disabled:opacity-40"
+                          >
+                            <SettingsIcon />
+                            Manage Status
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -2514,7 +2940,7 @@ export default function PropertiesPage() {
                         <div className="mt-5 grid gap-3 sm:grid-cols-2">
                           <div className="rounded-dashboard-card bg-primary-50 p-4">
                             <span className="text-xs font-semibold text-primary-700">
-                              Base Price
+                              Full Stay Base Price
                             </span>
 
                             <strong className="mt-2 block text-xl font-extrabold text-text-main">
@@ -2526,7 +2952,7 @@ export default function PropertiesPage() {
 
                           <div className="rounded-dashboard-card bg-warning-soft p-4">
                             <span className="text-xs font-semibold text-warning">
-                              Weekend Price
+                              Full Stay Weekend Price
                             </span>
 
                             <strong className="mt-2 block text-xl font-extrabold text-text-main">
@@ -2535,6 +2961,40 @@ export default function PropertiesPage() {
                               )}
                             </strong>
                           </div>
+
+                          {(detailsProperty.bookingType ===
+                            "BOTH" ||
+                            detailsProperty.bookingType ===
+                              "ROOM_WISE") && (
+                            <div className="rounded-dashboard-card bg-success-soft p-4">
+                              <span className="text-xs font-semibold text-success">
+                                Room-wise Price
+                              </span>
+
+                              <strong className="mt-2 block text-xl font-extrabold text-text-main">
+                                {formatPrice(
+                                  getLowestRoomPrice(
+                                    detailsProperty
+                                  )
+                                )}
+                              </strong>
+
+                              <span className="mt-1 block text-xs font-semibold text-success">
+                                {(detailsProperty.roomTypes || [])
+                                  .filter(
+                                    (room) =>
+                                      room.isActive
+                                  )
+                                  .reduce(
+                                    (total, room) =>
+                                      total +
+                                      room.totalRooms,
+                                    0
+                                  )}{" "}
+                                active rooms
+                              </span>
+                            </div>
+                          )}
 
                           <div className="rounded-dashboard-card bg-info-soft p-4">
                             <span className="text-xs font-semibold text-info">
@@ -2896,6 +3356,30 @@ export default function PropertiesPage() {
                 />
               </div>
 
+              {selectedStatus && (
+                <div className="rounded-control border border-primary-200 bg-primary-50 px-4 py-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wide text-primary-700">
+                      Change To
+                    </span>
+
+                    <StatusBadge
+                      status={selectedStatus}
+                    />
+                  </div>
+
+                  <p className="mt-2 text-sm font-semibold leading-6 text-text-secondary">
+                    {selectedStatus ===
+                    "APPROVED"
+                      ? "This property will be active again and can appear on the customer website when it meets public listing requirements."
+                      : selectedStatus ===
+                          "INACTIVE"
+                        ? "This property will be hidden from public listings until an admin activates it again."
+                        : "This property will be blocked from public listings for an administrative or policy reason."}
+                  </p>
+                </div>
+              )}
+
               <div>
                 <span className="mb-2 block text-sm font-bold text-text-secondary">
                   New Status
@@ -3008,7 +3492,11 @@ export default function PropertiesPage() {
 
                 {statusSubmitting
                   ? "Updating..."
-                  : "Update Status"}
+                  : selectedStatus
+                    ? getStatusActionLabel(
+                        selectedStatus
+                      )
+                    : "Update Status"}
               </button>
             </div>
           </section>

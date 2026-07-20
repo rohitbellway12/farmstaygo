@@ -15,6 +15,7 @@ import AmenitiesPage from "../admin/pages/AmenitiesPage";
 import PropertyApprovalsPage from "../admin/pages/PropertyApprovalsPage";
 import PropertyApprovalReviewPage from "../admin/pages/PropertyApprovalReviewPage";
 import AdminPropertiesPage from "../admin/pages/PropertiesPage";
+import AdminBookingsPage from "../admin/pages/BookingsPage";
 import VendorsPage from "../admin/pages/VendorsPage";
 import UsersPage from "../admin/pages/UsersPage";
 
@@ -24,6 +25,7 @@ import VendorDashboardPage from "../vendor/pages/DashboardPage";
 import VendorLayout from "../vendor/layouts/VendorLayout";
 
 import VendorPropertiesPage from "../vendor/pages/PropertiesPage";
+import VendorBookingsPage from "../vendor/pages/BookingsPage";
 import AddPropertyPage from "../vendor/pages/AddPropertyPage";
 import RoomInventoryPage from "../vendor/pages/RoomInventoryPage";
 import RoomFormPage from "../vendor/pages/RoomFormPage";
@@ -153,12 +155,7 @@ export default function AppRoutes() {
 
           <Route
             path="bookings"
-            element={
-              <ModulePlaceholder
-                title="Bookings"
-                description="View and manage platform bookings."
-              />
-            }
+            element={<AdminBookingsPage />}
           />
 
           <Route
@@ -315,12 +312,7 @@ export default function AppRoutes() {
 
           <Route
             path="bookings"
-            element={
-              <ModulePlaceholder
-                title="Bookings"
-                description="Manage bookings for your properties."
-              />
-            }
+            element={<VendorBookingsPage />}
           />
 
          <Route

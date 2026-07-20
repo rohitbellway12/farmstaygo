@@ -44,6 +44,7 @@ model User {
 
   vendor Vendor?
   wishlists Wishlist[]
+  bookings Booking[]
 
   @@map("users")
 }
@@ -135,6 +136,19 @@ enum PropertyStatus {
   REJECTED
   INACTIVE
   SUSPENDED
+}
+
+enum BookingMode {
+  ENTIRE_PROPERTY
+  ROOM_WISE
+}
+
+enum BookingStatus {
+  REQUESTED
+  CONFIRMED
+  CANCELLED
+  REJECTED
+  COMPLETED
 }
 
 /**
@@ -262,6 +276,7 @@ model Property {
   images             PropertyImage[]
   roomTypes          RoomType[]
   availabilityBlocks PropertyAvailabilityBlock[]
+  bookings           Booking[]
   wishlists          Wishlist[]
 
   @@index([vendorId, status])
@@ -397,6 +412,7 @@ model RoomType {
   amenities          RoomAmenity[]
   images             RoomImage[]
   availabilityBlocks RoomAvailabilityBlock[]
+  bookings           Booking[]
 
   /**
    * Same room slug can be used in different properties,
@@ -535,4 +551,35 @@ model Wishlist {
   @@unique([userId, propertyId])
   @@index([userId])
   @@index([propertyId])
+}
+
+model Booking {
+  id            String        @id @default(cuid())
+  userId        Int           @map("user_id")
+  propertyId    String        @map("property_id")
+  roomTypeId    String?       @map("room_type_id")
+  bookingMode   BookingMode   @map("booking_mode")
+  status        BookingStatus @default(REQUESTED)
+  checkIn       DateTime      @map("check_in") @db.Date
+  checkOut      DateTime      @map("check_out") @db.Date
+  guests        Int
+  rooms         Int           @default(1)
+  totalNights   Int           @map("total_nights")
+  estimatedTotal Decimal?     @map("estimated_total") @db.Decimal(12, 2)
+  currency      String        @default("INR")
+  guestName     String        @map("guest_name")
+  guestEmail    String        @map("guest_email")
+  guestMobile   String?       @map("guest_mobile")
+  specialRequest String?      @map("special_request")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  roomType RoomType? @relation(fields: [roomTypeId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([propertyId, status, checkIn, checkOut])
+  @@index([roomTypeId, status, checkIn, checkOut])
+  @@map("bookings")
 }

@@ -72,3 +72,22 @@ export const PropertyStatus = {
 } as const
 
 export type PropertyStatus = (typeof PropertyStatus)[keyof typeof PropertyStatus]
+
+
+export const BookingMode = {
+  ENTIRE_PROPERTY: 'ENTIRE_PROPERTY',
+  ROOM_WISE: 'ROOM_WISE'
+} as const
+
+export type BookingMode = (typeof BookingMode)[keyof typeof BookingMode]
+
+
+export const BookingStatus = {
+  REQUESTED: 'REQUESTED',
+  CONFIRMED: 'CONFIRMED',
+  CANCELLED: 'CANCELLED',
+  REJECTED: 'REJECTED',
+  COMPLETED: 'COMPLETED'
+} as const
+
+export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus]

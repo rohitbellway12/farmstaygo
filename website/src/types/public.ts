@@ -71,6 +71,74 @@ export interface PublicPropertyCard {
     availableModes: Array<
       "ENTIRE_PROPERTY" | "ROOM_WISE"
     >;
+    entireProperty?: {
+      supported: boolean;
+      ready: boolean;
+      available: boolean;
+      maximumGuests: number | null;
+      guestCapacityValid: boolean;
+      propertyBlocked: boolean;
+      propertyBooked?: boolean;
+      roomInventoryConflict: boolean;
+      basePrice: number | null;
+      weekendPrice: number | null;
+    };
+    roomBooking?: {
+      supported: boolean;
+      available: boolean;
+      availableRoomTypeCount: number;
+      roomTypes: Array<{
+        roomTypeId: string;
+        name: string;
+        totalRooms: number;
+        requestedRooms: number;
+        maximumGuestsPerRoom: number;
+        minimumAvailableRooms: number;
+        guestCapacityValid: boolean;
+        inventoryValid: boolean;
+        available: boolean;
+        nightlyAvailability: Array<{
+          date: string;
+          propertyBlocked: boolean;
+          entireBooked?: boolean;
+          manuallyBlocked: number;
+          bookedRooms?: number;
+          availableRooms: number;
+        }>;
+      }>;
+    };
+  };
+}
+
+export interface PublicAvailabilityResponse {
+  success: boolean;
+  message: string;
+  data: {
+    property: {
+      publicId: string;
+      displayTitle: string;
+      bookingType: PropertyBookingType;
+      category: PublicPropertyCard["category"];
+      location: {
+        area: string | null;
+        city: string | null;
+        state: string | null;
+      };
+    };
+    availability: PublicPropertyDetail["availability"];
+    nightlyAvailability: Array<{
+      date: string;
+      propertyBlocked: boolean;
+      entireBooked?: boolean;
+      roomTypes: Array<{
+        roomTypeId: string;
+        name: string;
+        totalRooms: number;
+        manuallyBlocked: number;
+        bookedRooms?: number;
+        availableRooms: number;
+      }>;
+    }>;
   };
 }
 

@@ -285,7 +285,7 @@ export default async function Home() {
               className="hidden items-center gap-2 text-[12px] font-extrabold text-brand-700 hover:text-brand-800 sm:inline-flex"
             >
               View All Properties
-              <span>→</span>
+              <span>-&gt;</span>
             </Link>
           </div>
 

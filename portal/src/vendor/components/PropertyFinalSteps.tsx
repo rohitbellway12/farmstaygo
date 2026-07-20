@@ -107,6 +107,26 @@ interface PricingFormState {
   instantBook: boolean;
 }
 
+interface RoomType {
+  id: string;
+  name: string;
+  totalRooms: number;
+  basePrice: string | number;
+  weekendPrice: string | number | null;
+  isActive: boolean;
+}
+
+interface RoomInventoryResponse {
+  success: boolean;
+  message: string;
+  data: RoomType[];
+}
+
+interface RoomPricingFormState {
+  basePrice: string;
+  weekendPrice: string;
+}
+
 interface ApiResponse<T> {
   success: boolean;
   message: string;
@@ -339,6 +359,21 @@ export default function PropertyFinalSteps({
   const [pricingErrors, setPricingErrors] =
     useState<PricingErrors>({});
 
+  const [roomTypes, setRoomTypes] =
+    useState<RoomType[]>([]);
+
+  const [
+    roomPricingForms,
+    setRoomPricingForms,
+  ] = useState<
+    Record<string, RoomPricingFormState>
+  >({});
+
+  const [
+    roomPricingErrors,
+    setRoomPricingErrors,
+  ] = useState<Record<string, string>>({});
+
   const [amenitySearch, setAmenitySearch] =
     useState("");
 
@@ -441,6 +476,48 @@ export default function PropertyFinalSteps({
         instantBook:
           loadedProperty.instantBook,
       });
+
+      if (
+        loadedProperty.bookingType ===
+          "BOTH" ||
+        loadedProperty.bookingType ===
+          "ROOM_WISE"
+      ) {
+        const roomResponse =
+          await api.get<RoomInventoryResponse>(
+            `/vendor/properties/${propertyId}/rooms`
+          );
+
+        const loadedRooms =
+          roomResponse.data.data || [];
+
+        setRoomTypes(loadedRooms);
+        setRoomPricingForms(
+          loadedRooms.reduce<
+            Record<
+              string,
+              RoomPricingFormState
+            >
+          >((forms, room) => {
+            forms[room.id] = {
+              basePrice: String(
+                room.basePrice ?? ""
+              ),
+              weekendPrice:
+                room.weekendPrice !== null
+                  ? String(
+                      room.weekendPrice
+                    )
+                  : "",
+            };
+
+            return forms;
+          }, {})
+        );
+      } else {
+        setRoomTypes([]);
+        setRoomPricingForms({});
+      }
     } catch (error) {
       setPageError(
         getErrorDetails(error).message
@@ -538,6 +615,64 @@ export default function PropertyFinalSteps({
     return Object.keys(errors).length === 0;
   };
 
+  const updateRoomPricingForm = (
+    roomTypeId: string,
+    field: keyof RoomPricingFormState,
+    value: string
+  ) => {
+    setRoomPricingForms((currentForms) => ({
+      ...currentForms,
+      [roomTypeId]: {
+        ...(currentForms[roomTypeId] || {
+          basePrice: "",
+          weekendPrice: "",
+        }),
+        [field]: value,
+      },
+    }));
+  };
+
+  const validateRoomPricing = (): boolean => {
+    if (
+      !property ||
+      !(
+        property.bookingType === "BOTH" ||
+        property.bookingType === "ROOM_WISE"
+      )
+    ) {
+      setRoomPricingErrors({});
+      return true;
+    }
+
+    const errors: Record<string, string> = {};
+
+    roomTypes.forEach((room) => {
+      const form =
+        roomPricingForms[room.id];
+
+      if (
+        !form?.basePrice ||
+        Number(form.basePrice) <= 0
+      ) {
+        errors[room.id] =
+          "Room base price must be greater than 0.";
+        return;
+      }
+
+      if (
+        form.weekendPrice &&
+        Number(form.weekendPrice) < 0
+      ) {
+        errors[room.id] =
+          "Room weekend price cannot be negative.";
+      }
+    });
+
+    setRoomPricingErrors(errors);
+
+    return Object.keys(errors).length === 0;
+  };
+
   const handlePricingSubmit = async (
     event: FormEvent<HTMLFormElement>
   ) => {
@@ -546,7 +681,8 @@ export default function PropertyFinalSteps({
     if (
       submitting ||
       editingBlocked ||
-      !validatePricing()
+      !validatePricing() ||
+      !validateRoomPricing()
     ) {
       return;
     }
@@ -603,6 +739,39 @@ export default function PropertyFinalSteps({
           }
         );
 
+      if (
+        property &&
+        (
+          property.bookingType ===
+            "BOTH" ||
+          property.bookingType ===
+            "ROOM_WISE"
+        ) &&
+        roomTypes.length > 0
+      ) {
+        await Promise.all(
+          roomTypes.map((room) => {
+            const form =
+              roomPricingForms[room.id];
+
+            return api.put(
+              `/vendor/properties/${propertyId}/rooms/${room.id}`,
+              {
+                basePrice: Number(
+                  form.basePrice
+                ),
+                weekendPrice:
+                  form.weekendPrice
+                    ? Number(
+                        form.weekendPrice
+                      )
+                    : null,
+              }
+            );
+          })
+        );
+      }
+
       setProperty((currentProperty) =>
         currentProperty
           ? {
@@ -613,7 +782,7 @@ export default function PropertyFinalSteps({
       );
 
       setSuccessMessage(
-        "Pricing saved successfully."
+        "Full stay and room pricing saved successfully."
       );
 
       onChangeStep(5);
@@ -955,8 +1124,14 @@ export default function PropertyFinalSteps({
             </p>
 
             <h2 className="mt-1 text-xl font-extrabold text-text-main">
-              Rates and Charges
+              Full Stay Rates and Charges
             </h2>
+
+            <p className="mt-1 text-sm leading-6 text-text-muted">
+              These prices are used when guests book the complete
+              property. Room-wise prices are managed separately in
+              Room Inventory.
+            </p>
 
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
               {[
@@ -964,14 +1139,14 @@ export default function PropertyFinalSteps({
                   field:
                     "basePrice" as const,
                   label:
-                    "Base Price Per Night",
+                    "Full Stay Base Price Per Night",
                   required: true,
                 },
                 {
                   field:
                     "weekendPrice" as const,
                   label:
-                    "Weekend Price Per Night",
+                    "Full Stay Weekend Price Per Night",
                   required: false,
                 },
                 {
@@ -1005,7 +1180,7 @@ export default function PropertyFinalSteps({
 
                   <div className="relative">
                     <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-bold text-text-muted">
-                      ₹
+                      Rs.
                     </span>
 
                     <input
@@ -1042,6 +1217,158 @@ export default function PropertyFinalSteps({
               ))}
             </div>
           </section>
+
+          {property &&
+            (property.bookingType === "BOTH" ||
+              property.bookingType ===
+                "ROOM_WISE") && (
+              <section className="rounded-dashboard-large border border-border bg-surface p-5 shadow-dashboard sm:p-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-[0.12em] text-primary-700">
+                      Room-wise Pricing
+                    </p>
+
+                    <h2 className="mt-1 text-xl font-extrabold text-text-main">
+                      Per Room Charges
+                    </h2>
+
+                    <p className="mt-1 text-sm leading-6 text-text-muted">
+                      These prices are used when guests book individual
+                      rooms. Full Stay price above is used when guests book
+                      the complete property.
+                    </p>
+                  </div>
+
+                  <Link
+                    to={`/vendor/properties/${propertyId}/rooms`}
+                    className="inline-flex h-10 items-center justify-center rounded-control border border-primary-300 bg-primary-50 px-4 text-sm font-bold text-primary-700 transition hover:bg-primary-100"
+                  >
+                    Manage Rooms
+                  </Link>
+                </div>
+
+                {roomTypes.length === 0 ? (
+                  <div className="mt-5 rounded-dashboard-card border border-dashed border-primary-300 bg-primary-50 p-5">
+                    <h3 className="text-base font-extrabold text-primary-800">
+                      Add room types to set room price
+                    </h3>
+                    <p className="mt-1 text-sm leading-6 text-primary-700">
+                      Create at least one room type, then add its per-room
+                      base and weekend charges here.
+                    </p>
+                    <Link
+                      to={`/vendor/properties/${propertyId}/rooms/new`}
+                      className="mt-4 inline-flex h-10 items-center justify-center rounded-control bg-primary-700 px-4 text-sm font-bold text-white transition hover:bg-primary-800"
+                    >
+                      Add Room Type
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="mt-5 space-y-4">
+                    {roomTypes.map((room) => (
+                      <div
+                        key={room.id}
+                        className="rounded-dashboard-card border border-border bg-surface-soft p-4"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <h3 className="text-base font-extrabold text-text-main">
+                              {room.name}
+                            </h3>
+                            <p className="mt-1 text-sm text-text-muted">
+                              {room.totalRooms} total rooms
+                              {!room.isActive
+                                ? " | inactive"
+                                : ""}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                          <label>
+                            <span className="mb-2 block text-sm font-bold text-text-secondary">
+                              Room Base Price Per Night *
+                            </span>
+                            <div className="relative">
+                              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-bold text-text-muted">
+                                Rs.
+                              </span>
+                              <input
+                                type="number"
+                                min="1"
+                                step="0.01"
+                                value={
+                                  roomPricingForms[
+                                    room.id
+                                  ]?.basePrice || ""
+                                }
+                                disabled={
+                                  editingBlocked
+                                }
+                                onChange={(event) =>
+                                  updateRoomPricingForm(
+                                    room.id,
+                                    "basePrice",
+                                    event.target.value
+                                  )
+                                }
+                                className="h-12 w-full rounded-control border border-border bg-surface pl-12 pr-4 text-base text-text-main outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                              />
+                            </div>
+                          </label>
+
+                          <label>
+                            <span className="mb-2 block text-sm font-bold text-text-secondary">
+                              Room Weekend Price Per Night
+                            </span>
+                            <div className="relative">
+                              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-bold text-text-muted">
+                                Rs.
+                              </span>
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={
+                                  roomPricingForms[
+                                    room.id
+                                  ]?.weekendPrice || ""
+                                }
+                                disabled={
+                                  editingBlocked
+                                }
+                                onChange={(event) =>
+                                  updateRoomPricingForm(
+                                    room.id,
+                                    "weekendPrice",
+                                    event.target.value
+                                  )
+                                }
+                                placeholder="Uses room base price if empty"
+                                className="h-12 w-full rounded-control border border-border bg-surface pl-12 pr-4 text-base text-text-main outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                              />
+                            </div>
+                          </label>
+                        </div>
+
+                        {roomPricingErrors[
+                          room.id
+                        ] && (
+                          <p className="mt-2 text-sm font-semibold text-red-600">
+                            {
+                              roomPricingErrors[
+                                room.id
+                              ]
+                            }
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
 
           <section className="rounded-dashboard-large border border-border bg-surface p-5 shadow-dashboard sm:p-6">
             <p className="text-sm font-bold uppercase tracking-[0.12em] text-primary-700">
@@ -1482,7 +1809,7 @@ export default function PropertyFinalSteps({
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex justify-between">
                   <dt className="text-text-muted">
-                    Base Price
+                    Full Stay Base Price
                   </dt>
                   <dd className="font-bold">
                     {formatPrice(
@@ -1493,7 +1820,7 @@ export default function PropertyFinalSteps({
 
                 <div className="flex justify-between">
                   <dt className="text-text-muted">
-                    Weekend Price
+                    Full Stay Weekend Price
                   </dt>
                   <dd className="font-bold">
                     {formatPrice(
@@ -1534,6 +1861,27 @@ export default function PropertyFinalSteps({
                   </dd>
                 </div>
               </dl>
+
+              {(property.bookingType ===
+                "BOTH" ||
+                property.bookingType ===
+                  "ROOM_WISE") && (
+                <div className="mt-5 rounded-dashboard-card border border-primary-200 bg-primary-50 p-4">
+                  <h4 className="text-sm font-extrabold text-primary-800">
+                    Room-wise prices
+                  </h4>
+                  <p className="mt-1 text-sm leading-6 text-primary-700">
+                    Add each room type with its own room price before
+                    submitting for approval.
+                  </p>
+                  <Link
+                    to={`/vendor/properties/${property.id}/rooms`}
+                    className="mt-3 inline-flex h-10 items-center justify-center rounded-control bg-primary-700 px-4 text-sm font-bold text-white transition hover:bg-primary-800"
+                  >
+                    Manage Room Prices
+                  </Link>
+                </div>
+              )}
             </div>
           </section>
 

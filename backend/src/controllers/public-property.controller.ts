@@ -4,6 +4,8 @@ import type {
 } from "express";
 
 import {
+  BookingMode,
+  BookingStatus,
   PropertyBookingType,
   PropertyStatus,
   type Prisma,
@@ -48,6 +50,16 @@ interface AvailabilityMaps {
   >;
 
   roomBlocks: Map<
+    string,
+    Map<string, number>
+  >;
+
+  entireBookings: Map<
+    string,
+    Set<string>
+  >;
+
+  roomBookings: Map<
     string,
     Map<string, number>
   >;
@@ -1142,22 +1154,26 @@ const buildPublicPropertyWhere = (
 |--------------------------------------------------------------------------
 | Build Public Display Title
 |--------------------------------------------------------------------------
-|
-| Exact database property title is intentionally not returned before booking.
-|
 */
 
 const buildPublicDisplayTitle = (
   property:
     PublicPropertyRecord
 ): string => {
+  const title =
+    property.title.trim();
+
+  if (title) {
+    return title;
+  }
+
   const approximateLocation =
     property.locality ||
     property.city ||
     property.state ||
     "a peaceful destination";
 
-  return `Premium ${property.category.name} near ${approximateLocation}`;
+  return `${property.category.name} near ${approximateLocation}`;
 };
 
 /*
@@ -1253,6 +1269,18 @@ const fetchAvailabilityMaps =
         Map<string, number>
       >();
 
+    const entireBookings =
+      new Map<
+        string,
+        Set<string>
+      >();
+
+    const roomBookings =
+      new Map<
+        string,
+        Map<string, number>
+      >();
+
     if (
       !dateRange ||
       properties.length === 0
@@ -1260,6 +1288,8 @@ const fetchAvailabilityMaps =
       return {
         propertyBlocks,
         roomBlocks,
+        entireBookings,
+        roomBookings,
       };
     }
 
@@ -1281,6 +1311,7 @@ const fetchAvailabilityMaps =
     const [
       propertyBlockRecords,
       roomBlockRecords,
+      bookingRecords,
     ] = await Promise.all([
       prisma.propertyAvailabilityBlock.findMany(
         {
@@ -1324,6 +1355,34 @@ const fetchAvailabilityMaps =
             }
           )
         : Promise.resolve([]),
+
+      prisma.booking.findMany({
+        where: {
+          propertyId: {
+            in: propertyIds,
+          },
+          status: {
+            in: [
+              BookingStatus.REQUESTED,
+              BookingStatus.CONFIRMED,
+            ],
+          },
+          checkIn: {
+            lt: dateRange.checkOut,
+          },
+          checkOut: {
+            gt: dateRange.checkIn,
+          },
+        },
+        select: {
+          propertyId: true,
+          roomTypeId: true,
+          bookingMode: true,
+          checkIn: true,
+          checkOut: true,
+          rooms: true,
+        },
+      }),
     ]);
 
     propertyBlockRecords.forEach(
@@ -1372,9 +1431,79 @@ const fetchAvailabilityMaps =
       }
     );
 
+    bookingRecords.forEach(
+      (record) => {
+        const bookingNights =
+          buildNights(
+            record.checkIn,
+            record.checkOut
+          );
+
+        if (
+          record.bookingMode ===
+          BookingMode.ENTIRE_PROPERTY
+        ) {
+          const dates =
+            entireBookings.get(
+              record.propertyId
+            ) ||
+            new Set<string>();
+
+          bookingNights.forEach(
+            (night) => {
+              dates.add(
+                formatDateKey(night)
+              );
+            }
+          );
+
+          entireBookings.set(
+            record.propertyId,
+            dates
+          );
+
+          return;
+        }
+
+        if (!record.roomTypeId) {
+          return;
+        }
+
+        const existingRoomBookings =
+          roomBookings.get(
+            record.roomTypeId
+          ) ||
+          new Map<
+            string,
+            number
+          >();
+
+        bookingNights.forEach(
+          (night) => {
+            const date =
+              formatDateKey(night);
+
+            existingRoomBookings.set(
+              date,
+              (existingRoomBookings.get(
+                date
+              ) || 0) + record.rooms
+            );
+          }
+        );
+
+        roomBookings.set(
+          record.roomTypeId,
+          existingRoomBookings
+        );
+      }
+    );
+
     return {
       propertyBlocks,
       roomBlocks,
+      entireBookings,
+      roomBookings,
     };
   };
 
@@ -1401,8 +1530,23 @@ const calculateRoomAvailability = (
     ) ||
     new Set<string>();
 
+  const entireBookedDates =
+    maps.entireBookings.get(
+      property.id
+    ) ||
+    new Set<string>();
+
   const roomBlockMap =
     maps.roomBlocks.get(
+      roomType.id
+    ) ||
+    new Map<
+      string,
+      number
+    >();
+
+  const roomBookingMap =
+    maps.roomBookings.get(
       roomType.id
     ) ||
     new Map<
@@ -1427,13 +1571,24 @@ const calculateRoomAvailability = (
                 date
               );
 
+            const entireBooked =
+              entireBookedDates.has(
+                date
+              );
+
             const manuallyBlocked =
               roomBlockMap.get(
                 date
               ) || 0;
 
+            const bookedRooms =
+              roomBookingMap.get(
+                date
+              ) || 0;
+
             const availableRooms =
-              propertyBlocked
+              propertyBlocked ||
+              entireBooked
                 ? 0
                 : Math.max(
                     roomType.totalRooms -
@@ -1441,17 +1596,30 @@ const calculateRoomAvailability = (
                     0
                   );
 
+            const availableRoomsAfterBookings =
+              propertyBlocked ||
+              entireBooked
+                ? 0
+                : Math.max(
+                    availableRooms -
+                      bookedRooms,
+                    0
+                  );
+
             minimumAvailableRooms =
               Math.min(
                 minimumAvailableRooms,
-                availableRooms
+                availableRoomsAfterBookings
               );
 
             return {
               date,
               propertyBlocked,
+              entireBooked,
               manuallyBlocked,
-              availableRooms,
+              bookedRooms,
+              availableRooms:
+                availableRoomsAfterBookings,
             };
           }
         )
@@ -1528,6 +1696,12 @@ const calculatePropertyAvailability = (
     ) ||
     new Set<string>();
 
+  const entireBookedDates =
+    maps.entireBookings.get(
+      property.id
+    ) ||
+    new Set<string>();
+
   const entirePropertySupported =
     supportsEntireProperty(
       property.bookingType
@@ -1546,6 +1720,9 @@ const calculatePropertyAvailability = (
   let entirePropertyBlocked =
     false;
 
+  let entirePropertyBooked =
+    false;
+
   let roomInventoryConflict =
     false;
 
@@ -1554,6 +1731,16 @@ const calculatePropertyAvailability = (
       dateRange.nights.some(
         (night) =>
           propertyBlockedDates.has(
+            formatDateKey(
+              night
+            )
+          )
+      );
+
+    entirePropertyBooked =
+      dateRange.nights.some(
+        (night) =>
+          entireBookedDates.has(
             formatDateKey(
               night
             )
@@ -1586,18 +1773,53 @@ const calculatePropertyAvailability = (
                 );
 
               if (!roomBlockMap) {
-                return false;
+                const roomBookingMap =
+                  maps.roomBookings.get(
+                    roomType.id
+                  );
+
+                if (!roomBookingMap) {
+                  return false;
+                }
+
+                return dateRange.nights.some(
+                  (night) =>
+                    (
+                      roomBookingMap.get(
+                        formatDateKey(
+                          night
+                        )
+                      ) || 0
+                    ) > 0
+                );
               }
 
               return dateRange.nights.some(
-                (night) =>
+                (night) => {
+                  const date =
+                    formatDateKey(
+                      night
+                    );
+
+                  const manualBlocked =
                   (
                     roomBlockMap.get(
-                      formatDateKey(
-                        night
-                      )
+                      date
                     ) || 0
-                  ) > 0
+                  ) > 0;
+
+                  const bookedRooms =
+                    (
+                      maps.roomBookings
+                        .get(roomType.id)
+                        ?.get(date) || 0
+                    ) > 0;
+
+                  return (
+                    manualBlocked ||
+                    bookedRooms
+                  );
+                }
               );
             }
           );
@@ -1623,6 +1845,7 @@ const calculatePropertyAvailability = (
       !checked ||
       (
         !entirePropertyBlocked &&
+        !entirePropertyBooked &&
         !roomInventoryConflict
       )
     );
@@ -1723,6 +1946,9 @@ const calculatePropertyAvailability = (
 
       propertyBlocked:
         entirePropertyBlocked,
+
+      propertyBooked:
+        entirePropertyBooked,
 
       roomInventoryConflict,
 
@@ -2487,24 +2713,6 @@ export const getPublicProperties =
             )
         );
 
-      /*
-      |--------------------------------------------------------------------------
-      | Availability Filter
-      |--------------------------------------------------------------------------
-      |
-      | Only apply when customer selected check-in and check-out.
-      |
-      */
-
-      if (context.dateRange) {
-        publicProperties =
-          publicProperties.filter(
-            (property) =>
-              property.availability
-                .available
-          );
-      }
-
       publicProperties =
         sortPublicProperties(
           publicProperties,
@@ -2818,9 +3026,19 @@ export const checkPublicPropertyAvailability =
                     new Set<string>()
                   ).has(date);
 
+                const entireBooked =
+                  (
+                    availabilityMaps
+                      .entireBookings.get(
+                        property.id
+                      ) ||
+                    new Set<string>()
+                  ).has(date);
+
                 return {
                   date,
                   propertyBlocked,
+                  entireBooked,
 
                   roomTypes:
                     property.roomTypes
@@ -2837,15 +3055,37 @@ export const checkPublicPropertyAvailability =
                               )
                               ?.get(
                                 date
+                            ) ||
+                            0;
+
+                          const bookedRooms =
+                            availabilityMaps
+                              .roomBookings
+                              .get(
+                                roomType.id
+                              )
+                              ?.get(
+                                date
                               ) ||
                             0;
 
                           const availableRooms =
-                            propertyBlocked
+                            propertyBlocked ||
+                            entireBooked
                               ? 0
                               : Math.max(
                                   roomType.totalRooms -
                                     manuallyBlocked,
+                                  0
+                                );
+
+                          const availableRoomsAfterBookings =
+                            propertyBlocked ||
+                            entireBooked
+                              ? 0
+                              : Math.max(
+                                  availableRooms -
+                                    bookedRooms,
                                   0
                                 );
 
@@ -2860,8 +3100,10 @@ export const checkPublicPropertyAvailability =
                               roomType.totalRooms,
 
                             manuallyBlocked,
+                            bookedRooms,
 
-                            availableRooms,
+                            availableRooms:
+                              availableRoomsAfterBookings,
                           };
                         }
                       ),

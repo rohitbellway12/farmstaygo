@@ -1427,7 +1427,7 @@ export default function RoomFormPage() {
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
               <label>
                 <span className="mb-2 block text-sm font-bold text-text-secondary">
-                  Base Price
+                  Room Base Price Per Night
                   <span className="text-danger">
                     {" "}
                     *
@@ -1436,7 +1436,7 @@ export default function RoomFormPage() {
 
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-text-muted">
-                    ₹
+                    Rs.
                   </span>
 
                   <input
@@ -1471,12 +1471,12 @@ export default function RoomFormPage() {
 
               <label>
                 <span className="mb-2 block text-sm font-bold text-text-secondary">
-                  Weekend Price
+                  Room Weekend Price Per Night
                 </span>
 
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-text-muted">
-                    ₹
+                    Rs.
                   </span>
 
                   <input
@@ -1948,11 +1948,11 @@ export default function RoomFormPage() {
 
               <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
                 <span className="text-sm text-text-muted">
-                  Base Price
+                  Room Base Price
                 </span>
 
                 <strong className="text-base text-primary-700">
-                  ₹
+                  Rs.
                   {form.basePrice ||
                     "0"}
                 </strong>

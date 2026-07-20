@@ -385,10 +385,35 @@ export const getAdminProperties = async (
             take: 1,
           },
 
+          roomTypes: {
+            where: {
+              isActive: true,
+            },
+
+            orderBy: [
+              {
+                sortOrder: "asc",
+              },
+              {
+                createdAt: "asc",
+              },
+            ],
+
+            select: {
+              id: true,
+              name: true,
+              totalRooms: true,
+              basePrice: true,
+              weekendPrice: true,
+              isActive: true,
+            },
+          },
+
           _count: {
             select: {
               images: true,
               amenities: true,
+              roomTypes: true,
             },
           },
         },
@@ -619,10 +644,31 @@ export const getAdminPropertyById =
               },
             },
 
+            roomTypes: {
+              orderBy: [
+                {
+                  sortOrder: "asc",
+                },
+                {
+                  createdAt: "asc",
+                },
+              ],
+
+              select: {
+                id: true,
+                name: true,
+                totalRooms: true,
+                basePrice: true,
+                weekendPrice: true,
+                isActive: true,
+              },
+            },
+
             _count: {
               select: {
                 images: true,
                 amenities: true,
+                roomTypes: true,
               },
             },
           },

@@ -2151,6 +2151,22 @@ const handleMovePropertyImage =
           <FieldError
             message={formErrors.bookingType}
           />
+
+          {(form.bookingType ===
+            "BOTH" ||
+            form.bookingType ===
+              "ROOM_WISE") && (
+            <div className="mt-4 rounded-dashboard-card border border-primary-200 bg-primary-50 p-4">
+              <h3 className="text-sm font-extrabold text-primary-800">
+                Room pricing setup
+              </h3>
+              <p className="mt-1 text-sm leading-6 text-primary-700">
+                {form.bookingType === "BOTH"
+                  ? "Add the Full Stay price in the Pricing step, then add room-wise prices from Room Inventory after this property draft is created."
+                  : "Room-wise pricing is added from Room Inventory after this property draft is created."}
+              </p>
+            </div>
+          )}
         </section>
 
         {/* Capacity */}

@@ -33,6 +33,12 @@ import {
 } from "./wishlist.routes.js";
 
 import {
+  adminBookingRoutes,
+  bookingRoutes,
+  vendorBookingRoutes,
+} from "./booking.routes.js";
+
+import {
   adminPropertyApprovalRoutes,
 } from "./admin-property-approval.routes.js";
 
@@ -170,6 +176,17 @@ router.use(
 
 /*
 |--------------------------------------------------------------------------
+| Admin Booking Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/admin/bookings",
+  adminBookingRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
 | Vendor Property Category Routes
 |--------------------------------------------------------------------------
 */
@@ -214,6 +231,17 @@ router.use(
 
 /*
 |--------------------------------------------------------------------------
+| Vendor Booking Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/vendor/bookings",
+  vendorBookingRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
 | Wishlist Routes
 |--------------------------------------------------------------------------
 */
@@ -221,6 +249,17 @@ router.use(
 router.use(
   "/wishlist",
   wishlistRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
+| Booking Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/bookings",
+  bookingRoutes
 );
 
 export default router;

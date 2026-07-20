@@ -27,6 +27,20 @@ function formatPrice(
   ).format(price);
 }
 
+function getPrimaryPriceLabel(
+  property: Property
+): string {
+  if (property.bookingType === "BOTH") {
+    return "Rooms from";
+  }
+
+  if (property.bookingType === "ROOM_WISE") {
+    return "Rooms from";
+  }
+
+  return "Full stay";
+}
+
 function HeartIcon({ filled = false }: { filled?: boolean }) {
   return (
     <svg
@@ -242,12 +256,12 @@ export default function PropertyCard({
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-ink-600">
           <span>
             {property.capacity.maxGuests ??
-              "—"}{" "}
+              "-"}{" "}
             Guests
           </span>
 
           <span className="text-ink-300">
-            •
+            |
           </span>
 
           <span>
@@ -261,6 +275,10 @@ export default function PropertyCard({
 
         <div className="mt-4 flex items-end justify-between gap-3">
           <div>
+            <span className="text-[11px] font-bold uppercase tracking-wide text-ink-500">
+              {getPrimaryPriceLabel(property)}
+            </span>
+
             <strong className="block text-lg font-extrabold text-ink-900">
               {formatPrice(
                 property.pricing
@@ -268,9 +286,24 @@ export default function PropertyCard({
               )}
             </strong>
 
-            <span className="text-[11px] text-ink-500">
-              starting price / night
-            </span>
+            {property.bookingType ===
+              "BOTH" &&
+              property.pricing.basePrice !==
+                null && (
+                <span className="text-[11px] text-ink-500">
+                  Full stay{" "}
+                  {formatPrice(
+                    property.pricing.basePrice
+                  )}
+                </span>
+              )}
+
+            {property.bookingType !==
+              "BOTH" && (
+              <span className="text-[11px] text-ink-500">
+                per night
+              </span>
+            )}
           </div>
 
           <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[10px] font-bold text-brand-700">

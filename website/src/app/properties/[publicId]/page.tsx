@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 
 import { ApiRequestError, apiFetch } from "@/lib/api";
 import { getAssetUrl } from "@/lib/assets";
+import AvailabilityCalendarClient from "@/components/property/AvailabilityCalendarClient";
+import BookingRequestPanel from "@/components/property/BookingRequestPanel";
 import type {
   PublicImage,
   PublicPropertyDetail,
@@ -47,6 +49,47 @@ function formatBookingType(
   };
 
   return labels[bookingType];
+}
+
+function getPrimaryPriceLabel(
+  property: PublicPropertyDetail
+): string {
+  if (property.bookingType === "BOTH") {
+    return "Rooms From";
+  }
+
+  if (property.bookingType === "ROOM_WISE") {
+    return "Rooms From";
+  }
+
+  return "Full Stay";
+}
+
+function getLowestRoomPrice(
+  property: PublicPropertyDetail
+): number | null {
+  const prices = property.roomTypes
+    .map((room) => room.pricing.basePrice)
+    .filter(
+      (price): price is number =>
+        typeof price === "number" &&
+        price > 0
+    );
+
+  if (prices.length === 0) {
+    return null;
+  }
+
+  return Math.min(...prices);
+}
+
+function getAmenityInitial(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
 }
 
 function buildDetailQuery(
@@ -177,6 +220,8 @@ export default async function PropertyDetailsPage({
     .slice(0, 4);
 
   const location = getLocation(property);
+  const lowestRoomPrice =
+    getLowestRoomPrice(property);
 
   return (
     <div className="bg-[#f8faf8]">
@@ -225,16 +270,40 @@ export default async function PropertyDetailsPage({
 
             <div className="rounded-xl border border-ink-100 bg-ink-50 p-4">
               <div className="text-xs font-bold uppercase tracking-wide text-ink-500">
-                Starting Price
+                {getPrimaryPriceLabel(property)}
               </div>
               <div className="mt-1 text-3xl font-extrabold text-ink-900">
                 {formatPrice(
                   property.pricing.startingPrice
                 )}
               </div>
-              <div className="mt-1 text-xs text-ink-500">
-                per night before taxes and fees
-              </div>
+              {property.bookingType === "BOTH" && (
+                <div className="mt-3 grid gap-2 text-xs font-semibold text-ink-600">
+                  <div className="flex justify-between gap-3">
+                    <span>Full stay</span>
+                    <strong className="text-ink-900">
+                      {formatPrice(
+                        property.pricing
+                          .entireProperty
+                          .basePrice
+                      )}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <span>Room-wise</span>
+                    <strong className="text-ink-900">
+                      {formatPrice(
+                        lowestRoomPrice
+                      )}
+                    </strong>
+                  </div>
+                </div>
+              )}
+              {property.bookingType !== "BOTH" && (
+                <div className="mt-1 text-xs text-ink-500">
+                  per night before taxes and fees
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -317,24 +386,44 @@ export default async function PropertyDetailsPage({
           </section>
 
           <section>
-            <h2 className="text-2xl font-extrabold text-ink-900">
-              Amenities
-            </h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="flex flex-wrap items-end justify-between gap-3 border-b border-ink-100 pb-3">
+              <div>
+                <h2 className="text-2xl font-extrabold text-ink-900">
+                  Amenities
+                </h2>
+                <p className="mt-1 text-sm text-ink-500">
+                  Facilities included with this stay
+                </p>
+              </div>
+              {property.amenities.length > 0 && (
+                <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-extrabold text-brand-700">
+                  {property.amenities.length} available
+                </span>
+              )}
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {property.amenities.length > 0 ? (
                 property.amenities.map((amenity) => (
                   <div
                     key={amenity.id}
-                    className="flex items-center gap-3 rounded-lg border border-ink-100 bg-white p-4"
+                    className="flex min-h-[76px] items-center gap-3 rounded-lg border border-ink-100 bg-white p-4 shadow-[0_8px_20px_rgba(27,58,39,0.05)]"
                   >
                     <DetailIcon>
-                      <span className="text-sm font-extrabold">
-                        {amenity.icon || amenity.name[0]}
+                      <span className="text-xs font-extrabold">
+                        {getAmenityInitial(
+                          amenity.name
+                        )}
                       </span>
                     </DetailIcon>
-                    <span className="font-bold text-ink-800">
-                      {amenity.name}
-                    </span>
+                    <div className="min-w-0">
+                      <span className="block truncate font-bold text-ink-800">
+                        {amenity.name}
+                      </span>
+                      <span className="mt-0.5 block text-xs font-semibold capitalize text-ink-500">
+                        {amenity.group.toLowerCase()}
+                      </span>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -409,66 +498,23 @@ export default async function PropertyDetailsPage({
               </div>
             </section>
           )}
+
+          <AvailabilityCalendarClient
+            publicId={property.publicId}
+            bookingType={property.bookingType}
+            initialCheckIn={
+              typeof resolvedSearchParams.checkIn ===
+              "string"
+                ? resolvedSearchParams.checkIn
+                : undefined
+            }
+          />
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="rounded-xl border border-ink-100 bg-white p-5 shadow-[0_14px_36px_rgba(27,58,39,0.10)]">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="text-sm font-bold text-ink-500">
-                  From
-                </div>
-                <div className="text-2xl font-extrabold text-ink-900">
-                  {formatPrice(
-                    property.pricing.startingPrice
-                  )}
-                </div>
-              </div>
-
-              <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-extrabold text-brand-700">
-                {property.availability.checked
-                  ? property.availability.available
-                    ? "Available"
-                    : "Unavailable"
-                  : "Check dates"}
-              </span>
-            </div>
-
-            <div className="mt-5 grid gap-3 text-sm text-ink-700">
-              <div className="flex justify-between gap-3 border-b border-ink-100 pb-3">
-                <span>Check-in</span>
-                <strong>
-                  {property.stayInformation.checkInTime ||
-                    "Flexible"}
-                </strong>
-              </div>
-              <div className="flex justify-between gap-3 border-b border-ink-100 pb-3">
-                <span>Check-out</span>
-                <strong>
-                  {property.stayInformation.checkOutTime ||
-                    "Flexible"}
-                </strong>
-              </div>
-              <div className="flex justify-between gap-3 border-b border-ink-100 pb-3">
-                <span>Minimum stay</span>
-                <strong>
-                  {property.stayInformation.minimumStay} night
-                </strong>
-              </div>
-              <div className="flex justify-between gap-3">
-                <span>Location privacy</span>
-                <strong>Protected</strong>
-              </div>
-            </div>
-
-            <button className="mt-5 h-11 w-full rounded-lg bg-brand-700 text-sm font-extrabold text-white transition hover:bg-brand-800">
-              Request Booking
-            </button>
-
-            <p className="mt-3 text-center text-xs leading-5 text-ink-500">
-              Full address and host contact are shared after a confirmed booking.
-            </p>
-          </div>
+          <BookingRequestPanel
+            property={property}
+          />
         </aside>
       </section>
     </div>
