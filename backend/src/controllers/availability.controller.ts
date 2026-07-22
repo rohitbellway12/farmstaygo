@@ -1,6 +1,7 @@
 import type { Response } from "express";
 
 import {
+  BookingStatus,
   PropertyBookingType,
   PropertyStatus,
 } from "../generated/prisma/client.js";
@@ -79,6 +80,26 @@ const propertySupportsRoomBooking = (
     bookingType ===
       PropertyBookingType.BOTH
   );
+};
+
+const buildNights = (
+  checkIn: Date,
+  checkOut: Date
+): Date[] => {
+  const nights: Date[] = [];
+
+  let currentDate = checkIn;
+
+  while (
+    currentDate.getTime() <
+    checkOut.getTime()
+  ) {
+    nights.push(currentDate);
+
+    currentDate = addDays(currentDate, 1);
+  }
+
+  return nights;
 };
 
 /*
@@ -731,6 +752,103 @@ export const getVendorAvailability =
           0
         );
 
+
+      const bookings =
+        await prisma.booking.findMany({
+          where: {
+            propertyId,
+            status: {
+              in: [
+                BookingStatus.REQUESTED,
+                BookingStatus.CONFIRMED,
+              ],
+            },
+            checkIn: {
+              lte: endDate,
+            },
+            checkOut: {
+              gt: startDate,
+            },
+          },
+          select: {
+            id: true,
+            guestName: true,
+            guestEmail: true,
+            bookingMode: true,
+            checkIn: true,
+            checkOut: true,
+            guests: true,
+            rooms: true,
+            status: true,
+            roomType: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+                mobile: true,
+              },
+            },
+          },
+          orderBy: {
+            checkIn: 'asc',
+          },
+        });
+
+      const bookingMap = new Map<
+        string,
+        (typeof bookings)[number]
+      >();
+
+      bookings.forEach((booking) => {
+        const nights =
+          buildNights(
+            booking.checkIn,
+            booking.checkOut
+          );
+
+        nights.forEach((night) => {
+          bookingMap.set(
+            formatDateKey(night),
+            booking
+          );
+        });
+      });
+
+      const bookingsByDate = Array.from(
+        bookingMap.entries()
+      ).map(
+        ([date, booking]) => ({
+          date,
+          bookingId: booking.id,
+          guestName: booking.guestName,
+          guestEmail: booking.guestEmail,
+          bookingMode: booking.bookingMode,
+          checkIn: formatDateKey(
+            booking.checkIn
+          ),
+          checkOut: formatDateKey(
+            booking.checkOut
+          ),
+          guests: booking.guests,
+          rooms: booking.rooms,
+          status: booking.status,
+          roomType:
+            booking.bookingMode === 'ROOM_WISE'
+              ? {
+                  id:
+                    booking.roomType?.id,
+                  name:
+                    booking.roomType?.name,
+                }
+              : null,
+        })
+      );
       return res.status(200).json({
         success: true,
         message:
@@ -782,6 +900,8 @@ export const getVendorAvailability =
                   ]).size
                 : propertyBlocks.length,
           },
+
+          bookings: bookingsByDate,
         },
       });
     } catch (error) {

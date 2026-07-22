@@ -43,7 +43,8 @@ type AvailabilityAction =
 type DateStatus =
   | "AVAILABLE"
   | "PARTIAL"
-  | "BLOCKED";
+  | "BLOCKED"
+  | "BOOKED";
 
 interface PropertyCategory {
   id: string;
@@ -140,6 +141,23 @@ interface AvailabilityData {
     roomBlockedEntries: number;
     completePropertyUnavailableDates: number;
   };
+
+  bookings: Array<{
+    date: string;
+    bookingId: string;
+    guestName: string;
+    guestEmail: string;
+    bookingMode: string;
+    checkIn: string;
+    checkOut: string;
+    guests: number;
+    rooms: number;
+    status: string;
+    roomType: {
+      id: string | null;
+      name: string | null;
+    } | null;
+  }>;
 }
 
 interface AvailabilityResponse {
@@ -179,6 +197,20 @@ interface CalendarDateState {
   note: string | null;
   blockedRooms?: number;
   availableRooms?: number;
+  booking?: {
+    bookingId: string;
+    guestName: string;
+    bookingMode: string;
+    checkIn: string;
+    checkOut: string;
+    guests: number;
+    rooms: number;
+    status: string;
+    roomType: {
+      id: string | null;
+      name: string | null;
+    } | null;
+  } | null;
 }
 
 /*
@@ -1028,11 +1060,28 @@ export default function AvailabilityCalendarPage() {
       return dates;
     }, [calendarData]);
 
+  const bookingsMap =
+    useMemo(() => {
+      const map =
+        new Map<
+          string,
+          AvailabilityData["bookings"][number]
+        >();
+
+      calendarData?.data.bookings.forEach(
+        (booking) => {
+          map.set(booking.date, booking);
+        }
+      );
+
+      return map;
+    }, [calendarData]);
+
   /*
-  |--------------------------------------------------------------------------
-  | Date State
-  |--------------------------------------------------------------------------
-  */
+|--------------------------------------------------------------------------
+| Date State
+|--------------------------------------------------------------------------
+*/
 
   const getCalendarDateState = (
     dateKey: string
@@ -1042,6 +1091,10 @@ export default function AvailabilityCalendarPage() {
         dateKey
       );
 
+    const booking =
+      bookingsMap.get(dateKey) ||
+      null;
+
     if (mode === "PROPERTY") {
       if (propertyBlock) {
         return {
@@ -1049,13 +1102,14 @@ export default function AvailabilityCalendarPage() {
           label: "Blocked",
           note:
             propertyBlock.note,
+          booking,
         };
       }
 
       if (
         selectedProperty
           ?.bookingType ===
-          "BOTH" &&
+        "BOTH" &&
         roomConflictDates.has(
           dateKey
         )
@@ -1066,6 +1120,16 @@ export default function AvailabilityCalendarPage() {
             "Room unavailable",
           note:
             "One or more room types are blocked.",
+          booking,
+        };
+      }
+
+      if (booking) {
+        return {
+          status: "BOOKED",
+          label: `${booking.status === "CONFIRMED" ? "Confirmed" : "Requested"}`,
+          note: `${booking.guestName} (${booking.guests} guests)`,
+          booking,
         };
       }
 
@@ -1073,6 +1137,7 @@ export default function AvailabilityCalendarPage() {
         status: "AVAILABLE",
         label: "Available",
         note: null,
+        booking,
       };
     }
 
@@ -1083,6 +1148,7 @@ export default function AvailabilityCalendarPage() {
           "Property blocked",
         note:
           propertyBlock.note,
+        booking,
       };
     }
 
@@ -1116,6 +1182,7 @@ export default function AvailabilityCalendarPage() {
           blockedRooms:
             roomBlock.blockedRooms,
           availableRooms: 0,
+          booking,
         };
       }
 
@@ -1126,6 +1193,16 @@ export default function AvailabilityCalendarPage() {
         blockedRooms:
           roomBlock.blockedRooms,
         availableRooms,
+        booking,
+      };
+    }
+
+    if (booking) {
+      return {
+        status: "BOOKED",
+        label: `${booking.status === "CONFIRMED" ? "Confirmed" : "Requested"}`,
+        note: `${booking.guestName} (${booking.guests} guests)`,
+        booking,
       };
     }
 
@@ -1140,6 +1217,8 @@ export default function AvailabilityCalendarPage() {
       availableRooms:
         selectedRoomType
           ?.totalRooms,
+
+      booking,
     };
   };
 
@@ -1944,6 +2023,11 @@ export default function AvailabilityCalendarPage() {
                   </span>
 
                   <span className="inline-flex items-center gap-2">
+                    <span className="h-3 w-3 rounded-full bg-purple-500" />
+                    Booked
+                  </span>
+
+                  <span className="inline-flex items-center gap-2">
                     <span className="h-3 w-3 rounded-full bg-primary-700" />
                     Selected
                   </span>
@@ -2015,9 +2099,12 @@ export default function AvailabilityCalendarPage() {
                                         "BLOCKED"
                                       ? "border-danger/20 bg-danger-soft"
                                       : dateState.status ===
-                                          "PARTIAL"
-                                        ? "border-warning/20 bg-warning-soft"
-                                        : "border-border bg-surface hover:border-primary-300 hover:bg-primary-50"
+                                          "BOOKED"
+                                        ? "border-purple-200 bg-purple-50"
+                                        : dateState.status ===
+                                            "PARTIAL"
+                                          ? "border-warning/20 bg-warning-soft"
+                                          : "border-border bg-surface hover:border-primary-300 hover:bg-primary-50"
                               } ${
                                 disabled
                                   ? "cursor-not-allowed"
@@ -2039,23 +2126,32 @@ export default function AvailabilityCalendarPage() {
 
                                 {day.inCurrentMonth &&
                                   !day.isPast && (
-                                    <span
-                                      className={`mt-1 h-2.5 w-2.5 rounded-full ${
-                                        dateState.status ===
-                                        "BLOCKED"
-                                          ? "bg-danger"
-                                          : dateState.status ===
-                                              "PARTIAL"
-                                            ? "bg-warning"
-                                            : "bg-success"
-                                      }`}
-                                    />
+                                <span
+                                  className={`mt-1 h-2.5 w-2.5 rounded-full ${
+                                    dateState.status ===
+                                    "BLOCKED"
+                                      ? "bg-danger"
+                                      : dateState.status ===
+                                          "BOOKED"
+                                        ? "bg-purple-500"
+                                        : dateState.status ===
+                                            "PARTIAL"
+                                          ? "bg-warning"
+                                          : "bg-success"
+                                  }`}
+                                />
                                   )}
                               </div>
 
                               {day.inCurrentMonth && (
-                                <div className="mt-3">
-                                  {day.isPast ? (
+                                <div className="mt-2">
+                                  {dateState.booking ? (
+                                    <>
+                                      <span className="block truncate rounded-md bg-purple-50 px-1.5 py-1 text-[10px] font-bold text-purple-700">
+                                        📅 {dateState.booking.guestName}
+                                      </span>
+                                    </>
+                                  ) : day.isPast ? (
                                     <span className="text-xs font-semibold text-text-soft">
                                       Past date
                                     </span>
@@ -2088,7 +2184,7 @@ export default function AvailabilityCalendarPage() {
                                       )}
 
                                       {dateState.note && (
-                                        <span className="mt-1 line-clamp-2 block text-[10px] leading-4 text-text-muted">
+                                        <span className="mt-1 line-clamp-1 block text-[10px] leading-4 text-text-muted">
                                           {
                                             dateState.note
                                           }

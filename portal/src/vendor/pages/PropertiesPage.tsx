@@ -130,42 +130,49 @@ const statusConfig: Record<
   {
     label: string;
     className: string;
+    dotColor: string;
   }
 > = {
   DRAFT: {
     label: "Draft",
     className:
-      "border-slate-200 bg-slate-100 text-slate-700",
+      "border-slate-200 bg-slate-50 text-slate-700",
+    dotColor: "bg-slate-500",
   },
 
   PENDING_APPROVAL: {
     label: "Pending Approval",
     className:
-      "border-amber-200 bg-amber-50 text-amber-700",
+      "border-amber-200 bg-amber-50 text-amber-800",
+    dotColor: "bg-amber-500",
   },
 
   APPROVED: {
     label: "Approved",
     className:
-      "border-emerald-200 bg-emerald-50 text-emerald-700",
+      "border-emerald-200 bg-emerald-50 text-emerald-800",
+    dotColor: "bg-emerald-500",
   },
 
   REJECTED: {
     label: "Rejected",
     className:
-      "border-red-200 bg-red-50 text-red-700",
+      "border-red-200 bg-red-50 text-red-800",
+    dotColor: "bg-red-500",
   },
 
   INACTIVE: {
     label: "Inactive",
     className:
-      "border-gray-200 bg-gray-100 text-gray-700",
+      "border-gray-200 bg-gray-50 text-gray-700",
+    dotColor: "bg-gray-500",
   },
 
   SUSPENDED: {
     label: "Suspended",
     className:
-      "border-purple-200 bg-purple-50 text-purple-700",
+      "border-purple-200 bg-purple-50 text-purple-800",
+    dotColor: "bg-purple-500",
   },
 };
 
@@ -380,6 +387,80 @@ function ImageIcon() {
   );
 }
 
+function TrashIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="h-4 w-4"
+    >
+      <path d="M3 6h18" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="h-4 w-4"
+    >
+      <rect
+        x="3"
+        y="5"
+        width="18"
+        height="16"
+        rx="2"
+      />
+      <path d="M8 3v4" />
+      <path d="M16 3v4" />
+      <path d="M3 10h18" />
+    </svg>
+  );
+}
+
+function RoomIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="h-4 w-4"
+    >
+      <path d="M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7" />
+      <path d="M21 10H3" />
+      <path d="M8 10v5" />
+      <path d="M12 10v5" />
+      <path d="M16 10v5" />
+    </svg>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="h-4 w-4"
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
 /*
 |--------------------------------------------------------------------------
 | Statistic Card
@@ -398,24 +479,24 @@ function StatisticCard({
   iconClassName: string;
 }) {
   return (
-    <div className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard">
-      <div className="flex items-start justify-between gap-4">
+    <div className="group rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/40">
+      <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-semibold text-text-muted">
+          <p className="text-sm font-semibold text-slate-500">
             {title}
           </p>
 
-          <strong className="mt-2 block text-3xl font-extrabold tracking-tight text-text-main">
+          <strong className="mt-2 block text-3xl font-extrabold tracking-tight text-slate-900">
             {value}
           </strong>
 
-          <p className="mt-2 text-sm text-text-soft">
+          <p className="mt-1.5 text-sm text-slate-400">
             {description}
           </p>
         </div>
 
         <span
-          className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl ${iconClassName}`}
+          className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${iconClassName} shadow-sm`}
         >
           <PropertyIcon />
         </span>
@@ -444,13 +525,13 @@ function PropertyCover({
       <img
         src={getAssetUrl(coverImage)}
         alt={property.title}
-        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
       />
     );
   }
 
   return (
-    <div className="grid h-full w-full place-items-center bg-primary-50 text-primary-700">
+    <div className="grid h-full w-full place-items-center bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-600">
       <ImageIcon />
     </div>
   );
@@ -513,57 +594,75 @@ function PropertyCard({
   };
 
   return (
-    <article className="group overflow-hidden rounded-dashboard-large border border-border bg-surface shadow-dashboard transition duration-200 hover:-translate-y-0.5 hover:shadow-dashboard-lg">
-      <div className="relative h-52 overflow-hidden bg-surface-soft">
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-slate-200/60">
+      {/* Image Section */}
+
+      <div className="relative h-56 overflow-hidden bg-gradient-to-br from-slate-100 to-slate-50">
         <PropertyCover property={property} />
+
+        {/* Gradient Overlay */}
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent" />
+
+        {/* Status Badge */}
 
         <div className="absolute left-4 top-4">
           <span
-            className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-bold ${status.className}`}
+            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold ${status.className} shadow-lg backdrop-blur-sm`}
           >
+            <span
+              className={`h-2 w-2 rounded-full ${status.dotColor}`}
+            />
             {status.label}
           </span>
         </div>
 
+        {/* Photo Count */}
+
         <div className="absolute bottom-4 right-4">
-          <span className="rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold text-text-main shadow-sm backdrop-blur">
-            {property._count.images} Photos
+          <span className="rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold text-slate-700 shadow-lg backdrop-blur-sm">
+            {property._count.images}{" "}
+            Photos
           </span>
         </div>
       </div>
 
-      <div className="p-5">
+      {/* Content Section */}
+
+      <div className="flex flex-1 flex-col p-5">
         <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-primary-700">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">
               {property.category.name}
             </p>
 
-            <h2 className="mt-1 truncate text-xl font-extrabold text-text-main">
+            <h2 className="mt-1.5 line-clamp-1 text-lg font-extrabold text-slate-900">
               {property.title}
             </h2>
           </div>
 
-          <span className="shrink-0 rounded-lg bg-primary-50 px-2.5 py-1 text-xs font-bold text-primary-700">
+          <span className="shrink-0 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-700">
             {bookingTypeLabels[
               property.bookingType
             ]}
           </span>
         </div>
 
-        <p className="mt-3 line-clamp-2 min-h-10 text-sm leading-5 text-text-muted">
+        <p className="mt-2.5 line-clamp-2 min-h-[2.5rem] text-sm leading-5 text-slate-600">
           {property.shortDescription ||
             "Property description has not been added yet."}
         </p>
 
-        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-y border-border py-3 text-sm text-text-muted">
-          <span className="inline-flex items-center gap-1.5">
+        {/* Location and Guests */}
+
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-y border-slate-100 py-3 text-sm text-slate-600">
+          <span className="inline-flex items-center gap-1.5 font-medium">
             <LocationIcon />
 
             {location || "Location not added"}
           </span>
 
-          <span className="inline-flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1.5 font-medium">
             <UsersIcon />
 
             {property.maxGuests
@@ -572,52 +671,56 @@ function PropertyCard({
           </span>
         </div>
 
-        <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-lg bg-surface-soft px-2 py-2.5">
-            <strong className="block text-base font-extrabold text-text-main">
+        {/* Stats Grid */}
+
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="rounded-xl border border-slate-100 bg-slate-50/80 px-2 py-3 text-center">
+            <strong className="block text-base font-extrabold text-slate-900">
               {property.bedrooms ?? "—"}
             </strong>
 
-            <span className="text-xs text-text-muted">
+            <span className="text-xs text-slate-500">
               Bedrooms
             </span>
           </div>
 
-          <div className="rounded-lg bg-surface-soft px-2 py-2.5">
-            <strong className="block text-base font-extrabold text-text-main">
+          <div className="rounded-xl border border-slate-100 bg-slate-50/80 px-2 py-3 text-center">
+            <strong className="block text-base font-extrabold text-slate-900">
               {property.bathrooms ?? "—"}
             </strong>
 
-            <span className="text-xs text-text-muted">
+            <span className="text-xs text-slate-500">
               Bathrooms
             </span>
           </div>
 
-          <div className="rounded-lg bg-surface-soft px-2 py-2.5">
-            <strong className="block text-base font-extrabold text-text-main">
+          <div className="rounded-xl border border-slate-100 bg-slate-50/80 px-2 py-3 text-center">
+            <strong className="block text-base font-extrabold text-slate-900">
               {property._count.amenities}
             </strong>
 
-            <span className="text-xs text-text-muted">
+            <span className="text-xs text-slate-500">
               Amenities
             </span>
           </div>
         </div>
 
+        {/* Completion Bar */}
+
         <div className="mt-5">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-bold text-text-secondary">
+            <span className="text-sm font-bold text-slate-700">
               Listing completion
             </span>
 
-            <span className="text-sm font-extrabold text-primary-700">
+            <span className="text-sm font-extrabold text-emerald-700">
               {completion}%
             </span>
           </div>
 
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-primary-50">
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
             <div
-              className="h-full rounded-full bg-primary-600 transition-all"
+              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all"
               style={{
                 width: `${completion}%`,
               }}
@@ -625,73 +728,81 @@ function PropertyCard({
           </div>
         </div>
 
-        <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-  <div>
-    <p className="text-xs font-semibold text-text-muted">
-      Starting price
-    </p>
+        {/* Actions */}
 
-    <strong className="mt-1 block text-lg font-extrabold text-text-main">
-      {formatPrice(property.basePrice)}
-    </strong>
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold text-slate-500">
+              Starting price
+            </p>
 
-    <p className="mt-1 text-xs text-text-soft">
-      Updated {formatDate(property.updatedAt)}
-    </p>
-  </div>
+            <strong className="mt-1 block text-lg font-extrabold text-slate-900">
+              {formatPrice(property.basePrice)}
+            </strong>
 
-  <div className="flex flex-wrap justify-end gap-2">
-   <Link
-    to={`/vendor/calendar?propertyId=${property.id}`}
-    className="inline-flex h-10 shrink-0 items-center justify-center rounded-control border border-info/30 bg-info-soft px-4 text-sm font-bold text-info transition hover:bg-info/10"
-  >
-    Manage Calendar
-  </Link>
-   
-    {(property.bookingType ===
-      "ROOM_WISE" ||
-      property.bookingType ===
-        "BOTH") && (
-      <Link
-        to={`/vendor/properties/${property.id}/rooms`}
-        className="inline-flex h-10 shrink-0 items-center justify-center rounded-control border border-primary-300 bg-primary-50 px-4 text-sm font-bold text-primary-700 transition hover:bg-primary-100"
-      >
-        Manage Rooms
-      </Link>
-    )}
+            <p className="mt-1 text-xs text-slate-400">
+              Updated {formatDate(property.updatedAt)}
+            </p>
+          </div>
 
-    <Link
-      to={`/vendor/properties/${property.id}/edit`}
-      className="inline-flex h-10 shrink-0 items-center justify-center rounded-control bg-primary-700 px-4 text-sm font-bold text-white transition hover:bg-primary-800"
-    >
-      {editAllowed
-        ? "Continue Editing"
-        : "View Property"}
-    </Link>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Link
+              to={`/vendor/calendar?propertyId=${property.id}`}
+              className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+            >
+              <CalendarIcon />
+              Calendar
+            </Link>
 
-    {canDelete && (
-      <button
-        type="button"
-        onClick={() =>
-          setShowDeleteModal(true)
-        }
-        className="inline-flex h-10 shrink-0 items-center justify-center rounded-control border border-red-200 bg-red-50 px-4 text-sm font-bold text-red-700 transition hover:bg-red-100"
-      >
-        Delete
-      </button>
-    )}
-  </div>
-</div>
+            {(property.bookingType ===
+              "ROOM_WISE" ||
+              property.bookingType ===
+                "BOTH") && (
+              <Link
+                to={`/vendor/properties/${property.id}/rooms`}
+                className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+              >
+                <RoomIcon />
+                Rooms
+              </Link>
+            )}
+
+            <Link
+              to={`/vendor/properties/${property.id}/edit`}
+              className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white shadow-sm shadow-emerald-200/50 transition hover:bg-emerald-700"
+            >
+              <EditIcon />
+              {editAllowed
+                ? "Edit"
+                : "View"}
+            </Link>
+
+            {canDelete && (
+              <button
+                type="button"
+                onClick={() =>
+                  setShowDeleteModal(true)
+                }
+                className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-red-200 bg-white px-4 text-sm font-bold text-red-700 shadow-sm transition hover:border-red-300 hover:bg-red-50"
+              >
+                <TrashIcon />
+                Delete
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
+      {/* Delete Modal */}
+
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <h3 className="text-lg font-extrabold text-ink-900">
+            <h3 className="text-lg font-extrabold text-slate-900">
               Delete Property
             </h3>
 
-            <p className="mt-2 text-sm text-ink-600">
+            <p className="mt-2 text-sm text-slate-600">
               Are you sure you want to delete "
               {property.title}
               "? This action cannot be undone.
@@ -702,7 +813,7 @@ function PropertyCard({
                 type="button"
                 disabled={deleting}
                 onClick={handleDelete}
-                className="flex h-11 w-full items-center justify-center rounded-xl bg-red-700 text-sm font-extrabold text-white shadow transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-11 w-full items-center justify-center rounded-xl bg-red-600 text-sm font-extrabold text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {deleting
                   ? "Deleting..."
@@ -714,7 +825,7 @@ function PropertyCard({
                 onClick={() =>
                   setShowDeleteModal(false)
                 }
-                className="h-10 w-full rounded-xl border border-ink-200 text-xs font-bold text-ink-600 hover:bg-ink-50"
+                className="h-10 w-full rounded-xl border border-slate-200 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
               >
                 Cancel
               </button>
@@ -893,56 +1004,70 @@ export default function PropertiesPage() {
     ]);
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50/50 to-white">
       {/* Page Header */}
 
-      <section className="flex flex-col gap-4 rounded-dashboard-large border border-border bg-surface p-5 shadow-dashboard sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm font-bold uppercase tracking-[0.12em] text-primary-700">
-            Property Management
-          </p>
+      <section className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-lg shadow-slate-200/60">
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-50/40 via-white to-teal-50/30" />
 
-          <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-text-main sm:text-3xl">
-            My Properties
-          </h1>
+        <div className="relative flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between lg:p-8">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.14em] text-emerald-700">
+              Property Management
+            </p>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-text-muted">
-            Create, complete and manage all your
-            FarmStayGo property listings.
-          </p>
+            <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+              My Properties
+            </h1>
+
+            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
+              Create, complete and manage all your
+              FarmStayGo property listings.
+            </p>
+          </div>
+
+          <Link
+            to={
+              kycApproved
+                ? "/vendor/properties/new"
+                : "/vendor/kyc-bank"
+            }
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 text-sm font-bold text-white shadow-md shadow-emerald-200/60 transition-all hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-lg"
+          >
+            <PlusIcon />
+            {kycApproved
+              ? "Add Property"
+              : "Complete KYC"}
+          </Link>
         </div>
-
-        <Link
-          to={
-            kycApproved
-              ? "/vendor/properties/new"
-              : "/vendor/kyc-bank"
-          }
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-control bg-primary-700 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-800"
-        >
-          <PlusIcon />
-          {kycApproved
-            ? "Add Property"
-            : "Complete KYC"}
-        </Link>
       </section>
 
       {!kycApproved && (
-        <section className="rounded-dashboard-card border border-amber-200 bg-amber-50 p-5 text-amber-800">
-          <h2 className="text-base font-extrabold">
-            KYC approval required
-          </h2>
-          <p className="mt-1 text-sm font-semibold leading-6">
-            You can view this page, but property
-            creation unlocks only after admin approves
-            your KYC.
-          </p>
-          <Link
-            to="/vendor/kyc-bank"
-            className="mt-4 inline-flex h-10 items-center justify-center rounded-control bg-amber-600 px-4 text-sm font-bold text-white"
-          >
-            Go to KYC
-          </Link>
+        <section className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50/50 p-5 text-amber-900 shadow-sm">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-amber-200 text-xs font-extrabold text-amber-800">
+              !
+            </span>
+
+            <div>
+              <h2 className="text-base font-extrabold">
+                KYC approval required
+              </h2>
+
+              <p className="mt-1 text-sm font-semibold leading-6 text-amber-800">
+                You can view this page, but property
+                creation unlocks only after admin approves
+                your KYC.
+              </p>
+
+              <Link
+                to="/vendor/kyc-bank"
+                className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-amber-600 px-4 text-sm font-bold text-white shadow-sm transition hover:bg-amber-700"
+              >
+                Go to KYC
+              </Link>
+            </div>
+          </div>
         </section>
       )}
 
@@ -953,37 +1078,37 @@ export default function PropertiesPage() {
           title="Total Properties"
           value={statistics.total}
           description="All property listings"
-          iconClassName="bg-primary-50 text-primary-700"
+          iconClassName="bg-emerald-50 text-emerald-600"
         />
 
         <StatisticCard
           title="Draft Properties"
           value={statistics.draft}
           description="Listings being completed"
-          iconClassName="bg-slate-100 text-slate-700"
+          iconClassName="bg-slate-100 text-slate-600"
         />
 
         <StatisticCard
           title="Pending Approval"
           value={statistics.pending}
           description="Waiting for admin review"
-          iconClassName="bg-amber-50 text-amber-700"
+          iconClassName="bg-amber-50 text-amber-600"
         />
 
         <StatisticCard
           title="Approved"
           value={statistics.approved}
           description="Approved property listings"
-          iconClassName="bg-emerald-50 text-emerald-700"
+          iconClassName="bg-emerald-50 text-emerald-600"
         />
       </section>
 
       {/* Search and Filters */}
 
-      <section className="rounded-dashboard-card border border-border bg-surface p-4 shadow-dashboard">
+      <section className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="relative flex-1">
-            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
               <SearchIcon />
             </span>
 
@@ -993,8 +1118,8 @@ export default function PropertiesPage() {
               onChange={(event) =>
                 setSearch(event.target.value)
               }
-              placeholder="Search by property, category or location..."
-              className="h-11 w-full rounded-control border border-border bg-surface pl-12 pr-4 text-sm text-text-main outline-none transition placeholder:text-text-soft focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+              placeholder="Search properties..."
+              className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-12 pr-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-50"
             />
           </div>
 
@@ -1007,7 +1132,7 @@ export default function PropertiesPage() {
                   | "ALL"
               )
             }
-            className="h-11 min-w-52 rounded-control border border-border bg-surface px-4 text-sm font-semibold text-text-main outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+            className="h-12 min-w-52 rounded-xl border border-slate-200 bg-slate-50/50 px-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-50"
           >
             <option value="ALL">
               All Statuses
@@ -1043,20 +1168,28 @@ export default function PropertiesPage() {
       {/* Error State */}
 
       {error && (
-        <section className="rounded-dashboard-card border border-red-200 bg-red-50 p-5">
-          <p className="font-bold text-red-700">
-            {error}
-          </p>
+        <section className="rounded-xl border border-red-200 bg-gradient-to-br from-red-50 to-rose-50/80 p-5">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-red-200 text-xs font-extrabold text-red-800">
+              !
+            </span>
 
-          <button
-            type="button"
-            onClick={() =>
-              void loadProperties()
-            }
-            className="mt-3 rounded-control bg-red-600 px-4 py-2 text-sm font-bold text-white"
-          >
-            Try Again
-          </button>
+            <div className="flex-1">
+              <p className="font-bold text-red-800">
+                {error}
+              </p>
+
+              <button
+                type="button"
+                onClick={() =>
+                  void loadProperties()
+                }
+                className="mt-3 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-red-700"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
         </section>
       )}
 
@@ -1069,15 +1202,15 @@ export default function PropertiesPage() {
           }).map((_, index) => (
             <div
               key={index}
-              className="overflow-hidden rounded-dashboard-large border border-border bg-surface shadow-dashboard"
+              className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"
             >
-              <div className="h-52 animate-pulse bg-surface-soft" />
+              <div className="h-56 animate-pulse bg-gradient-to-br from-slate-100 to-slate-50" />
 
               <div className="space-y-4 p-5">
-                <div className="h-4 w-24 animate-pulse rounded bg-surface-soft" />
-                <div className="h-6 w-3/4 animate-pulse rounded bg-surface-soft" />
-                <div className="h-12 animate-pulse rounded bg-surface-soft" />
-                <div className="h-10 animate-pulse rounded bg-surface-soft" />
+                <div className="h-4 w-24 animate-pulse rounded-lg bg-slate-100" />
+                <div className="h-6 w-3/4 animate-pulse rounded-lg bg-slate-100" />
+                <div className="h-16 animate-pulse rounded-lg bg-slate-100" />
+                <div className="h-12 animate-pulse rounded-lg bg-slate-100" />
               </div>
             </div>
           ))}
@@ -1108,16 +1241,16 @@ export default function PropertiesPage() {
         !error &&
         properties.length > 0 &&
         filteredProperties.length === 0 && (
-          <section className="rounded-dashboard-large border border-dashed border-border-strong bg-surface px-6 py-16 text-center">
-            <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-primary-50 text-primary-700">
+          <section className="rounded-2xl border-2 border-dashed border-slate-300 bg-gradient-to-br from-slate-50 to-white px-6 py-20 text-center">
+            <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-sm">
               <SearchIcon />
             </div>
 
-            <h2 className="mt-4 text-xl font-extrabold text-text-main">
+            <h2 className="mt-6 text-2xl font-extrabold text-slate-900">
               No matching properties found
             </h2>
 
-            <p className="mt-2 text-sm text-text-muted">
+            <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-600">
               Change the search term or status
               filter and try again.
             </p>
@@ -1128,7 +1261,7 @@ export default function PropertiesPage() {
                 setSearch("");
                 setStatusFilter("ALL");
               }}
-              className="mt-5 rounded-control border border-primary-300 bg-primary-50 px-5 py-2.5 text-sm font-bold text-primary-700"
+              className="mt-6 rounded-xl border border-slate-300 bg-white px-6 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-slate-50"
             >
               Clear Filters
             </button>
@@ -1140,16 +1273,16 @@ export default function PropertiesPage() {
       {!loading &&
         !error &&
         properties.length === 0 && (
-          <section className="rounded-dashboard-large border border-dashed border-border-strong bg-surface px-6 py-16 text-center">
-            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-primary-50 text-primary-700">
+          <section className="rounded-2xl border-2 border-dashed border-slate-300 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 px-6 py-20 text-center">
+            <div className="mx-auto grid h-20 w-20 place-items-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-sm">
               <PropertyIcon />
             </div>
 
-            <h2 className="mt-5 text-2xl font-extrabold text-text-main">
+            <h2 className="mt-6 text-2xl font-extrabold text-slate-900">
               Add your first property
             </h2>
 
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-text-muted">
+            <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-slate-600">
               Create your property listing, add
               photos, pricing, amenities and submit
               it for approval.
@@ -1161,7 +1294,7 @@ export default function PropertiesPage() {
                   ? "/vendor/properties/new"
                   : "/vendor/kyc-bank"
               }
-              className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-control bg-primary-700 px-5 text-sm font-bold text-white"
+              className="mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-8 text-sm font-bold text-white shadow-md shadow-emerald-200/60 transition-all hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-lg"
             >
               <PlusIcon />
               {kycApproved
