@@ -39,6 +39,7 @@ export type PropertyAvgAggregateOutputType = {
   weekendPrice: runtime.Decimal | null
   cleaningFee: runtime.Decimal | null
   securityDeposit: runtime.Decimal | null
+  reservationAmount: runtime.Decimal | null
   minimumStay: number | null
 }
 
@@ -55,6 +56,7 @@ export type PropertySumAggregateOutputType = {
   weekendPrice: runtime.Decimal | null
   cleaningFee: runtime.Decimal | null
   securityDeposit: runtime.Decimal | null
+  reservationAmount: runtime.Decimal | null
   minimumStay: number | null
 }
 
@@ -87,6 +89,7 @@ export type PropertyMinAggregateOutputType = {
   weekendPrice: runtime.Decimal | null
   cleaningFee: runtime.Decimal | null
   securityDeposit: runtime.Decimal | null
+  reservationAmount: runtime.Decimal | null
   checkInTime: string | null
   checkOutTime: string | null
   minimumStay: number | null
@@ -128,6 +131,7 @@ export type PropertyMaxAggregateOutputType = {
   weekendPrice: runtime.Decimal | null
   cleaningFee: runtime.Decimal | null
   securityDeposit: runtime.Decimal | null
+  reservationAmount: runtime.Decimal | null
   checkInTime: string | null
   checkOutTime: string | null
   minimumStay: number | null
@@ -169,6 +173,7 @@ export type PropertyCountAggregateOutputType = {
   weekendPrice: number
   cleaningFee: number
   securityDeposit: number
+  reservationAmount: number
   checkInTime: number
   checkOutTime: number
   minimumStay: number
@@ -196,6 +201,7 @@ export type PropertyAvgAggregateInputType = {
   weekendPrice?: true
   cleaningFee?: true
   securityDeposit?: true
+  reservationAmount?: true
   minimumStay?: true
 }
 
@@ -212,6 +218,7 @@ export type PropertySumAggregateInputType = {
   weekendPrice?: true
   cleaningFee?: true
   securityDeposit?: true
+  reservationAmount?: true
   minimumStay?: true
 }
 
@@ -244,6 +251,7 @@ export type PropertyMinAggregateInputType = {
   weekendPrice?: true
   cleaningFee?: true
   securityDeposit?: true
+  reservationAmount?: true
   checkInTime?: true
   checkOutTime?: true
   minimumStay?: true
@@ -285,6 +293,7 @@ export type PropertyMaxAggregateInputType = {
   weekendPrice?: true
   cleaningFee?: true
   securityDeposit?: true
+  reservationAmount?: true
   checkInTime?: true
   checkOutTime?: true
   minimumStay?: true
@@ -326,6 +335,7 @@ export type PropertyCountAggregateInputType = {
   weekendPrice?: true
   cleaningFee?: true
   securityDeposit?: true
+  reservationAmount?: true
   checkInTime?: true
   checkOutTime?: true
   minimumStay?: true
@@ -454,6 +464,7 @@ export type PropertyGroupByOutputType = {
   weekendPrice: runtime.Decimal | null
   cleaningFee: runtime.Decimal | null
   securityDeposit: runtime.Decimal | null
+  reservationAmount: runtime.Decimal | null
   checkInTime: string | null
   checkOutTime: string | null
   minimumStay: number
@@ -518,6 +529,7 @@ export type PropertyWhereInput = {
   weekendPrice?: Prisma.DecimalNullableFilter<"Property"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.DecimalNullableFilter<"Property"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.DecimalNullableFilter<"Property"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.DecimalNullableFilter<"Property"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.StringNullableFilter<"Property"> | string | null
   checkOutTime?: Prisma.StringNullableFilter<"Property"> | string | null
   minimumStay?: Prisma.IntFilter<"Property"> | number
@@ -567,6 +579,7 @@ export type PropertyOrderByWithRelationInput = {
   weekendPrice?: Prisma.SortOrderInput | Prisma.SortOrder
   cleaningFee?: Prisma.SortOrderInput | Prisma.SortOrder
   securityDeposit?: Prisma.SortOrderInput | Prisma.SortOrder
+  reservationAmount?: Prisma.SortOrderInput | Prisma.SortOrder
   checkInTime?: Prisma.SortOrderInput | Prisma.SortOrder
   checkOutTime?: Prisma.SortOrderInput | Prisma.SortOrder
   minimumStay?: Prisma.SortOrder
@@ -619,6 +632,7 @@ export type PropertyWhereUniqueInput = Prisma.AtLeast<{
   weekendPrice?: Prisma.DecimalNullableFilter<"Property"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.DecimalNullableFilter<"Property"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.DecimalNullableFilter<"Property"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.DecimalNullableFilter<"Property"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.StringNullableFilter<"Property"> | string | null
   checkOutTime?: Prisma.StringNullableFilter<"Property"> | string | null
   minimumStay?: Prisma.IntFilter<"Property"> | number
@@ -668,6 +682,7 @@ export type PropertyOrderByWithAggregationInput = {
   weekendPrice?: Prisma.SortOrderInput | Prisma.SortOrder
   cleaningFee?: Prisma.SortOrderInput | Prisma.SortOrder
   securityDeposit?: Prisma.SortOrderInput | Prisma.SortOrder
+  reservationAmount?: Prisma.SortOrderInput | Prisma.SortOrder
   checkInTime?: Prisma.SortOrderInput | Prisma.SortOrder
   checkOutTime?: Prisma.SortOrderInput | Prisma.SortOrder
   minimumStay?: Prisma.SortOrder
@@ -717,6 +732,7 @@ export type PropertyScalarWhereWithAggregatesInput = {
   weekendPrice?: Prisma.DecimalNullableWithAggregatesFilter<"Property"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.DecimalNullableWithAggregatesFilter<"Property"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.DecimalNullableWithAggregatesFilter<"Property"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.DecimalNullableWithAggregatesFilter<"Property"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.StringNullableWithAggregatesFilter<"Property"> | string | null
   checkOutTime?: Prisma.StringNullableWithAggregatesFilter<"Property"> | string | null
   minimumStay?: Prisma.IntWithAggregatesFilter<"Property"> | number
@@ -756,6 +772,7 @@ export type PropertyCreateInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -805,6 +822,7 @@ export type PropertyUncheckedCreateInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -850,6 +868,7 @@ export type PropertyUpdateInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -899,6 +918,7 @@ export type PropertyUncheckedUpdateInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -946,6 +966,7 @@ export type PropertyCreateManyInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -985,6 +1006,7 @@ export type PropertyUpdateManyMutationInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1026,6 +1048,7 @@ export type PropertyUncheckedUpdateManyInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1077,6 +1100,7 @@ export type PropertyCountOrderByAggregateInput = {
   weekendPrice?: Prisma.SortOrder
   cleaningFee?: Prisma.SortOrder
   securityDeposit?: Prisma.SortOrder
+  reservationAmount?: Prisma.SortOrder
   checkInTime?: Prisma.SortOrder
   checkOutTime?: Prisma.SortOrder
   minimumStay?: Prisma.SortOrder
@@ -1102,6 +1126,7 @@ export type PropertyAvgOrderByAggregateInput = {
   weekendPrice?: Prisma.SortOrder
   cleaningFee?: Prisma.SortOrder
   securityDeposit?: Prisma.SortOrder
+  reservationAmount?: Prisma.SortOrder
   minimumStay?: Prisma.SortOrder
 }
 
@@ -1134,6 +1159,7 @@ export type PropertyMaxOrderByAggregateInput = {
   weekendPrice?: Prisma.SortOrder
   cleaningFee?: Prisma.SortOrder
   securityDeposit?: Prisma.SortOrder
+  reservationAmount?: Prisma.SortOrder
   checkInTime?: Prisma.SortOrder
   checkOutTime?: Prisma.SortOrder
   minimumStay?: Prisma.SortOrder
@@ -1175,6 +1201,7 @@ export type PropertyMinOrderByAggregateInput = {
   weekendPrice?: Prisma.SortOrder
   cleaningFee?: Prisma.SortOrder
   securityDeposit?: Prisma.SortOrder
+  reservationAmount?: Prisma.SortOrder
   checkInTime?: Prisma.SortOrder
   checkOutTime?: Prisma.SortOrder
   minimumStay?: Prisma.SortOrder
@@ -1200,6 +1227,7 @@ export type PropertySumOrderByAggregateInput = {
   weekendPrice?: Prisma.SortOrder
   cleaningFee?: Prisma.SortOrder
   securityDeposit?: Prisma.SortOrder
+  reservationAmount?: Prisma.SortOrder
   minimumStay?: Prisma.SortOrder
 }
 
@@ -1419,6 +1447,7 @@ export type PropertyCreateWithoutVendorInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -1466,6 +1495,7 @@ export type PropertyUncheckedCreateWithoutVendorInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -1542,6 +1572,7 @@ export type PropertyScalarWhereInput = {
   weekendPrice?: Prisma.DecimalNullableFilter<"Property"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.DecimalNullableFilter<"Property"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.DecimalNullableFilter<"Property"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.DecimalNullableFilter<"Property"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.StringNullableFilter<"Property"> | string | null
   checkOutTime?: Prisma.StringNullableFilter<"Property"> | string | null
   minimumStay?: Prisma.IntFilter<"Property"> | number
@@ -1581,6 +1612,7 @@ export type PropertyCreateWithoutCategoryInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -1628,6 +1660,7 @@ export type PropertyUncheckedCreateWithoutCategoryInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -1699,6 +1732,7 @@ export type PropertyCreateWithoutAmenitiesInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -1747,6 +1781,7 @@ export type PropertyUncheckedCreateWithoutAmenitiesInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -1807,6 +1842,7 @@ export type PropertyUpdateWithoutAmenitiesInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1855,6 +1891,7 @@ export type PropertyUncheckedUpdateWithoutAmenitiesInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1899,6 +1936,7 @@ export type PropertyCreateWithoutImagesInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -1947,6 +1985,7 @@ export type PropertyUncheckedCreateWithoutImagesInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -2007,6 +2046,7 @@ export type PropertyUpdateWithoutImagesInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2055,6 +2095,7 @@ export type PropertyUncheckedUpdateWithoutImagesInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2099,6 +2140,7 @@ export type PropertyCreateWithoutRoomTypesInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -2147,6 +2189,7 @@ export type PropertyUncheckedCreateWithoutRoomTypesInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -2207,6 +2250,7 @@ export type PropertyUpdateWithoutRoomTypesInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2255,6 +2299,7 @@ export type PropertyUncheckedUpdateWithoutRoomTypesInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2299,6 +2344,7 @@ export type PropertyCreateWithoutAvailabilityBlocksInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -2347,6 +2393,7 @@ export type PropertyUncheckedCreateWithoutAvailabilityBlocksInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -2407,6 +2454,7 @@ export type PropertyUpdateWithoutAvailabilityBlocksInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2455,6 +2503,7 @@ export type PropertyUncheckedUpdateWithoutAvailabilityBlocksInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2499,6 +2548,7 @@ export type PropertyCreateWithoutWishlistsInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -2547,6 +2597,7 @@ export type PropertyUncheckedCreateWithoutWishlistsInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -2607,6 +2658,7 @@ export type PropertyUpdateWithoutWishlistsInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2655,6 +2707,7 @@ export type PropertyUncheckedUpdateWithoutWishlistsInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2699,6 +2752,7 @@ export type PropertyCreateWithoutBookingsInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -2747,6 +2801,7 @@ export type PropertyUncheckedCreateWithoutBookingsInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -2807,6 +2862,7 @@ export type PropertyUpdateWithoutBookingsInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2855,6 +2911,7 @@ export type PropertyUncheckedUpdateWithoutBookingsInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2900,6 +2957,7 @@ export type PropertyCreateManyVendorInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -2939,6 +2997,7 @@ export type PropertyUpdateWithoutVendorInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2986,6 +3045,7 @@ export type PropertyUncheckedUpdateWithoutVendorInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3032,6 +3092,7 @@ export type PropertyUncheckedUpdateManyWithoutVendorInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3072,6 +3133,7 @@ export type PropertyCreateManyCategoryInput = {
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: string | null
   checkOutTime?: string | null
   minimumStay?: number
@@ -3111,6 +3173,7 @@ export type PropertyUpdateWithoutCategoryInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3158,6 +3221,7 @@ export type PropertyUncheckedUpdateWithoutCategoryInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3204,6 +3268,7 @@ export type PropertyUncheckedUpdateManyWithoutCategoryInput = {
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   cleaningFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   securityDeposit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   checkInTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3321,6 +3386,7 @@ export type PropertySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   weekendPrice?: boolean
   cleaningFee?: boolean
   securityDeposit?: boolean
+  reservationAmount?: boolean
   checkInTime?: boolean
   checkOutTime?: boolean
   minimumStay?: boolean
@@ -3371,6 +3437,7 @@ export type PropertySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   weekendPrice?: boolean
   cleaningFee?: boolean
   securityDeposit?: boolean
+  reservationAmount?: boolean
   checkInTime?: boolean
   checkOutTime?: boolean
   minimumStay?: boolean
@@ -3414,6 +3481,7 @@ export type PropertySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   weekendPrice?: boolean
   cleaningFee?: boolean
   securityDeposit?: boolean
+  reservationAmount?: boolean
   checkInTime?: boolean
   checkOutTime?: boolean
   minimumStay?: boolean
@@ -3457,6 +3525,7 @@ export type PropertySelectScalar = {
   weekendPrice?: boolean
   cleaningFee?: boolean
   securityDeposit?: boolean
+  reservationAmount?: boolean
   checkInTime?: boolean
   checkOutTime?: boolean
   minimumStay?: boolean
@@ -3469,7 +3538,7 @@ export type PropertySelectScalar = {
   updatedAt?: boolean
 }
 
-export type PropertyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "vendorId" | "categoryId" | "title" | "slug" | "shortDescription" | "description" | "bookingType" | "status" | "maxGuests" | "bedrooms" | "bathrooms" | "beds" | "totalRooms" | "addressLine1" | "addressLine2" | "landmark" | "locality" | "city" | "state" | "country" | "postalCode" | "latitude" | "longitude" | "basePrice" | "weekendPrice" | "cleaningFee" | "securityDeposit" | "checkInTime" | "checkOutTime" | "minimumStay" | "instantBook" | "rejectionReason" | "isFeatured" | "submittedAt" | "approvedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["property"]>
+export type PropertyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "vendorId" | "categoryId" | "title" | "slug" | "shortDescription" | "description" | "bookingType" | "status" | "maxGuests" | "bedrooms" | "bathrooms" | "beds" | "totalRooms" | "addressLine1" | "addressLine2" | "landmark" | "locality" | "city" | "state" | "country" | "postalCode" | "latitude" | "longitude" | "basePrice" | "weekendPrice" | "cleaningFee" | "securityDeposit" | "reservationAmount" | "checkInTime" | "checkOutTime" | "minimumStay" | "instantBook" | "rejectionReason" | "isFeatured" | "submittedAt" | "approvedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["property"]>
 export type PropertyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
   category?: boolean | Prisma.PropertyCategoryDefaultArgs<ExtArgs>
@@ -3561,6 +3630,7 @@ export type $PropertyPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     weekendPrice: runtime.Decimal | null
     cleaningFee: runtime.Decimal | null
     securityDeposit: runtime.Decimal | null
+    reservationAmount: runtime.Decimal | null
     /**
      * *
      *    * |--------------------------------------------------------------------------
@@ -4042,6 +4112,7 @@ export interface PropertyFieldRefs {
   readonly weekendPrice: Prisma.FieldRef<"Property", 'Decimal'>
   readonly cleaningFee: Prisma.FieldRef<"Property", 'Decimal'>
   readonly securityDeposit: Prisma.FieldRef<"Property", 'Decimal'>
+  readonly reservationAmount: Prisma.FieldRef<"Property", 'Decimal'>
   readonly checkInTime: Prisma.FieldRef<"Property", 'String'>
   readonly checkOutTime: Prisma.FieldRef<"Property", 'String'>
   readonly minimumStay: Prisma.FieldRef<"Property", 'Int'>

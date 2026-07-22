@@ -151,6 +151,26 @@ enum BookingStatus {
   COMPLETED
 }
 
+enum PaymentMethod {
+  ONLINE
+  CASH
+  BANK_TRANSFER
+}
+
+enum PaymentType {
+  RESERVATION
+  INSTALLMENT
+  BALANCE
+  REFUND
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
 /**
  * |--------------------------------------------------------------------------
  * | Property Amenities
@@ -239,6 +259,7 @@ model Property {
   weekendPrice    Decimal? @db.Decimal(12, 2)
   cleaningFee     Decimal? @db.Decimal(12, 2)
   securityDeposit Decimal? @db.Decimal(12, 2)
+  reservationAmount Decimal? @db.Decimal(12, 2) @map("reservation_amount")
 
   /**
    * |--------------------------------------------------------------------------
@@ -390,6 +411,7 @@ model RoomType {
 
   basePrice    Decimal  @db.Decimal(12, 2)
   weekendPrice Decimal? @db.Decimal(12, 2)
+  reservationAmount Decimal? @db.Decimal(12, 2) @map("reservation_amount")
 
   /**
    * |--------------------------------------------------------------------------
@@ -571,15 +593,38 @@ model Booking {
   guestEmail    String        @map("guest_email")
   guestMobile   String?       @map("guest_mobile")
   specialRequest String?      @map("special_request")
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
+  reservationAmount Decimal?  @db.Decimal(12, 2) @map("reservation_amount")
+  paymentStatus  String       @default("PENDING") @map("payment_status")
+  acceptedAt     DateTime?    @map("accepted_at")
+  rejectedAt     DateTime?    @map("rejected_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
 
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   property Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   roomType RoomType? @relation(fields: [roomTypeId], references: [id], onDelete: SetNull)
+  payments Payment[]
 
   @@index([userId, status])
   @@index([propertyId, status, checkIn, checkOut])
   @@index([roomTypeId, status, checkIn, checkOut])
   @@map("bookings")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  bookingId     String        @map("booking_id")
+  amount        Decimal       @db.Decimal(12, 2)
+  paymentMethod PaymentMethod @map("payment_method")
+  paymentType   PaymentType   @map("payment_type")
+  status        PaymentStatus @default(PENDING)
+  transactionId String?       @map("transaction_id")
+  notes         String?
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@map("payments")
 }

@@ -21,6 +21,7 @@ interface PropertyPricingBody {
   weekendPrice?: unknown;
   cleaningFee?: unknown;
   securityDeposit?: unknown;
+  reservationAmount?: unknown;
   checkInTime?: unknown;
   checkOutTime?: unknown;
   minimumStay?: unknown;
@@ -203,23 +204,13 @@ export const updatePropertyPricing = async (
       });
     }
 
-    if (
-      propertyEditingIsBlocked(
-        property.status
-      )
-    ) {
-      return res.status(409).json({
-        success: false,
-        message:
-          "This property cannot currently be edited",
-      });
-    }
-
     const body =
       req.body as PropertyPricingBody;
 
+    const isRoomWise = property.bookingType === "ROOM_WISE";
+
     const basePrice =
-      parseMoney(body.basePrice, true);
+      parseMoney(body.basePrice, !isRoomWise);
 
     const weekendPrice =
       parseMoney(body.weekendPrice);
@@ -229,6 +220,9 @@ export const updatePropertyPricing = async (
 
     const securityDeposit =
       parseMoney(body.securityDeposit);
+
+    const reservationAmount =
+      parseMoney(body.reservationAmount);
 
     const errors: Record<string, string> =
       {};
@@ -251,6 +245,18 @@ export const updatePropertyPricing = async (
     if (!securityDeposit.isValid) {
       errors.securityDeposit =
         "Please enter a valid security deposit.";
+    }
+
+    if (!reservationAmount.isValid) {
+      errors.reservationAmount =
+        "Please enter a valid reservation / deposit amount.";
+    } else if (
+      reservationAmount.value !== null &&
+      basePrice.value !== null &&
+      reservationAmount.value > basePrice.value
+    ) {
+      errors.reservationAmount =
+        "Deposit amount cannot be greater than the base price.";
     }
 
     if (!isValidTime(body.checkInTime)) {
@@ -309,6 +315,8 @@ export const updatePropertyPricing = async (
             cleaningFee.value,
           securityDeposit:
             securityDeposit.value,
+          reservationAmount:
+            reservationAmount.value,
 
           checkInTime: (
             body.checkInTime as string
@@ -734,9 +742,10 @@ export const submitPropertyForApproval =
       |--------------------------------------------------------------------------
       */
 
+      const isRoomWise = property.bookingType === "ROOM_WISE";
+
       const pricingComplete =
-        property.basePrice !== null &&
-        Number(property.basePrice) > 0 &&
+        (isRoomWise || (property.basePrice !== null && Number(property.basePrice) > 0)) &&
         Boolean(property.checkInTime) &&
         Boolean(property.checkOutTime) &&
         property.minimumStay >= 1;
@@ -746,7 +755,7 @@ export const submitPropertyForApproval =
           step: 4,
           title: "Pricing",
           message:
-            "Add the base price, check-in time, check-out time and minimum stay.",
+            "Set check-in time, check-out time, minimum stay, and base price (if full property booking).",
         });
       }
 

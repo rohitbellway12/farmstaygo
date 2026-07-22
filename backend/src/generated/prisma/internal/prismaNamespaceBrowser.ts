@@ -64,7 +64,8 @@ export const ModelName = {
   PropertyAvailabilityBlock: 'PropertyAvailabilityBlock',
   RoomAvailabilityBlock: 'RoomAvailabilityBlock',
   Wishlist: 'Wishlist',
-  Booking: 'Booking'
+  Booking: 'Booking',
+  Payment: 'Payment'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -189,6 +190,7 @@ export const PropertyScalarFieldEnum = {
   weekendPrice: 'weekendPrice',
   cleaningFee: 'cleaningFee',
   securityDeposit: 'securityDeposit',
+  reservationAmount: 'reservationAmount',
   checkInTime: 'checkInTime',
   checkOutTime: 'checkOutTime',
   minimumStay: 'minimumStay',
@@ -241,6 +243,7 @@ export const RoomTypeScalarFieldEnum = {
   bathrooms: 'bathrooms',
   basePrice: 'basePrice',
   weekendPrice: 'weekendPrice',
+  reservationAmount: 'reservationAmount',
   isActive: 'isActive',
   sortOrder: 'sortOrder',
   createdAt: 'createdAt',
@@ -326,11 +329,31 @@ export const BookingScalarFieldEnum = {
   guestEmail: 'guestEmail',
   guestMobile: 'guestMobile',
   specialRequest: 'specialRequest',
+  reservationAmount: 'reservationAmount',
+  paymentStatus: 'paymentStatus',
+  acceptedAt: 'acceptedAt',
+  rejectedAt: 'rejectedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
+
+
+export const PaymentScalarFieldEnum = {
+  id: 'id',
+  bookingId: 'bookingId',
+  amount: 'amount',
+  paymentMethod: 'paymentMethod',
+  paymentType: 'paymentType',
+  status: 'status',
+  transactionId: 'transactionId',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
 
 
 export const SortOrder = {

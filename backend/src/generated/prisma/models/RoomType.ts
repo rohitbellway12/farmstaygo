@@ -35,6 +35,7 @@ export type RoomTypeAvgAggregateOutputType = {
   bathrooms: number | null
   basePrice: runtime.Decimal | null
   weekendPrice: runtime.Decimal | null
+  reservationAmount: runtime.Decimal | null
   sortOrder: number | null
 }
 
@@ -47,6 +48,7 @@ export type RoomTypeSumAggregateOutputType = {
   bathrooms: number | null
   basePrice: runtime.Decimal | null
   weekendPrice: runtime.Decimal | null
+  reservationAmount: runtime.Decimal | null
   sortOrder: number | null
 }
 
@@ -64,6 +66,7 @@ export type RoomTypeMinAggregateOutputType = {
   bathrooms: number | null
   basePrice: runtime.Decimal | null
   weekendPrice: runtime.Decimal | null
+  reservationAmount: runtime.Decimal | null
   isActive: boolean | null
   sortOrder: number | null
   createdAt: Date | null
@@ -84,6 +87,7 @@ export type RoomTypeMaxAggregateOutputType = {
   bathrooms: number | null
   basePrice: runtime.Decimal | null
   weekendPrice: runtime.Decimal | null
+  reservationAmount: runtime.Decimal | null
   isActive: boolean | null
   sortOrder: number | null
   createdAt: Date | null
@@ -104,6 +108,7 @@ export type RoomTypeCountAggregateOutputType = {
   bathrooms: number
   basePrice: number
   weekendPrice: number
+  reservationAmount: number
   isActive: number
   sortOrder: number
   createdAt: number
@@ -121,6 +126,7 @@ export type RoomTypeAvgAggregateInputType = {
   bathrooms?: true
   basePrice?: true
   weekendPrice?: true
+  reservationAmount?: true
   sortOrder?: true
 }
 
@@ -133,6 +139,7 @@ export type RoomTypeSumAggregateInputType = {
   bathrooms?: true
   basePrice?: true
   weekendPrice?: true
+  reservationAmount?: true
   sortOrder?: true
 }
 
@@ -150,6 +157,7 @@ export type RoomTypeMinAggregateInputType = {
   bathrooms?: true
   basePrice?: true
   weekendPrice?: true
+  reservationAmount?: true
   isActive?: true
   sortOrder?: true
   createdAt?: true
@@ -170,6 +178,7 @@ export type RoomTypeMaxAggregateInputType = {
   bathrooms?: true
   basePrice?: true
   weekendPrice?: true
+  reservationAmount?: true
   isActive?: true
   sortOrder?: true
   createdAt?: true
@@ -190,6 +199,7 @@ export type RoomTypeCountAggregateInputType = {
   bathrooms?: true
   basePrice?: true
   weekendPrice?: true
+  reservationAmount?: true
   isActive?: true
   sortOrder?: true
   createdAt?: true
@@ -297,6 +307,7 @@ export type RoomTypeGroupByOutputType = {
   bathrooms: number
   basePrice: runtime.Decimal
   weekendPrice: runtime.Decimal | null
+  reservationAmount: runtime.Decimal | null
   isActive: boolean
   sortOrder: number
   createdAt: Date
@@ -340,6 +351,7 @@ export type RoomTypeWhereInput = {
   bathrooms?: Prisma.IntFilter<"RoomType"> | number
   basePrice?: Prisma.DecimalFilter<"RoomType"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.DecimalNullableFilter<"RoomType"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.DecimalNullableFilter<"RoomType"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFilter<"RoomType"> | boolean
   sortOrder?: Prisma.IntFilter<"RoomType"> | number
   createdAt?: Prisma.DateTimeFilter<"RoomType"> | Date | string
@@ -365,6 +377,7 @@ export type RoomTypeOrderByWithRelationInput = {
   bathrooms?: Prisma.SortOrder
   basePrice?: Prisma.SortOrder
   weekendPrice?: Prisma.SortOrderInput | Prisma.SortOrder
+  reservationAmount?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -394,6 +407,7 @@ export type RoomTypeWhereUniqueInput = Prisma.AtLeast<{
   bathrooms?: Prisma.IntFilter<"RoomType"> | number
   basePrice?: Prisma.DecimalFilter<"RoomType"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.DecimalNullableFilter<"RoomType"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.DecimalNullableFilter<"RoomType"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFilter<"RoomType"> | boolean
   sortOrder?: Prisma.IntFilter<"RoomType"> | number
   createdAt?: Prisma.DateTimeFilter<"RoomType"> | Date | string
@@ -419,6 +433,7 @@ export type RoomTypeOrderByWithAggregationInput = {
   bathrooms?: Prisma.SortOrder
   basePrice?: Prisma.SortOrder
   weekendPrice?: Prisma.SortOrderInput | Prisma.SortOrder
+  reservationAmount?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -447,6 +462,7 @@ export type RoomTypeScalarWhereWithAggregatesInput = {
   bathrooms?: Prisma.IntWithAggregatesFilter<"RoomType"> | number
   basePrice?: Prisma.DecimalWithAggregatesFilter<"RoomType"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.DecimalNullableWithAggregatesFilter<"RoomType"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.DecimalNullableWithAggregatesFilter<"RoomType"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"RoomType"> | boolean
   sortOrder?: Prisma.IntWithAggregatesFilter<"RoomType"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"RoomType"> | Date | string
@@ -466,6 +482,7 @@ export type RoomTypeCreateInput = {
   bathrooms?: number
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: boolean
   sortOrder?: number
   createdAt?: Date | string
@@ -491,6 +508,7 @@ export type RoomTypeUncheckedCreateInput = {
   bathrooms?: number
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: boolean
   sortOrder?: number
   createdAt?: Date | string
@@ -514,6 +532,7 @@ export type RoomTypeUpdateInput = {
   bathrooms?: Prisma.IntFieldUpdateOperationsInput | number
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -539,6 +558,7 @@ export type RoomTypeUncheckedUpdateInput = {
   bathrooms?: Prisma.IntFieldUpdateOperationsInput | number
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -563,6 +583,7 @@ export type RoomTypeCreateManyInput = {
   bathrooms?: number
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: boolean
   sortOrder?: number
   createdAt?: Date | string
@@ -582,6 +603,7 @@ export type RoomTypeUpdateManyMutationInput = {
   bathrooms?: Prisma.IntFieldUpdateOperationsInput | number
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -602,6 +624,7 @@ export type RoomTypeUncheckedUpdateManyInput = {
   bathrooms?: Prisma.IntFieldUpdateOperationsInput | number
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -637,6 +660,7 @@ export type RoomTypeCountOrderByAggregateInput = {
   bathrooms?: Prisma.SortOrder
   basePrice?: Prisma.SortOrder
   weekendPrice?: Prisma.SortOrder
+  reservationAmount?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -652,6 +676,7 @@ export type RoomTypeAvgOrderByAggregateInput = {
   bathrooms?: Prisma.SortOrder
   basePrice?: Prisma.SortOrder
   weekendPrice?: Prisma.SortOrder
+  reservationAmount?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
 }
 
@@ -669,6 +694,7 @@ export type RoomTypeMaxOrderByAggregateInput = {
   bathrooms?: Prisma.SortOrder
   basePrice?: Prisma.SortOrder
   weekendPrice?: Prisma.SortOrder
+  reservationAmount?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -689,6 +715,7 @@ export type RoomTypeMinOrderByAggregateInput = {
   bathrooms?: Prisma.SortOrder
   basePrice?: Prisma.SortOrder
   weekendPrice?: Prisma.SortOrder
+  reservationAmount?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -704,6 +731,7 @@ export type RoomTypeSumOrderByAggregateInput = {
   bathrooms?: Prisma.SortOrder
   basePrice?: Prisma.SortOrder
   weekendPrice?: Prisma.SortOrder
+  reservationAmount?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
 }
 
@@ -838,6 +866,7 @@ export type RoomTypeCreateWithoutPropertyInput = {
   bathrooms?: number
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: boolean
   sortOrder?: number
   createdAt?: Date | string
@@ -861,6 +890,7 @@ export type RoomTypeUncheckedCreateWithoutPropertyInput = {
   bathrooms?: number
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: boolean
   sortOrder?: number
   createdAt?: Date | string
@@ -914,6 +944,7 @@ export type RoomTypeScalarWhereInput = {
   bathrooms?: Prisma.IntFilter<"RoomType"> | number
   basePrice?: Prisma.DecimalFilter<"RoomType"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.DecimalNullableFilter<"RoomType"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.DecimalNullableFilter<"RoomType"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFilter<"RoomType"> | boolean
   sortOrder?: Prisma.IntFilter<"RoomType"> | number
   createdAt?: Prisma.DateTimeFilter<"RoomType"> | Date | string
@@ -933,6 +964,7 @@ export type RoomTypeCreateWithoutAmenitiesInput = {
   bathrooms?: number
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: boolean
   sortOrder?: number
   createdAt?: Date | string
@@ -957,6 +989,7 @@ export type RoomTypeUncheckedCreateWithoutAmenitiesInput = {
   bathrooms?: number
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: boolean
   sortOrder?: number
   createdAt?: Date | string
@@ -995,6 +1028,7 @@ export type RoomTypeUpdateWithoutAmenitiesInput = {
   bathrooms?: Prisma.IntFieldUpdateOperationsInput | number
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1019,6 +1053,7 @@ export type RoomTypeUncheckedUpdateWithoutAmenitiesInput = {
   bathrooms?: Prisma.IntFieldUpdateOperationsInput | number
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1041,6 +1076,7 @@ export type RoomTypeCreateWithoutImagesInput = {
   bathrooms?: number
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: boolean
   sortOrder?: number
   createdAt?: Date | string
@@ -1065,6 +1101,7 @@ export type RoomTypeUncheckedCreateWithoutImagesInput = {
   bathrooms?: number
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: boolean
   sortOrder?: number
   createdAt?: Date | string
@@ -1103,6 +1140,7 @@ export type RoomTypeUpdateWithoutImagesInput = {
   bathrooms?: Prisma.IntFieldUpdateOperationsInput | number
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1127,6 +1165,7 @@ export type RoomTypeUncheckedUpdateWithoutImagesInput = {
   bathrooms?: Prisma.IntFieldUpdateOperationsInput | number
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1149,6 +1188,7 @@ export type RoomTypeCreateWithoutAvailabilityBlocksInput = {
   bathrooms?: number
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: boolean
   sortOrder?: number
   createdAt?: Date | string
@@ -1173,6 +1213,7 @@ export type RoomTypeUncheckedCreateWithoutAvailabilityBlocksInput = {
   bathrooms?: number
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: boolean
   sortOrder?: number
   createdAt?: Date | string
@@ -1211,6 +1252,7 @@ export type RoomTypeUpdateWithoutAvailabilityBlocksInput = {
   bathrooms?: Prisma.IntFieldUpdateOperationsInput | number
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1235,6 +1277,7 @@ export type RoomTypeUncheckedUpdateWithoutAvailabilityBlocksInput = {
   bathrooms?: Prisma.IntFieldUpdateOperationsInput | number
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1257,6 +1300,7 @@ export type RoomTypeCreateWithoutBookingsInput = {
   bathrooms?: number
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: boolean
   sortOrder?: number
   createdAt?: Date | string
@@ -1281,6 +1325,7 @@ export type RoomTypeUncheckedCreateWithoutBookingsInput = {
   bathrooms?: number
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: boolean
   sortOrder?: number
   createdAt?: Date | string
@@ -1319,6 +1364,7 @@ export type RoomTypeUpdateWithoutBookingsInput = {
   bathrooms?: Prisma.IntFieldUpdateOperationsInput | number
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1343,6 +1389,7 @@ export type RoomTypeUncheckedUpdateWithoutBookingsInput = {
   bathrooms?: Prisma.IntFieldUpdateOperationsInput | number
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1365,6 +1412,7 @@ export type RoomTypeCreateManyPropertyInput = {
   bathrooms?: number
   basePrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: boolean
   sortOrder?: number
   createdAt?: Date | string
@@ -1384,6 +1432,7 @@ export type RoomTypeUpdateWithoutPropertyInput = {
   bathrooms?: Prisma.IntFieldUpdateOperationsInput | number
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1407,6 +1456,7 @@ export type RoomTypeUncheckedUpdateWithoutPropertyInput = {
   bathrooms?: Prisma.IntFieldUpdateOperationsInput | number
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1430,6 +1480,7 @@ export type RoomTypeUncheckedUpdateManyWithoutPropertyInput = {
   bathrooms?: Prisma.IntFieldUpdateOperationsInput | number
   basePrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   weekendPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1508,6 +1559,7 @@ export type RoomTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   bathrooms?: boolean
   basePrice?: boolean
   weekendPrice?: boolean
+  reservationAmount?: boolean
   isActive?: boolean
   sortOrder?: boolean
   createdAt?: boolean
@@ -1534,6 +1586,7 @@ export type RoomTypeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   bathrooms?: boolean
   basePrice?: boolean
   weekendPrice?: boolean
+  reservationAmount?: boolean
   isActive?: boolean
   sortOrder?: boolean
   createdAt?: boolean
@@ -1555,6 +1608,7 @@ export type RoomTypeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   bathrooms?: boolean
   basePrice?: boolean
   weekendPrice?: boolean
+  reservationAmount?: boolean
   isActive?: boolean
   sortOrder?: boolean
   createdAt?: boolean
@@ -1576,13 +1630,14 @@ export type RoomTypeSelectScalar = {
   bathrooms?: boolean
   basePrice?: boolean
   weekendPrice?: boolean
+  reservationAmount?: boolean
   isActive?: boolean
   sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type RoomTypeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "propertyId" | "name" | "slug" | "description" | "totalRooms" | "maxAdults" | "maxChildren" | "maxGuests" | "beds" | "bathrooms" | "basePrice" | "weekendPrice" | "isActive" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["roomType"]>
+export type RoomTypeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "propertyId" | "name" | "slug" | "description" | "totalRooms" | "maxAdults" | "maxChildren" | "maxGuests" | "beds" | "bathrooms" | "basePrice" | "weekendPrice" | "reservationAmount" | "isActive" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["roomType"]>
 export type RoomTypeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   property?: boolean | Prisma.PropertyDefaultArgs<ExtArgs>
   amenities?: boolean | Prisma.RoomType$amenitiesArgs<ExtArgs>
@@ -1654,6 +1709,7 @@ export type $RoomTypePayload<ExtArgs extends runtime.Types.Extensions.InternalAr
      */
     basePrice: runtime.Decimal
     weekendPrice: runtime.Decimal | null
+    reservationAmount: runtime.Decimal | null
     /**
      * *
      *    * |--------------------------------------------------------------------------
@@ -2105,6 +2161,7 @@ export interface RoomTypeFieldRefs {
   readonly bathrooms: Prisma.FieldRef<"RoomType", 'Int'>
   readonly basePrice: Prisma.FieldRef<"RoomType", 'Decimal'>
   readonly weekendPrice: Prisma.FieldRef<"RoomType", 'Decimal'>
+  readonly reservationAmount: Prisma.FieldRef<"RoomType", 'Decimal'>
   readonly isActive: Prisma.FieldRef<"RoomType", 'Boolean'>
   readonly sortOrder: Prisma.FieldRef<"RoomType", 'Int'>
   readonly createdAt: Prisma.FieldRef<"RoomType", 'DateTime'>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { apiFetch } from "@/lib/api";
 import type {
@@ -318,30 +319,60 @@ export default function AvailabilityCalendarClient({
         </div>
       </section>
 
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/60 px-4 py-6"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="availability-modal-title"
-        >
-          <div className="max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-xl bg-white shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-100 px-5 py-4">
-              <div>
-                <h2
-                  id="availability-modal-title"
-                  className="text-lg font-extrabold text-ink-900"
-                >
-                  Availability
-                </h2>
-                <p className="mt-1 text-sm font-semibold text-ink-500">
-                  {modalTitle}
-                </p>
+      {isOpen &&
+        typeof window !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/60 px-4 py-6"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="availability-modal-title"
+          >
+            <div className="max-h-[90vh] w-full max-w-5xl overflow-auto rounded-xl bg-white shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-100 px-5 py-4">
+                <div>
+                  <h2
+                    id="availability-modal-title"
+                    className="text-lg font-extrabold text-ink-900"
+                  >
+                    Availability
+                  </h2>
+                  <p className="mt-1 text-sm font-semibold text-ink-500">
+                    {modalTitle}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="hidden items-center gap-2 text-xs font-bold text-ink-500 sm:flex">
+                    Check from
+                    <input
+                      type="date"
+                      min={today}
+                      value={startDate}
+                      onChange={(event) =>
+                        setStartDate(
+                          event.target.value
+                        )
+                      }
+                      className="h-9 rounded-lg border border-ink-200 px-3 text-xs font-bold text-ink-800 outline-none focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsOpen(false)}
+                    className="h-9 w-9 rounded-lg border border-ink-200 text-lg font-extrabold leading-none text-ink-700 transition hover:border-red-200 hover:text-red-700"
+                    aria-label="Close availability modal"
+                  >
+                    x
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <label className="hidden items-center gap-2 text-xs font-bold text-ink-500 sm:flex">
-                  Check from
+              <div className="max-h-[calc(90vh-82px)] overflow-y-auto p-5">
+                <label className="mb-4 block sm:hidden">
+                  <span className="mb-2 block text-xs font-extrabold uppercase tracking-wide text-ink-500">
+                    Check from
+                  </span>
                   <input
                     type="date"
                     min={today}
@@ -351,133 +382,106 @@ export default function AvailabilityCalendarClient({
                         event.target.value
                       )
                     }
-                    className="h-9 rounded-lg border border-ink-200 px-3 text-xs font-bold text-ink-800 outline-none focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
+                    className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm font-bold text-ink-800 outline-none focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
                   />
                 </label>
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="h-9 w-9 rounded-lg border border-ink-200 text-lg font-extrabold leading-none text-ink-700 transition hover:border-red-200 hover:text-red-700"
-                  aria-label="Close availability modal"
-                >
-                  x
-                </button>
-              </div>
-            </div>
 
-            <div className="max-h-[calc(90vh-82px)] overflow-y-auto p-5">
-              <label className="mb-4 block sm:hidden">
-                <span className="mb-2 block text-xs font-extrabold uppercase tracking-wide text-ink-500">
-                  Check from
-                </span>
-                <input
-                  type="date"
-                  min={today}
-                  value={startDate}
-                  onChange={(event) =>
-                    setStartDate(
-                      event.target.value
-                    )
-                  }
-                  className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm font-bold text-ink-800 outline-none focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
-                />
-              </label>
-
-              <div className="flex flex-wrap gap-3 text-xs font-bold text-ink-600">
-                <span className="inline-flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                  Available
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-                  Partial
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-                  Unavailable
-                </span>
-              </div>
-
-              {loading && (
-                <div className="mt-4 rounded-lg border border-ink-100 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-600">
-                  Checking latest dates...
+                <div className="flex flex-wrap gap-3 text-xs font-bold text-ink-600">
+                  <span className="inline-flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                    Available
+                  </span>
+                  <span className="inline-flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                    Partial
+                  </span>
+                  <span className="inline-flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
+                    Unavailable
+                  </span>
                 </div>
-              )}
 
-              {error && (
-                <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-                  {error}
-                </div>
-              )}
+                {loading && (
+                  <div className="mt-4 rounded-lg border border-ink-100 bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-600">
+                    Checking latest dates...
+                  </div>
+                )}
 
-              {!loading && !error && (
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                  {nights.map((night) => {
-                    const status = getDayStatus(
-                      night,
-                      bookingType
-                    );
+                {error && (
+                  <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                    {error}
+                  </div>
+                )}
 
-                    return (
-                      <article
-                        key={night.date}
-                        className={`min-h-[116px] rounded-lg border p-3 ${getStatusClasses(
-                          status.status
-                        )}`}
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <strong className="text-sm">
-                            {formatShortDate(
-                              night.date
-                            )}
-                          </strong>
-                          <span
-                            className={`h-2.5 w-2.5 rounded-full ${getDotClasses(
-                              status.status
-                            )}`}
-                          />
-                        </div>
+                {!loading && !error && (
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    {nights.map((night) => {
+                      const status = getDayStatus(
+                        night,
+                        bookingType
+                      );
 
-                        <div className="mt-3 space-y-1.5 text-xs font-extrabold">
-                          {status.fullText && (
-                            <div>
-                              {status.fullText}
-                            </div>
-                          )}
-                          {status.roomText && (
-                            <div>
-                              {status.roomText}
-                            </div>
-                          )}
-                          {status.totalRoomCount > 0 && (
-                            <div>
-                              {status.roomCount} free /{" "}
-                              {status.bookedRoomCount} booked /{" "}
-                              {status.totalRoomCount} total rooms
-                            </div>
-                          )}
-                        </div>
-
-                        {night.roomTypes.length > 0 && (
-                          <div className="mt-3 text-[11px] font-semibold leading-4 opacity-80">
-                            {night.roomTypes
-                              .slice(0, 2)
-                              .map(
-                                (roomType) =>
-                                  `${roomType.name}: ${roomType.availableRooms}/${roomType.totalRooms}`
-                              )
-                              .join(" | ")}
+                      return (
+                        <article
+                          key={night.date}
+                          className={`min-h-[116px] rounded-lg border p-3 ${getStatusClasses(
+                            status.status
+                          )}`}
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <strong className="text-sm">
+                              {formatShortDate(
+                                night.date
+                              )}
+                            </strong>
+                            <span
+                              className={`h-2.5 w-2.5 rounded-full ${getDotClasses(
+                                status.status
+                              )}`}
+                            />
                           </div>
-                        )}
-                      </article>
-                    );
-                  })}
-                </div>
-              )}
+
+                          <div className="mt-3 space-y-1.5 text-xs font-extrabold">
+                            {status.fullText && (
+                              <div>
+                                {status.fullText}
+                              </div>
+                            )}
+                            {status.roomText && (
+                              <div>
+                                {status.roomText}
+                              </div>
+                            )}
+                            {status.totalRoomCount > 0 && (
+                              <div>
+                                {status.roomCount} free /{" "}
+                                {status.bookedRoomCount} booked /{" "}
+                                {status.totalRoomCount} total rooms
+                              </div>
+                            )}
+                          </div>
+
+                          {night.roomTypes.length > 0 && (
+                            <div className="mt-3 text-[11px] font-semibold leading-4 opacity-80">
+                              {night.roomTypes
+                                .slice(0, 2)
+                                .map(
+                                  (roomType) =>
+                                    `${roomType.name}: ${roomType.availableRooms}/${roomType.totalRooms}`
+                                )
+                                .join(" | ")}
+                            </div>
+                          )}
+                        </article>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }

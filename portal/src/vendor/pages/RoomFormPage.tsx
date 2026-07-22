@@ -76,6 +76,7 @@ interface RoomType {
 
   basePrice: string | number;
   weekendPrice: string | number | null;
+  reservationAmount: string | number | null;
 
   isActive: boolean;
   sortOrder: number;
@@ -129,6 +130,7 @@ interface RoomFormValues {
   bathrooms: string;
   basePrice: string;
   weekendPrice: string;
+  reservationAmount: string;
   isActive: boolean;
 }
 
@@ -149,6 +151,7 @@ const initialFormValues: RoomFormValues = {
   bathrooms: "1",
   basePrice: "",
   weekendPrice: "",
+  reservationAmount: "",
   isActive: true,
 };
 
@@ -551,6 +554,13 @@ export default function RoomFormPage() {
               null
                 ? String(
                     room.weekendPrice
+                  )
+                : "",
+            reservationAmount:
+              room.reservationAmount !==
+              null
+                ? String(
+                    room.reservationAmount
                   )
                 : "",
             isActive:
@@ -1023,6 +1033,28 @@ export default function RoomFormPage() {
         "Weekend price must be greater than zero.";
     }
 
+    if (
+      form.reservationAmount &&
+      (
+        !Number.isFinite(
+          Number(form.reservationAmount)
+        ) ||
+        Number(form.reservationAmount) <= 0
+      )
+    ) {
+      errors.reservationAmount =
+        "Deposit amount must be greater than zero.";
+    }
+
+    if (
+      form.reservationAmount &&
+      form.basePrice &&
+      Number(form.reservationAmount) > Number(form.basePrice)
+    ) {
+      errors.reservationAmount =
+        "Deposit amount cannot exceed base price.";
+    }
+
     setFieldErrors(errors);
 
     if (
@@ -1090,6 +1122,13 @@ export default function RoomFormPage() {
         form.weekendPrice
           ? Number(
               form.weekendPrice
+            )
+          : null,
+
+      reservationAmount:
+        form.reservationAmount
+          ? Number(
+              form.reservationAmount
             )
           : null,
 
@@ -1506,6 +1545,43 @@ export default function RoomFormPage() {
                     {
                       fieldErrors.weekendPrice
                     }
+                  </span>
+                )}
+              </label>
+
+              <label>
+                <span className="mb-2 block text-sm font-bold text-text-secondary">
+                  Deposit / Reservation Amount Per Night
+                </span>
+
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-text-muted">
+                    Rs.
+                  </span>
+
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={form.reservationAmount}
+                    onChange={(event) =>
+                      updateField(
+                        "reservationAmount",
+                        event.target.value
+                      )
+                    }
+                    placeholder="Optional — min. amount to confirm booking"
+                    className={`h-11 w-full rounded-control border bg-surface pl-9 pr-4 text-sm outline-none focus:ring-4 ${
+                      fieldErrors.reservationAmount
+                        ? "border-danger focus:ring-danger-soft"
+                        : "border-border focus:border-primary-400 focus:ring-primary-100"
+                    }`}
+                  />
+                </div>
+
+                {fieldErrors.reservationAmount && (
+                  <span className="mt-1.5 block text-xs font-semibold text-danger">
+                    {fieldErrors.reservationAmount}
                   </span>
                 )}
               </label>

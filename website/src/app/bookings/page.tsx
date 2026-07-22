@@ -29,6 +29,8 @@ interface Booking {
   rooms: number;
   totalNights: number;
   estimatedTotal: string | number | null;
+  reservationAmount: string | number | null;
+  paymentStatus: string | null;
   currency: string;
   specialRequest: string | null;
   createdAt: string;
@@ -86,6 +88,30 @@ const modeLabels: Record<BookingMode, string> =
     ENTIRE_PROPERTY: "Full property",
     ROOM_WISE: "Room-wise",
   };
+
+const paymentStatusStyles: Record<
+  string,
+  string
+> = {
+  PENDING:
+    "border-amber-200 bg-amber-50 text-amber-700",
+  PARTIAL:
+    "border-blue-200 bg-blue-50 text-blue-700",
+  PAID:
+    "border-emerald-200 bg-emerald-50 text-emerald-700",
+  REFUNDED:
+    "border-slate-200 bg-slate-100 text-slate-700",
+};
+
+const paymentStatusLabels: Record<
+  string,
+  string
+> = {
+  PENDING: "Payment pending",
+  PARTIAL: "Partial paid",
+  PAID: "Paid",
+  REFUNDED: "Refunded",
+};
 
 const formatDate = (value: string): string => {
   return new Intl.DateTimeFormat("en-IN", {
@@ -287,51 +313,100 @@ export default function CustomerBookingsPage() {
                   key={booking.id}
                   className="rounded-xl border border-ink-100 bg-white p-5 shadow-[0_8px_28px_rgba(27,58,39,0.08)]"
                 >
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span
-                          className={`inline-flex rounded-full border px-3 py-1 text-xs font-extrabold ${statusStyles[booking.status]}`}
-                        >
-                          {statusLabels[booking.status]}
-                        </span>
+                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                     <div>
+                       <div className="flex flex-wrap items-center gap-2">
+                         <span
+                           className={`inline-flex rounded-full border px-3 py-1 text-xs font-extrabold ${statusStyles[booking.status]}`}
+                         >
+                           {statusLabels[booking.status]}
+                         </span>
 
-                        <span className="text-xs font-bold uppercase tracking-[0.14em] text-ink-400">
-                          {modeLabels[booking.bookingMode]}
-                        </span>
-                      </div>
+                         <span className="text-xs font-bold uppercase tracking-[0.14em] text-ink-400">
+                           {modeLabels[booking.bookingMode]}
+                         </span>
 
-                      <h2 className="mt-3 text-xl font-extrabold text-ink-900">
-                        {booking.property.title}
-                      </h2>
+                         <span
+                           className={`inline-flex rounded-full border px-3 py-1 text-xs font-extrabold ${paymentStatusStyles[booking.paymentStatus || "PENDING"] || paymentStatusStyles.PENDING}`}
+                         >
+                           {paymentStatusLabels[
+                             booking.paymentStatus ||
+                               "PENDING"
+                           ] || "Pending"}
+                         </span>
+                       </div>
 
-                      <p className="mt-1 text-sm text-ink-600">
-                        {booking.property.category.name}
-                        {location
-                          ? ` in ${location}`
-                          : ""}
-                      </p>
+                       <h2 className="mt-3 text-xl font-extrabold text-ink-900">
+                         {booking.property.title}
+                       </h2>
 
-                      {booking.roomType && (
-                        <p className="mt-2 text-sm font-bold text-ink-700">
-                          Room: {booking.roomType.name}
-                        </p>
-                      )}
-                    </div>
+                       <p className="mt-1 text-sm text-ink-600">
+                         {booking.property.category.name}
+                         {location
+                           ? ` in ${location}`
+                           : ""}
+                       </p>
 
-                    <div className="text-left lg:text-right">
-                      <p className="text-lg font-extrabold text-ink-900">
-                        {formatMoney(
-                          booking.estimatedTotal,
-                          booking.currency
-                        )}
-                      </p>
+                       {booking.roomType && (
+                         <p className="mt-2 text-sm font-bold text-ink-700">
+                           Room: {booking.roomType.name}
+                         </p>
+                       )}
+                     </div>
 
-                      <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-ink-400">
-                        Request #{booking.id.slice(-8)}
-                      </p>
-                    </div>
-                  </div>
+                     <div className="text-left lg:text-right">
+                       <p className="text-lg font-extrabold text-ink-900">
+                         {formatMoney(
+                           booking.estimatedTotal,
+                           booking.currency
+                         )}
+                       </p>
+
+                       {booking.reservationAmount &&
+                         Number(
+                           booking.reservationAmount
+                         ) > 0 && (
+                           <p className="mt-1 text-sm font-semibold text-amber-700">
+                             Reservation:{" "}
+                             {formatMoney(
+                               booking.reservationAmount,
+                               booking.currency
+                             )}
+                           </p>
+                         )}
+
+                       <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-ink-400">
+                         Request #{booking.id.slice(-8)}
+                       </p>
+                     </div>
+                   </div>
+
+                   <div className="mt-5 flex items-center gap-3 border-t border-ink-100 pt-4">
+                     {(booking.status ===
+                         "CONFIRMED" ||
+                       booking.status ===
+                         "REQUESTED") &&
+                       (!booking.paymentStatus ||
+                         booking.paymentStatus ===
+                           "PENDING" ||
+                         booking.paymentStatus ===
+                           "PARTIAL") && (
+                         <button
+                           type="button"
+                           onClick={() => {
+                             window.location.href = `/bookings/${booking.id}/pay`;
+                           }}
+                           className="inline-flex h-10 items-center justify-center rounded-lg bg-brand-700 px-5 text-sm font-extrabold text-white transition hover:bg-brand-800"
+                         >
+                           Pay Now
+                         </button>
+                       )}
+
+                     <span className="text-xs text-ink-500">
+                       Requested{" "}
+                       {formatDate(booking.createdAt)}
+                     </span>
+                   </div>
 
                   <div className="mt-5 grid gap-3 border-t border-ink-100 pt-4 sm:grid-cols-4">
                     <div>

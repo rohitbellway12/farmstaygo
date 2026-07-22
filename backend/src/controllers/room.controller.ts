@@ -37,6 +37,7 @@ interface RoomTypeBody {
 
   basePrice?: unknown;
   weekendPrice?: unknown;
+  reservationAmount?: unknown;
 
   isActive?: unknown;
   sortOrder?: unknown;
@@ -67,6 +68,7 @@ interface RoomTypeDefaults {
 
   basePrice: string;
   weekendPrice: string | null;
+  reservationAmount: string | null;
 
   isActive: boolean;
   sortOrder: number;
@@ -87,6 +89,7 @@ interface ValidatedRoomTypeValues {
 
   basePrice: string;
   weekendPrice: string | null;
+  reservationAmount: string | null;
 
   isActive: boolean;
   sortOrder: number;
@@ -686,6 +689,11 @@ const validateRoomTypeBody = (
       ? body.weekendPrice
       : defaults?.weekendPrice;
 
+  const rawReservationAmount =
+    body.reservationAmount !== undefined
+      ? body.reservationAmount
+      : defaults?.reservationAmount;
+
   const rawSortOrder =
     body.sortOrder !== undefined
       ? body.sortOrder
@@ -817,6 +825,12 @@ const validateRoomTypeBody = (
       true
     );
 
+  const parsedReservationAmount =
+    parseMoney(
+      rawReservationAmount,
+      true
+    );
+
   if (!parsedBasePrice.isValid) {
     errors.basePrice =
       "Base price must be greater than zero.";
@@ -825,6 +839,20 @@ const validateRoomTypeBody = (
   if (!parsedWeekendPrice.isValid) {
     errors.weekendPrice =
       "Weekend price must be greater than zero.";
+  }
+
+  if (!parsedReservationAmount.isValid) {
+    errors.reservationAmount =
+      "Deposit amount must be greater than zero.";
+  }
+
+  if (
+    parsedReservationAmount.value != null &&
+    parsedBasePrice.value != null &&
+    Number(parsedReservationAmount.value) > Number(parsedBasePrice.value)
+  ) {
+    errors.reservationAmount =
+      "Deposit amount cannot exceed base price.";
   }
 
   /*
@@ -916,6 +944,10 @@ const validateRoomTypeBody = (
 
       weekendPrice:
         parsedWeekendPrice.value ??
+        null,
+
+      reservationAmount:
+        parsedReservationAmount.value ??
         null,
 
       isActive:
@@ -1297,6 +1329,7 @@ export const createVendorRoomType =
 
             basePrice: "",
             weekendPrice: null,
+            reservationAmount: null,
 
             isActive: true,
 
@@ -1381,6 +1414,9 @@ export const createVendorRoomType =
 
                     weekendPrice:
                       values.weekendPrice,
+
+                    reservationAmount:
+                      values.reservationAmount,
 
                     isActive:
                       values.isActive,
@@ -1585,6 +1621,13 @@ export const updateVendorRoomType =
                   )
                 : null,
 
+            reservationAmount:
+              existingRoomType.reservationAmount
+                ? String(
+                    existingRoomType.reservationAmount
+                  )
+                : null,
+
             isActive:
               existingRoomType.isActive,
 
@@ -1666,6 +1709,9 @@ export const updateVendorRoomType =
 
               weekendPrice:
                 values.weekendPrice,
+
+              reservationAmount:
+                values.reservationAmount,
 
               isActive:
                 values.isActive,

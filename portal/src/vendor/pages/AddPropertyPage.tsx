@@ -2152,21 +2152,43 @@ const handleMovePropertyImage =
             message={formErrors.bookingType}
           />
 
-          {(form.bookingType ===
-            "BOTH" ||
-            form.bookingType ===
-              "ROOM_WISE") && (
-            <div className="mt-4 rounded-dashboard-card border border-primary-200 bg-primary-50 p-4">
-              <h3 className="text-sm font-extrabold text-primary-800">
-                Room pricing setup
+          {form.bookingType && (
+            <div className={`mt-4 rounded-dashboard-card border p-4 ${
+              form.bookingType === "ENTIRE_PROPERTY"
+                ? "border-emerald-200 bg-emerald-50"
+                : form.bookingType === "ROOM_WISE"
+                ? "border-blue-200 bg-blue-50"
+                : "border-amber-200 bg-amber-50"
+            }`}>
+              <h3 className={`text-sm font-extrabold ${
+                form.bookingType === "ENTIRE_PROPERTY"
+                  ? "text-emerald-800"
+                  : form.bookingType === "ROOM_WISE"
+                  ? "text-blue-800"
+                  : "text-amber-800"
+              }`}>
+                {form.bookingType === "ENTIRE_PROPERTY"
+                  ? "🏡 Entire Property — Set pricing in Step 4"
+                  : form.bookingType === "ROOM_WISE"
+                  ? "🛏️ Room-Wise — Pricing set per room in Room Inventory"
+                  : "📦 Both — Step 4 for full-stay + Room Inventory for rooms"}
               </h3>
-              <p className="mt-1 text-sm leading-6 text-primary-700">
-                {form.bookingType === "BOTH"
-                  ? "Add the Full Stay price in the Pricing step, then add room-wise prices from Room Inventory after this property draft is created."
-                  : "Room-wise pricing is added from Room Inventory after this property draft is created."}
+              <p className={`mt-1 text-sm leading-6 ${
+                form.bookingType === "ENTIRE_PROPERTY"
+                  ? "text-emerald-700"
+                  : form.bookingType === "ROOM_WISE"
+                  ? "text-blue-700"
+                  : "text-amber-700"
+              }`}>
+                {form.bookingType === "ENTIRE_PROPERTY"
+                  ? "Set base night rate, weekend rate, cleaning fee, security deposit, and Razorpay advance deposit in Step 4 — Pricing."
+                  : form.bookingType === "ROOM_WISE"
+                  ? "No full-property pricing needed here. After saving this draft, go to Room Inventory to add room types with their own base rate, weekend rate, and deposit amounts."
+                  : "Set the full-property pricing in Step 4, then add individual room-type pricing from Room Inventory after the property draft is created."}
               </p>
             </div>
           )}
+
         </section>
 
         {/* Capacity */}

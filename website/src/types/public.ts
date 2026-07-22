@@ -196,6 +196,7 @@ export interface PublicRoomType {
     basePrice: number | null;
     weekendPrice: number | null;
     unit: "PER_ROOM_PER_NIGHT";
+    reservationAmountPerNight: number | null;
   };
 
   images: PublicImage[];
@@ -237,6 +238,7 @@ export interface PublicPropertyDetail
       weekendPrice: number | null;
       cleaningFee: number | null;
       securityDeposit: number | null;
+      reservationAmountPerNight: number | null;
       unit: "PER_NIGHT";
     };
     currency: "INR";

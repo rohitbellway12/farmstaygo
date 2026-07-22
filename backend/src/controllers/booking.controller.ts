@@ -3,6 +3,9 @@ import type { Response } from "express";
 import {
   BookingMode,
   BookingStatus,
+  PaymentMethod,
+  PaymentStatus,
+  PaymentType,
   Prisma,
   PropertyBookingType,
   PropertyStatus,
@@ -23,6 +26,7 @@ interface CreateBookingBody {
   guests?: unknown;
   rooms?: unknown;
   specialRequest?: unknown;
+  paymentMethod?: unknown;
 }
 
 const dateOnlyPattern =
@@ -209,6 +213,15 @@ const bookingListInclude = {
       city: true,
       state: true,
       country: true,
+      basePrice: true,
+      weekendPrice: true,
+      cleaningFee: true,
+      securityDeposit: true,
+      reservationAmount: true,
+      checkInTime: true,
+      checkOutTime: true,
+      minimumStay: true,
+      instantBook: true,
       category: {
         select: {
           id: true,
@@ -256,6 +269,21 @@ const bookingListInclude = {
       id: true,
       name: true,
       totalRooms: true,
+      basePrice: true,
+      weekendPrice: true,
+      reservationAmount: true,
+    },
+  },
+  payments: {
+    select: {
+      id: true,
+      amount: true,
+      paymentMethod: true,
+      paymentType: true,
+      status: true,
+      transactionId: true,
+      notes: true,
+      createdAt: true,
     },
   },
 } satisfies Prisma.BookingInclude;
@@ -391,6 +419,30 @@ export const createBookingRequest =
       ) {
         errors.specialRequest =
           "Special request must be valid text up to 500 characters.";
+      }
+
+      const paymentMethod =
+        typeof body.paymentMethod ===
+        "string"
+          ? body.paymentMethod
+              .trim()
+              .toUpperCase()
+          : null;
+
+      const validPaymentMethods = [
+        PaymentMethod.ONLINE,
+        PaymentMethod.CASH,
+        PaymentMethod.BANK_TRANSFER,
+      ];
+
+      if (
+        paymentMethod &&
+        !validPaymentMethods.includes(
+          paymentMethod as PaymentMethod
+        )
+      ) {
+        errors.paymentMethod =
+          "Invalid payment method.";
       }
 
       if (
@@ -577,6 +629,12 @@ export const createBookingRequest =
                       property.basePrice
                     ) *
                     nights.length,
+                  reservationAmount:
+                    property.reservationAmount
+                      ? Number(
+                          property.reservationAmount
+                        ) * nights.length
+                      : null,
                   guestName:
                     [
                       customer.firstName,
@@ -782,6 +840,16 @@ export const createBookingRequest =
                   ) *
                   rooms *
                   nights.length,
+                reservationAmount:
+                  roomType.reservationAmount
+                    ? Number(
+                        roomType.reservationAmount
+                      ) * rooms * nights.length
+                    : property.reservationAmount
+                      ? Number(
+                          property.reservationAmount
+                        ) * rooms * nights.length
+                      : null,
                 guestName:
                   [
                     customer.firstName,
@@ -799,6 +867,34 @@ export const createBookingRequest =
           );
         }
       );
+
+      if (
+        paymentMethod &&
+        booking.reservationAmount &&
+        Number(booking.reservationAmount) > 0
+      ) {
+        await prisma.payment.create({
+          data: {
+            bookingId: booking.id,
+            amount: new Prisma.Decimal(
+              booking.reservationAmount
+            ),
+            paymentMethod:
+              paymentMethod as PaymentMethod,
+            paymentType: PaymentType.RESERVATION,
+            status: PaymentStatus.COMPLETED,
+          },
+        });
+
+        await prisma.booking.update({
+          where: {
+            id: booking.id,
+          },
+          data: {
+            paymentStatus: "PAID",
+          },
+        });
+      }
 
       return res.status(201).json({
         success: true,
@@ -1001,6 +1097,625 @@ export const getAdminBookings = async (
       success: false,
       message:
         "Unable to load admin bookings",
+    });
+  }
+};
+
+const ensureVendorForBooking = async (
+  userId: number
+): Promise<number> => {
+  const vendor =
+    await prisma.vendor.findUnique({
+      where: {
+        userId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+  if (!vendor) {
+    throw new Error(
+      "VENDOR_NOT_FOUND"
+    );
+  }
+
+  return vendor.id;
+};
+
+export const acceptBooking = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const vendorId =
+      await ensureVendorForBooking(
+        req.user.id
+      );
+
+    const bookingId =
+      typeof req.params.id === "string"
+        ? req.params.id.trim()
+        : "";
+
+    if (!bookingId) {
+      return res.status(422).json({
+        success: false,
+        message:
+          "Booking ID is required",
+      });
+    }
+
+    const booking =
+      await prisma.booking.findFirst({
+        where: {
+          id: bookingId,
+          property: {
+            vendorId,
+          },
+        },
+      });
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Booking not found",
+      });
+    }
+
+    if (booking.status !== BookingStatus.REQUESTED) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Only requested bookings can be accepted",
+      });
+    }
+
+    const updated =
+      await prisma.booking.update({
+        where: {
+          id: bookingId,
+        },
+        data: {
+          status: BookingStatus.CONFIRMED,
+          acceptedAt: new Date(),
+        },
+        include: bookingListInclude,
+      });
+
+    return res.json({
+      success: true,
+      message:
+        "Booking accepted successfully",
+      data: updated,
+    });
+  } catch (error) {
+    console.error(
+      "Accept booking error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Unable to accept booking",
+    });
+  }
+};
+
+export const rejectBooking = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const vendorId =
+      await ensureVendorForBooking(
+        req.user.id
+      );
+
+    const bookingId =
+      typeof req.params.id === "string"
+        ? req.params.id.trim()
+        : "";
+
+    const body =
+      req.body as {
+        reason?: unknown;
+      };
+
+    const reason =
+      typeof body.reason === "string"
+        ? body.reason.trim()
+        : null;
+
+    if (!bookingId) {
+      return res.status(422).json({
+        success: false,
+        message:
+          "Booking ID is required",
+      });
+    }
+
+    const booking =
+      await prisma.booking.findFirst({
+        where: {
+          id: bookingId,
+          property: {
+            vendorId,
+          },
+        },
+      });
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Booking not found",
+      });
+    }
+
+    if (booking.status !== BookingStatus.REQUESTED) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Only requested bookings can be rejected",
+      });
+    }
+
+    const updated =
+      await prisma.booking.update({
+        where: {
+          id: bookingId,
+        },
+        data: {
+          status: BookingStatus.REJECTED,
+          rejectedAt: new Date(),
+        },
+        include: bookingListInclude,
+      });
+
+    return res.json({
+      success: true,
+      message:
+        "Booking rejected successfully",
+      data: updated,
+    });
+  } catch (error) {
+    console.error(
+      "Reject booking error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Unable to reject booking",
+    });
+  }
+};
+
+export const recordPayment = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const bookingId =
+      typeof req.params.id === "string"
+        ? req.params.id.trim()
+        : "";
+
+    if (!bookingId) {
+      return res.status(422).json({
+        success: false,
+        message:
+          "Booking ID is required",
+      });
+    }
+
+    const body =
+      req.body as {
+        amount?: unknown;
+        paymentMethod?: unknown;
+        paymentType?: unknown;
+        transactionId?: unknown;
+        notes?: unknown;
+      };
+
+    const amount =
+      typeof body.amount === "number"
+        ? body.amount
+        : Number(body.amount);
+
+    const paymentMethod =
+      typeof body.paymentMethod === "string"
+        ? body.paymentMethod.trim().toUpperCase()
+        : null;
+
+    const paymentType =
+      typeof body.paymentType === "string"
+        ? body.paymentType.trim().toUpperCase()
+        : null;
+
+    const transactionId =
+      typeof body.transactionId === "string"
+        ? body.transactionId.trim() || null
+        : null;
+
+    const notes =
+      typeof body.notes === "string"
+        ? body.notes.trim() || null
+        : null;
+
+    if (
+      !Number.isFinite(amount) ||
+      amount <= 0
+    ) {
+      return res.status(422).json({
+        success: false,
+        message:
+          "A valid payment amount is required",
+      });
+    }
+
+    const validMethods = [
+      PaymentMethod.ONLINE,
+      PaymentMethod.CASH,
+      PaymentMethod.BANK_TRANSFER,
+    ];
+
+    const validTypes = [
+      PaymentType.RESERVATION,
+      PaymentType.INSTALLMENT,
+      PaymentType.BALANCE,
+      PaymentType.REFUND,
+    ];
+
+    if (
+      !paymentMethod ||
+      !validMethods.includes(
+        paymentMethod as PaymentMethod
+      )
+    ) {
+      return res.status(422).json({
+        success: false,
+        message:
+          "A valid payment method is required",
+        errors: {
+          paymentMethod:
+            "Select online, cash or bank transfer",
+        },
+      });
+    }
+
+    if (
+      !paymentType ||
+      !validTypes.includes(
+        paymentType as PaymentType
+      )
+    ) {
+      return res.status(422).json({
+        success: false,
+        message:
+          "A valid payment type is required",
+        errors: {
+          paymentType:
+            "Select reservation, installment, balance or refund",
+        },
+      });
+    }
+
+    const booking =
+      await prisma.booking.findFirst({
+        where: {
+          id: bookingId,
+          OR: [
+            {
+              userId: req.user.id,
+            },
+            {
+              property: {
+                vendor: {
+                  userId: req.user.id,
+                },
+              },
+            },
+          ],
+        },
+        include: {
+          payments: true,
+        },
+      });
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Booking not found",
+      });
+    }
+
+    if (
+      booking.status ===
+        BookingStatus.CANCELLED ||
+      booking.status === BookingStatus.REJECTED
+    ) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Payments cannot be recorded for cancelled or rejected bookings",
+      });
+    }
+
+    const payment =
+      await prisma.payment.create({
+        data: {
+          bookingId,
+          amount: new Prisma.Decimal(amount),
+          paymentMethod:
+            paymentMethod as PaymentMethod,
+          paymentType:
+            paymentType as PaymentType,
+          status: PaymentStatus.COMPLETED,
+          transactionId,
+          notes,
+        },
+      });
+
+    const totalPaid =
+      booking.payments
+        .filter(
+          (p) =>
+            p.status ===
+              PaymentStatus.COMPLETED &&
+            p.paymentType !==
+              PaymentType.REFUND
+        )
+        .reduce(
+          (sum, p) =>
+            sum.plus(p.amount),
+          new Prisma.Decimal(0)
+        )
+        .plus(new Prisma.Decimal(amount));
+
+    const total =
+      booking.estimatedTotal
+        ? new Prisma.Decimal(
+            booking.estimatedTotal
+          )
+        : null;
+
+    let paymentStatus = "PENDING";
+
+    if (total && totalPaid.gte(total)) {
+      paymentStatus = "PAID";
+    } else if (totalPaid.gt(0)) {
+      paymentStatus = "PARTIAL";
+    }
+
+    const reservationThreshold =
+      booking.reservationAmount
+        ? new Prisma.Decimal(
+            booking.reservationAmount
+          )
+        : null;
+
+    if (
+      reservationThreshold &&
+      totalPaid.gte(reservationThreshold) &&
+      booking.status ===
+        BookingStatus.REQUESTED
+    ) {
+      await prisma.booking.update({
+        where: {
+          id: bookingId,
+        },
+        data: {
+          status: BookingStatus.CONFIRMED,
+          paymentStatus,
+          acceptedAt: new Date(),
+        },
+      });
+    } else {
+      await prisma.booking.update({
+        where: {
+          id: bookingId,
+        },
+        data: {
+          paymentStatus,
+        },
+      });
+    }
+
+    const updatedBooking =
+      await prisma.booking.findUnique({
+        where: {
+          id: bookingId,
+        },
+        include: bookingListInclude,
+      });
+
+    const populatedPayment =
+      await prisma.payment.findUnique({
+        where: {
+          id: payment.id,
+        },
+      });
+
+    return res.status(201).json({
+      success: true,
+      message: "Payment recorded successfully",
+      data: populatedPayment,
+      booking: updatedBooking,
+    });
+  } catch (error) {
+    console.error(
+      "Record payment error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Unable to record payment",
+    });
+  }
+};
+
+export const getBookingPayments = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const bookingId =
+      typeof req.params.id === "string"
+        ? req.params.id.trim()
+        : "";
+
+    if (!bookingId) {
+      return res.status(422).json({
+        success: false,
+        message:
+          "Booking ID is required",
+      });
+    }
+
+    const booking =
+      await prisma.booking.findFirst({
+        where: {
+          id: bookingId,
+          OR: [
+            {
+              userId: req.user.id,
+            },
+            {
+              property: {
+                vendor: {
+                  userId: req.user.id,
+                },
+              },
+            },
+          ],
+        },
+      });
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Booking not found",
+      });
+    }
+
+    const payments =
+      await prisma.payment.findMany({
+        where: {
+          bookingId,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+    const totalPaid = payments
+      .filter(
+        (p) =>
+          p.status ===
+            PaymentStatus.COMPLETED &&
+          p.paymentType !== PaymentType.REFUND
+      )
+      .reduce(
+        (sum, p) => sum.plus(p.amount),
+        new Prisma.Decimal(0)
+      );
+
+    const totalRefunded = payments
+      .filter(
+        (p) =>
+          p.status ===
+            PaymentStatus.COMPLETED &&
+          p.paymentType === PaymentType.REFUND
+      )
+      .reduce(
+        (sum, p) => sum.plus(p.amount),
+        new Prisma.Decimal(0)
+      );
+
+    const total =
+      booking.estimatedTotal
+        ? new Prisma.Decimal(
+            booking.estimatedTotal
+          )
+        : null;
+
+    const balance =
+      total && totalPaid.gte(total)
+        ? new Prisma.Decimal(0)
+        : total
+          ? total.minus(totalPaid)
+          : null;
+
+    return res.json({
+      success: true,
+      message: "Payments fetched successfully",
+      data: payments,
+      summary: {
+        totalPaid: totalPaid.toNumber(),
+        totalRefunded:
+          totalRefunded.toNumber(),
+        estimatedTotal:
+          total ? total.toNumber() : null,
+        balance: balance
+          ? balance.toNumber()
+          : null,
+        reservationAmount:
+          booking.reservationAmount
+            ? new Prisma.Decimal(
+                booking.reservationAmount
+              ).toNumber()
+            : null,
+        paymentStatus:
+          booking.paymentStatus,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Get booking payments error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Unable to load payments",
     });
   }
 };

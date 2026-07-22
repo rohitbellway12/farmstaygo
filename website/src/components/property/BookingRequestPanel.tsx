@@ -20,7 +20,29 @@ interface BookingResponse {
   data: {
     id: string;
     status: string;
+    reservationAmount: number | null;
+    estimatedTotal: number | null;
   };
+}
+
+interface RazorpayOrderResponse {
+  success: boolean;
+  sandbox: boolean;
+  message?: string;
+  data: {
+    orderId: string;
+    amount: number;
+    currency: string;
+    keyId: string;
+  };
+}
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => {
+      open: () => void;
+    };
+  }
 }
 
 function localDateKey(date: Date): string {
@@ -140,6 +162,18 @@ export default function BookingRequestPanel({
   const [successMessage, setSuccessMessage] =
     useState("");
 
+  const [razorpayPaying, setRazorpayPaying] =
+    useState(false);
+  const [showSandboxModal, setShowSandboxModal] =
+    useState(false);
+  const [sandboxOrderDetails, setSandboxOrderDetails] =
+    useState<{
+      orderId: string;
+      amount: number;
+      currency: string;
+      bookingId: string;
+    } | null>(null);
+
   const selectedRoomAvailability =
     availability?.availability.roomBooking?.roomTypes.find(
       (roomType) =>
@@ -213,12 +247,56 @@ export default function BookingRequestPanel({
     selectedRoom,
   ]);
 
+  const reservationAmount = useMemo(() => {
+    if (!checkIn || !checkOut) {
+      return null;
+    }
+
+    const nights = Math.max(
+      Math.round(
+        (new Date(`${checkOut}T00:00:00`).getTime() -
+          new Date(`${checkIn}T00:00:00`).getTime()) /
+          (24 * 60 * 60 * 1000)
+      ),
+      0
+    );
+
+    if (nights === 0) {
+      return null;
+    }
+
+    const perNight =
+      bookingMode === "ENTIRE_PROPERTY"
+        ? property.pricing.entireProperty
+            .reservationAmountPerNight
+        : selectedRoom?.pricing
+            .reservationAmountPerNight;
+
+    if (
+      perNight === null ||
+      perNight === undefined
+    ) {
+      return null;
+    }
+
+    return perNight * nights * (bookingMode === "ROOM_WISE" ? Number(rooms || 1) : 1);
+  }, [
+    bookingMode,
+    checkIn,
+    checkOut,
+    property.pricing.entireProperty
+      .reservationAmountPerNight,
+    rooms,
+    selectedRoom,
+  ]);
+
   useEffect(() => {
     if (
       bookingMode === "ROOM_WISE" &&
       !roomTypeId &&
       property.roomTypes[0]
     ) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRoomTypeId(property.roomTypes[0].id);
     }
   }, [
@@ -229,11 +307,24 @@ export default function BookingRequestPanel({
 
   useEffect(() => {
     if (
+      typeof window !== "undefined" &&
+      !window.Razorpay
+    ) {
+      const script =
+        document.createElement("script");
+      script.src =
+        "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (
       !checkIn ||
       !checkOut ||
       checkOut <= checkIn
     ) {
-      setAvailability(null);
       return;
     }
 
@@ -285,6 +376,183 @@ export default function BookingRequestPanel({
     property.publicId,
     rooms,
   ]);
+
+  const handleRazorpayCheckout = async (
+    bookingId: string,
+    amount: number
+  ) => {
+    try {
+      setRazorpayPaying(true);
+      setMessage("");
+      setSuccessMessage("");
+
+      const res = await apiFetch<RazorpayOrderResponse>(
+        `/bookings/${bookingId}/razorpay/order`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({ amount }),
+        }
+      );
+
+      if (res.sandbox) {
+        setSandboxOrderDetails({
+          orderId: res.data.orderId,
+          amount: res.data.amount,
+          currency: res.data.currency,
+          bookingId,
+        });
+        setShowSandboxModal(true);
+        setRazorpayPaying(false);
+        return;
+      }
+
+      if (
+        typeof window.Razorpay !== "function"
+      ) {
+        setMessage(
+          "Payment gateway failed to load. Please refresh and try again."
+        );
+        setRazorpayPaying(false);
+        return;
+      }
+
+      const options = {
+        key: res.data.keyId,
+        amount: res.data.amount,
+        currency: res.data.currency,
+        name: "FarmStayGo",
+        description: `Booking Reservation #${bookingId.slice(-6)}`,
+        order_id: res.data.orderId,
+        handler: async (response: {
+          razorpay_payment_id: string;
+          razorpay_order_id: string;
+          razorpay_signature: string;
+        }) => {
+          try {
+            const verifyRes =
+              await apiFetch<{
+                success: boolean;
+                message: string;
+                data: {
+                  confirmed: boolean;
+                };
+              }>(
+                `/bookings/${bookingId}/razorpay/verify`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type":
+                      "application/json",
+                  },
+                  body: JSON.stringify({
+                    razorpay_order_id:
+                      response.razorpay_order_id,
+                    razorpay_payment_id:
+                      response.razorpay_payment_id,
+                    razorpay_signature:
+                      response.razorpay_signature,
+                    amount,
+                  }),
+                }
+              );
+
+            setSuccessMessage(
+              verifyRes.message ||
+                "Payment completed successfully!"
+            );
+            setMessage("");
+            router.push(
+              `/bookings`
+            );
+          } catch (vErr) {
+            setMessage(
+              vErr instanceof Error
+                ? vErr.message
+                : "Payment verification failed."
+            );
+            setSuccessMessage("");
+          } finally {
+            setRazorpayPaying(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setRazorpayPaying(false);
+          },
+        },
+        theme: { color: "#166534" },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      setMessage(
+        err instanceof Error
+          ? err.message
+          : "Could not initialize payment. Please try again."
+      );
+      setSuccessMessage("");
+      setRazorpayPaying(false);
+    }
+  };
+
+  const confirmSandboxPayment = async () => {
+    if (!sandboxOrderDetails) return;
+
+    try {
+      setRazorpayPaying(true);
+      setShowSandboxModal(false);
+
+      const verifyRes = await apiFetch<{
+        success: boolean;
+        message: string;
+        data: {
+          confirmed: boolean;
+        };
+      }>(
+        `/bookings/${sandboxOrderDetails.bookingId}/razorpay/verify`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            razorpay_order_id:
+              sandboxOrderDetails.orderId,
+            razorpay_payment_id: `pay_sandbox_${Date.now()}`,
+            razorpay_signature: "sandbox_signature",
+            amount: sandboxOrderDetails.amount / 100,
+            sandbox: true,
+          }),
+        }
+      );
+
+      setSuccessMessage(
+        verifyRes.message ||
+          "Sandbox payment recorded successfully!"
+      );
+      setMessage("");
+      router.push(
+        `/bookings`
+      );
+    } catch (err) {
+      setMessage(
+        err instanceof Error
+          ? err.message
+          : "Sandbox payment recording failed."
+      );
+      setSuccessMessage("");
+    } finally {
+      setRazorpayPaying(false);
+      setShowSandboxModal(false);
+      setSandboxOrderDetails(null);
+    }
+  };
 
   const submitBooking = async () => {
     setMessage("");
@@ -338,16 +606,30 @@ export default function BookingRequestPanel({
           }
         );
 
-      setSuccessMessage(
-        response.message ||
-          "Booking request submitted successfully."
-      );
+      const depositAmount =
+        response.data.reservationAmount &&
+        Number(response.data.reservationAmount) > 0
+          ? Number(response.data.reservationAmount)
+          : null;
+
+      if (depositAmount) {
+        await handleRazorpayCheckout(
+          response.data.id,
+          depositAmount
+        );
+      } else {
+        setSuccessMessage(
+          response.message ||
+            "Booking request submitted successfully."
+        );
+      }
     } catch (error) {
       setMessage(
         error instanceof Error
           ? error.message
           : "Unable to submit booking request."
       );
+      setSuccessMessage("");
     } finally {
       setSubmitting(false);
     }
@@ -380,6 +662,16 @@ export default function BookingRequestPanel({
                   )}`}
             </div>
           )}
+
+          {reservationAmount !== null &&
+            reservationAmount > 0 && (
+              <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700">
+                Deposit: {formatPrice(reservationAmount)}
+                <span className="mt-1 block font-semibold text-amber-600">
+                  Required to confirm booking
+                </span>
+              </div>
+            )}
         </div>
 
         <span
@@ -642,6 +934,34 @@ export default function BookingRequestPanel({
               {formatPrice(estimatedTotal)}
             </strong>
           </div>
+
+          {reservationAmount !== null &&
+            reservationAmount > 0 && (
+              <div className="mt-2 flex justify-between gap-3 text-sm">
+                <span className="font-semibold text-amber-700">
+                  Deposit payable now
+                </span>
+                <strong className="text-amber-800">
+                  {formatPrice(reservationAmount)}
+                </strong>
+              </div>
+            )}
+
+          {reservationAmount !== null &&
+            reservationAmount > 0 &&
+            estimatedTotal !== null && (
+              <div className="mt-2 flex justify-between gap-3 text-sm border-t border-ink-100 pt-2">
+                <span className="font-semibold text-ink-500">
+                  Balance after deposit
+                </span>
+                <strong className="text-ink-800">
+                  {formatPrice(
+                    estimatedTotal -
+                      reservationAmount
+                  )}
+                </strong>
+              </div>
+            )}
         </div>
       )}
 
@@ -686,6 +1006,7 @@ export default function BookingRequestPanel({
         type="button"
         disabled={
           submitting ||
+          razorpayPaying ||
           checking ||
           !availability ||
           !modeAvailable
@@ -697,12 +1018,82 @@ export default function BookingRequestPanel({
       >
         {submitting
           ? "Submitting..."
-          : "Request Booking"}
+          : razorpayPaying
+            ? "Opening Payment..."
+            : "Request Booking"}
       </button>
 
       <p className="mt-3 text-center text-xs leading-5 text-ink-500">
         Full address and host contact are shared after a confirmed booking.
+        {reservationAmount !== null &&
+          reservationAmount > 0 && (
+            <span className="mt-1 block font-semibold text-amber-700">
+              A deposit of {formatPrice(reservationAmount)} is required to confirm your booking.
+            </span>
+          )}
       </p>
+
+      {showSandboxModal && sandboxOrderDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between border-b border-ink-100 pb-4">
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-emerald-500 animate-ping" />
+                <h3 className="text-lg font-extrabold text-ink-900">
+                  Razorpay Sandbox Gateway
+                </h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowSandboxModal(false);
+                  setSandboxOrderDetails(null);
+                }}
+                className="text-ink-400 hover:text-ink-700 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mt-4 rounded-xl bg-emerald-50 p-4 border border-emerald-200 text-xs text-emerald-900">
+              <strong>Simulated Payment Environment:</strong> Razorpay API keys are not set in the backend environment. You can simulate a successful Razorpay payment below.
+            </div>
+
+            <div className="mt-5 space-y-2 text-sm text-ink-800">
+              <div className="flex justify-between">
+                <span className="text-ink-500">Order ID:</span>
+                <span className="font-mono text-xs font-bold">{sandboxOrderDetails.orderId}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-ink-500">Amount:</span>
+                <span className="font-extrabold text-emerald-700">{formatPrice(sandboxOrderDetails.amount / 100)}</span>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={confirmSandboxPayment}
+                disabled={razorpayPaying}
+                className="flex h-11 w-full items-center justify-center rounded-xl bg-emerald-700 text-sm font-extrabold text-white shadow transition hover:bg-emerald-800 disabled:opacity-50"
+              >
+                {razorpayPaying ? "Confirming..." : "Simulate Successful Payment (Auto-Confirm)"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSandboxModal(false);
+                  setSandboxOrderDetails(null);
+                  setMessage("Payment was cancelled.");
+                }}
+                className="h-10 w-full rounded-xl border border-ink-200 text-xs font-bold text-ink-600 hover:bg-ink-50"
+              >
+                Cancel Payment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

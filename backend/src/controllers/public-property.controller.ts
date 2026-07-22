@@ -1320,10 +1320,12 @@ const fetchAvailabilityMaps =
               in: propertyIds,
             },
 
-            date: {
-              in:
-                dateRange.nights,
-            },
+            date: dateRange
+              ? {
+                  gte: dateRange.checkIn,
+                  lte: dateRange.checkOut,
+                }
+              : undefined,
           },
 
           select: {
@@ -1341,10 +1343,12 @@ const fetchAvailabilityMaps =
                   in: roomTypeIds,
                 },
 
-                date: {
-                  in:
-                    dateRange.nights,
-                },
+                date: dateRange
+                  ? {
+                      gte: dateRange.checkIn,
+                      lte: dateRange.checkOut,
+                    }
+                  : undefined,
               },
 
               select: {
@@ -2070,6 +2074,11 @@ const mapRoomType = (
 
       unit:
         "PER_ROOM_PER_NIGHT",
+
+      reservationAmountPerNight:
+        toNumber(
+          roomType.reservationAmount
+        ),
     },
 
     images:
@@ -2356,6 +2365,11 @@ const mapPublicPropertyDetail = (
         securityDeposit:
           toNumber(
             property.securityDeposit
+          ),
+
+        reservationAmountPerNight:
+          toNumber(
+            property.reservationAmount
           ),
 
         unit:

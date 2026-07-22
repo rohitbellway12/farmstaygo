@@ -1340,3 +1340,92 @@ export const updatePropertyLocation = async (
     });
   }
 };
+
+export const deleteProperty = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const propertyId =
+      typeof req.params.id === "string"
+        ? req.params.id.trim()
+        : "";
+
+    if (!propertyId) {
+      return res.status(422).json({
+        success: false,
+        message: "Property ID is required",
+      });
+    }
+
+    const property =
+      await prisma.property.findFirst({
+        where: {
+          id: propertyId,
+          vendor: {
+            userId: req.user.id,
+          },
+        },
+        select: {
+          id: true,
+          status: true,
+          title: true,
+        },
+      });
+
+    if (!property) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Property not found or you do not have permission to delete it",
+      });
+    }
+
+    const deletableStatuses: PropertyStatus[] =
+      [
+        "DRAFT",
+        "PENDING_APPROVAL",
+        "INACTIVE",
+      ] as PropertyStatus[];
+
+    if (
+      !deletableStatuses.includes(
+        property.status
+      )
+    ) {
+      return res.status(409).json({
+        success: false,
+        message:
+          `This property cannot be deleted because its current status is "${property.status}". Only draft, pending approval, or inactive properties can be removed.`,
+      });
+    }
+
+    await prisma.property.delete({
+      where: { id: propertyId },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message:
+        `"${property.title}" has been deleted successfully.`,
+    });
+  } catch (error) {
+    console.error(
+      "Delete property error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Unable to delete property. Please try again.",
+    });
+  }
+};

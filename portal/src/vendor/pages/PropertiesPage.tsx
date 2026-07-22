@@ -464,8 +464,10 @@ function PropertyCover({
 
 function PropertyCard({
   property,
+  onDelete,
 }: {
   property: VendorProperty;
+  onDelete?: (propertyId: string) => void;
 }) {
   const completion =
     getPropertyCompletion(property);
@@ -485,6 +487,30 @@ function PropertyCard({
     "REJECTED",
     "INACTIVE",
   ].includes(property.status);
+
+  const canDelete = [
+    "DRAFT",
+    "PENDING_APPROVAL",
+    "INACTIVE",
+  ].includes(property.status);
+
+  const [showDeleteModal, setShowDeleteModal] =
+    useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!onDelete) return;
+
+    try {
+      setDeleting(true);
+      await onDelete(property.id);
+      setShowDeleteModal(false);
+    } catch (error) {
+      // Error is handled by parent
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <article className="group overflow-hidden rounded-dashboard-large border border-border bg-surface shadow-dashboard transition duration-200 hover:-translate-y-0.5 hover:shadow-dashboard-lg">
@@ -642,9 +668,60 @@ function PropertyCard({
         ? "Continue Editing"
         : "View Property"}
     </Link>
+
+    {canDelete && (
+      <button
+        type="button"
+        onClick={() =>
+          setShowDeleteModal(true)
+        }
+        className="inline-flex h-10 shrink-0 items-center justify-center rounded-control border border-red-200 bg-red-50 px-4 text-sm font-bold text-red-700 transition hover:bg-red-100"
+      >
+        Delete
+      </button>
+    )}
   </div>
 </div>
       </div>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <h3 className="text-lg font-extrabold text-ink-900">
+              Delete Property
+            </h3>
+
+            <p className="mt-2 text-sm text-ink-600">
+              Are you sure you want to delete "
+              {property.title}
+              "? This action cannot be undone.
+            </p>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={handleDelete}
+                className="flex h-11 w-full items-center justify-center rounded-xl bg-red-700 text-sm font-extrabold text-white shadow transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {deleting
+                  ? "Deleting..."
+                  : "Yes, Delete Property"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowDeleteModal(false)
+                }
+                className="h-10 w-full rounded-xl border border-ink-200 text-xs font-bold text-ink-600 hover:bg-ink-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </article>
   );
 }
@@ -674,6 +751,42 @@ export default function PropertiesPage() {
 
   const [error, setError] =
     useState("");
+
+  /*
+  |--------------------------------------------------------------------------
+  | Delete Property
+  |--------------------------------------------------------------------------
+  */
+
+  const handleDeleteProperty =
+    useCallback(
+      async (propertyId: string) => {
+        try {
+          await api.delete(
+            `/vendor/properties/${propertyId}`
+          );
+
+          setProperties(
+            (previous) =>
+              previous.filter(
+                (property) =>
+                  property.id !==
+                  propertyId
+              )
+          );
+        } catch (requestError) {
+          const message =
+            getErrorMessage(
+              requestError
+            );
+
+          setError(message);
+
+          throw requestError;
+        }
+      },
+      []
+    );
 
   /*
   |--------------------------------------------------------------------------
@@ -982,6 +1095,7 @@ export default function PropertiesPage() {
                 <PropertyCard
                   key={property.id}
                   property={property}
+                  onDelete={handleDeleteProperty}
                 />
               )
             )}

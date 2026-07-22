@@ -79,6 +79,10 @@ interface PropertyDetails {
     | string
     | number
     | null;
+  reservationAmount:
+    | string
+    | number
+    | null;
 
   checkInTime: string | null;
   checkOutTime: string | null;
@@ -101,6 +105,7 @@ interface PricingFormState {
   weekendPrice: string;
   cleaningFee: string;
   securityDeposit: string;
+  reservationAmount: string;
   checkInTime: string;
   checkOutTime: string;
   minimumStay: string;
@@ -204,6 +209,7 @@ const emptyPricingForm: PricingFormState =
     weekendPrice: "",
     cleaningFee: "",
     securityDeposit: "",
+    reservationAmount: "",
     checkInTime: "14:00",
     checkOutTime: "11:00",
     minimumStay: "1",
@@ -461,6 +467,14 @@ export default function PropertyFinalSteps({
               )
             : "",
 
+        reservationAmount:
+          loadedProperty.reservationAmount !==
+          null
+            ? String(
+                loadedProperty.reservationAmount
+              )
+            : "",
+
         checkInTime:
           loadedProperty.checkInTime ||
           "14:00",
@@ -560,22 +574,28 @@ export default function PropertyFinalSteps({
   const validatePricing = (): boolean => {
     const errors: PricingErrors = {};
 
-    if (
-      !pricingForm.basePrice ||
-      Number(pricingForm.basePrice) <= 0
-    ) {
-      errors.basePrice =
-        "Please enter a base price greater than zero.";
+    const isRoomWise = property?.bookingType === "ROOM_WISE";
+
+    if (!isRoomWise) {
+      if (
+        !pricingForm.basePrice ||
+        Number(pricingForm.basePrice) <= 0
+      ) {
+        errors.basePrice =
+          "Please enter a base price greater than zero for full property booking.";
+      }
     }
 
     const optionalMoneyFields: Array<
       | "weekendPrice"
       | "cleaningFee"
       | "securityDeposit"
+      | "reservationAmount"
     > = [
       "weekendPrice",
       "cleaningFee",
       "securityDeposit",
+      "reservationAmount",
     ];
 
     optionalMoneyFields.forEach((field) => {
@@ -587,6 +607,15 @@ export default function PropertyFinalSteps({
           "Amount cannot be negative.";
       }
     });
+
+    if (
+      pricingForm.reservationAmount &&
+      pricingForm.basePrice &&
+      Number(pricingForm.reservationAmount) > Number(pricingForm.basePrice)
+    ) {
+      errors.reservationAmount =
+        "Deposit amount cannot be greater than base price.";
+    }
 
     if (!pricingForm.checkInTime) {
       errors.checkInTime =
@@ -699,9 +728,10 @@ export default function PropertyFinalSteps({
         >(
           `/vendor/properties/${propertyId}/pricing`,
           {
-            basePrice: Number(
+            basePrice:
               pricingForm.basePrice
-            ),
+                ? Number(pricingForm.basePrice)
+                : null,
 
             weekendPrice:
               pricingForm.weekendPrice
@@ -721,6 +751,13 @@ export default function PropertyFinalSteps({
               pricingForm.securityDeposit
                 ? Number(
                     pricingForm.securityDeposit
+                  )
+                : null,
+
+            reservationAmount:
+              pricingForm.reservationAmount
+                ? Number(
+                    pricingForm.reservationAmount
                   )
                 : null,
 
@@ -1127,95 +1164,118 @@ export default function PropertyFinalSteps({
               Full Stay Rates and Charges
             </h2>
 
-            <p className="mt-1 text-sm leading-6 text-text-muted">
-              These prices are used when guests book the complete
-              property. Room-wise prices are managed separately in
-              Room Inventory.
-            </p>
+            {property?.bookingType === "ROOM_WISE" ? (
+              <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-blue-900">
+                <p className="text-xs font-bold uppercase tracking-wider text-blue-800">
+                  💡 Room-Wise Booking Model
+                </p>
+                <p className="mt-1 text-sm leading-6">
+                  Guests book <strong>individual rooms</strong> for this property. Full-stay property pricing is <strong>not required</strong>. Room rates, weekend rates, and deposit amounts are set per room in{" "}
+                  <strong>Room Inventory</strong>.
+                </p>
+              </div>
+            ) : property?.bookingType === "BOTH" ? (
+              <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
+                <p className="text-xs font-bold uppercase tracking-wider text-amber-800">
+                  ℹ️ Both — Full Property &amp; Room-Wise
+                </p>
+                <p className="mt-1 text-sm leading-6">
+                  Guests can book the <strong>entire property</strong> or <strong>individual rooms</strong>. Set full-property rates below, and set room-level rates under <strong>Room Inventory</strong>.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">
+                  🏡 Entire Property Booking
+                </p>
+                <p className="mt-1 text-sm leading-6">
+                  Guests book the <strong>complete property</strong> privately. Set full-stay night rates, cleaning fee, security deposit, and the online advance booking deposit below.
+                </p>
+              </div>
+            )}
 
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
-              {[
-                {
-                  field:
-                    "basePrice" as const,
-                  label:
-                    "Full Stay Base Price Per Night",
-                  required: true,
-                },
-                {
-                  field:
-                    "weekendPrice" as const,
-                  label:
-                    "Full Stay Weekend Price Per Night",
-                  required: false,
-                },
-                {
-                  field:
-                    "cleaningFee" as const,
-                  label: "Cleaning Fee",
-                  required: false,
-                },
-                {
-                  field:
-                    "securityDeposit" as const,
-                  label:
-                    "Security Deposit",
-                  required: false,
-                },
-              ].map((item) => (
-                <label
-                  key={item.field}
-                  className="block"
-                >
-                  <span className="mb-2 block text-sm font-bold text-text-secondary">
-                    {item.label}
-
-                    {item.required && (
-                      <span className="text-red-500">
-                        {" "}
-                        *
-                      </span>
-                    )}
-                  </span>
-
-                  <div className="relative">
-                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-bold text-text-muted">
-                      Rs.
+            {/* Full-stay price fields — shown for ENTIRE_PROPERTY and BOTH, hidden for pure ROOM_WISE */}
+            {property?.bookingType !== "ROOM_WISE" && (
+              <div className="mt-6 grid gap-5 sm:grid-cols-2">
+                {[
+                  {
+                    field: "basePrice" as const,
+                    label: "Full Stay Base Price Per Night",
+                    subtext: "Required — base rate guests pay per night when booking the full property.",
+                    required: true,
+                  },
+                  {
+                    field: "weekendPrice" as const,
+                    label: "Full Stay Weekend Price Per Night",
+                    subtext: "Optional — higher rate applied on Friday & Saturday nights.",
+                    required: false,
+                  },
+                  {
+                    field: "cleaningFee" as const,
+                    label: "Cleaning Fee",
+                    subtext: "Optional — one-time cleaning charge added to the booking total.",
+                    required: false,
+                  },
+                  {
+                    field: "securityDeposit" as const,
+                    label: "Security Deposit (Refundable)",
+                    subtext: "Optional — refundable amount held against damage, returned after checkout.",
+                    required: false,
+                  },
+                  {
+                    field: "reservationAmount" as const,
+                    label: "Advance Booking Deposit (via Razorpay)",
+                    subtext: "Optional — minimum advance payment required online to confirm the booking.",
+                    required: false,
+                  },
+                ].map((item) => (
+                  <label
+                    key={item.field}
+                    className="block"
+                  >
+                    <span className="mb-1 block text-sm font-bold text-text-secondary">
+                      {item.label}
+                      {item.required && (
+                        <span className="text-red-500">
+                          {" "}
+                          *
+                        </span>
+                      )}
                     </span>
 
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={
-                        pricingForm[
-                          item.field
-                        ]
-                      }
-                      disabled={
-                        editingBlocked
-                      }
-                      onChange={(event) =>
-                        updatePricingForm(
-                          item.field,
-                          event.target.value
-                        )
-                      }
-                      placeholder="0.00"
-                      className="h-12 w-full rounded-control border border-border bg-surface pl-9 pr-4 text-base text-text-main outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-                    />
-                  </div>
+                    <p className="mb-2 text-xs leading-4 text-text-muted">
+                      {item.subtext}
+                    </p>
 
-                  <FieldError
-                    message={
-                      pricingErrors[
-                        item.field
-                      ]
-                    }
-                  />
-                </label>
-              ))}
-            </div>
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-bold text-text-muted">
+                        Rs.
+                      </span>
+
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={pricingForm[item.field]}
+                        disabled={editingBlocked}
+                        onChange={(event) =>
+                          updatePricingForm(
+                            item.field,
+                            event.target.value
+                          )
+                        }
+                        placeholder="0.00"
+                        className="h-12 w-full rounded-control border border-border bg-surface pl-9 pr-4 text-base text-text-main outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                      />
+                    </div>
+
+                    <FieldError
+                      message={pricingErrors[item.field]}
+                    />
+                  </label>
+                ))}
+              </div>
+            )}
           </section>
 
           {property &&

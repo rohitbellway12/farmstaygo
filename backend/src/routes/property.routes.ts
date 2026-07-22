@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   createPropertyDraft,
+  deleteProperty,
   getVendorProperties,
   getVendorPropertyById,
   updatePropertyBasicInfo,
@@ -259,6 +260,18 @@ vendorPropertyRoutes.post(
   "/:id/submit",
   requireApprovedVendorKyc,
   submitPropertyForApproval
+);
+
+/*
+|--------------------------------------------------------------------------
+| Delete Property
+|--------------------------------------------------------------------------
+*/
+
+vendorPropertyRoutes.delete(
+  "/:id",
+  requireApprovedVendorKyc,
+  deleteProperty
 );
 
 export {

@@ -87,3 +87,8 @@ export type Wishlist = Prisma.WishlistModel
  * 
  */
 export type Booking = Prisma.BookingModel
+/**
+ * Model Payment
+ * 
+ */
+export type Payment = Prisma.PaymentModel

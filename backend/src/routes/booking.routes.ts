@@ -1,11 +1,21 @@
 import { Router } from "express";
 
 import {
+  acceptBooking,
   createBookingRequest,
   getAdminBookings,
+  getBookingPayments,
   getMyBookings,
   getVendorBookings,
+  recordPayment,
+  rejectBooking,
 } from "../controllers/booking.controller.js";
+
+import {
+  createRazorpayOrder,
+  verifyRazorpayPayment,
+  getRazorpayStatus,
+} from "../controllers/payment-gateway.controller.js";
 
 import {
   authenticate,
@@ -31,11 +41,62 @@ bookingRoutes.post(
   createBookingRequest
 );
 
+bookingRoutes.get(
+  "/:id/payments",
+  authenticate,
+  getBookingPayments
+);
+
+bookingRoutes.post(
+  "/:id/payments",
+  authenticate,
+  recordPayment
+);
+
+// Razorpay payment gateway routes
+bookingRoutes.get(
+  "/razorpay/status",
+  getRazorpayStatus
+);
+
+bookingRoutes.post(
+  "/:id/razorpay/order",
+  authenticate,
+  createRazorpayOrder
+);
+
+bookingRoutes.post(
+  "/:id/razorpay/verify",
+  authenticate,
+  verifyRazorpayPayment
+);
+
 vendorBookingRoutes.get(
   "/",
   authenticate,
   allowRoles("VENDOR"),
   getVendorBookings
+);
+
+vendorBookingRoutes.post(
+  "/:id/accept",
+  authenticate,
+  allowRoles("VENDOR"),
+  acceptBooking
+);
+
+vendorBookingRoutes.post(
+  "/:id/reject",
+  authenticate,
+  allowRoles("VENDOR"),
+  rejectBooking
+);
+
+vendorBookingRoutes.post(
+  "/:id/payments",
+  authenticate,
+  allowRoles("VENDOR"),
+  recordPayment
 );
 
 adminBookingRoutes.get(
