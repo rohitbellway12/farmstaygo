@@ -10,6 +10,7 @@
  */
 export type * from './models/User.js'
 export type * from './models/Vendor.js'
+export type * from './models/VendorCommission.js'
 export type * from './models/PropertyCategory.js'
 export type * from './models/Amenity.js'
 export type * from './models/Property.js'

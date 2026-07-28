@@ -53,6 +53,7 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   Vendor: 'Vendor',
+  VendorCommission: 'VendorCommission',
   PropertyCategory: 'PropertyCategory',
   Amenity: 'Amenity',
   Property: 'Property',
@@ -121,11 +122,30 @@ export const VendorScalarFieldEnum = {
   kycReviewedAt: 'kycReviewedAt',
   kycRejectionReason: 'kycRejectionReason',
   commissionRate: 'commissionRate',
+  totalEarnings: 'totalEarnings',
+  totalCommission: 'totalCommission',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type VendorScalarFieldEnum = (typeof VendorScalarFieldEnum)[keyof typeof VendorScalarFieldEnum]
+
+
+export const VendorCommissionScalarFieldEnum = {
+  id: 'id',
+  vendorId: 'vendorId',
+  bookingId: 'bookingId',
+  bookingAmount: 'bookingAmount',
+  commissionRate: 'commissionRate',
+  commissionAmount: 'commissionAmount',
+  vendorEarning: 'vendorEarning',
+  status: 'status',
+  paidAt: 'paidAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VendorCommissionScalarFieldEnum = (typeof VendorCommissionScalarFieldEnum)[keyof typeof VendorCommissionScalarFieldEnum]
 
 
 export const PropertyCategoryScalarFieldEnum = {
@@ -331,6 +351,8 @@ export const BookingScalarFieldEnum = {
   specialRequest: 'specialRequest',
   reservationAmount: 'reservationAmount',
   paymentStatus: 'paymentStatus',
+  adminCommission: 'adminCommission',
+  vendorCommission: 'vendorCommission',
   acceptedAt: 'acceptedAt',
   rejectedAt: 'rejectedAt',
   createdAt: 'createdAt',

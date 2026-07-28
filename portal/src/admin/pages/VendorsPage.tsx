@@ -401,10 +401,77 @@ function RejectVendorModal({ open, onClose, vendor, onRejected }: { open: boolea
         </form>
       </div>
     </div>
-  );
-}
+   );
+ }
 
-function DetailItem({ label, value }: { label: string; value?: string | number | null }) {
+ function CommissionModal({ open, onClose, vendor, onUpdated }: { open: boolean; onClose: () => void; vendor: AdminVendor | null; onUpdated: () => void }) {
+   const [commissionRate, setCommissionRate] = useState("");
+   const [submitting, setSubmitting] = useState(false);
+   const [error, setError] = useState("");
+
+   useEffect(() => {
+     if (open && vendor) {
+       setCommissionRate(vendor.commissionRate != null ? String(vendor.commissionRate) : "");
+       setError("");
+     }
+   }, [open, vendor]);
+
+   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+     event.preventDefault();
+     if (!vendor) return;
+     setError("");
+     const value = Number(commissionRate);
+     if (!Number.isFinite(value) || value < 0 || value > 100) {
+       setError("Commission rate must be between 0 and 100");
+       return;
+     }
+     setSubmitting(true);
+     try {
+       await api.patch(`/admin/vendors/${vendor.id}/commission`, { commissionRate: value });
+       setError("");
+       onUpdated();
+       onClose();
+     } catch (requestError) {
+       if (axios.isAxiosError<ApiErrorResponse>(requestError)) {
+         setError(requestError.response?.data?.message || "Unable to update commission");
+       } else {
+         setError("Something went wrong. Please try again.");
+       }
+     } finally {
+       setSubmitting(false);
+     }
+   };
+
+   if (!open || !vendor) return null;
+
+   return (
+     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+       <div className="w-full max-w-md rounded-3xl border border-border bg-surface shadow-dashboard-dropdown">
+         <div className="flex items-center justify-between border-b border-border p-5">
+           <div>
+             <h2 className="text-lg font-extrabold text-text-main">Set Vendor Commission</h2>
+             <p className="mt-1 text-sm text-text-muted">{getVendorName(vendor)}</p>
+           </div>
+           <button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center rounded-lg border border-border text-text-secondary transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"><CloseIcon /></button>
+         </div>
+         {error && <div className="m-5 rounded-xl border border-danger/20 bg-danger-soft px-4 py-3 text-sm font-semibold text-danger">{error}</div>}
+         <form onSubmit={handleSubmit} className="space-y-4 p-5">
+           <div>
+             <label htmlFor="vendor-commissionRate" className="mb-2 block text-sm font-semibold text-text-secondary">Commission Rate (%) <span className="text-danger">*</span></label>
+             <input id="vendor-commissionRate" type="number" min="0" max="100" step="0.01" value={commissionRate} onChange={(e) => setCommissionRate(e.target.value)} placeholder="e.g. 10.5" required className="h-11 w-full rounded-control border border-border bg-white px-4 text-sm text-text-main outline-none placeholder:text-text-soft focus:border-primary-400 focus:ring-4 focus:ring-primary-100" />
+             <p className="mt-1 text-xs text-text-muted">Admin commission percentage from each booking. Vendor will receive the remaining amount.</p>
+           </div>
+           <div className="flex items-center justify-end gap-3 pt-2">
+             <button type="button" onClick={onClose} className="h-11 rounded-control border border-border bg-surface px-5 text-sm font-bold text-text-secondary transition hover:bg-surface-muted">Cancel</button>
+             <button type="submit" disabled={submitting} className="inline-flex h-11 items-center justify-center gap-2 rounded-control bg-primary-700 px-5 text-sm font-bold text-white transition hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-600/20 disabled:cursor-not-allowed disabled:opacity-60">{submitting ? "Saving..." : "Save Commission"}</button>
+           </div>
+         </form>
+       </div>
+     </div>
+   );
+ }
+
+ function DetailItem({ label, value }: { label: string; value?: string | number | null }) {
   return (
     <div className="rounded-control border border-border bg-surface-soft p-3">
       <span className="block text-xs font-bold uppercase tracking-wide text-text-muted">{label}</span>
@@ -500,6 +567,7 @@ export default function VendorsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<AdminVendor | null>(null);
   const [viewTarget, setViewTarget] = useState<AdminVendor | null>(null);
+  const [commissionTarget, setCommissionTarget] = useState<AdminVendor | null>(null);
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
 
   const loadVendors = useCallback(async () => {
@@ -587,26 +655,30 @@ export default function VendorsPage() {
     }
   };
 
-  const handleDeleteVendor = async (vendor: AdminVendor) => {
-    const confirmed = window.confirm(
-      `Delete ${getVendorName(vendor)} permanently? This will remove the vendor account and related vendor data.`
-    );
+   const handleDeleteVendor = async (vendor: AdminVendor) => {
+     const confirmed = window.confirm(
+       `Delete ${getVendorName(vendor)} permanently? This will remove the vendor account and related vendor data.`
+     );
 
-    if (!confirmed) return;
+     if (!confirmed) return;
 
-    try {
-      setActionLoadingId(vendor.id);
-      await api.delete(`/admin/vendors/${vendor.id}`);
-      setToast({ type: "success", message: "Vendor deleted successfully" });
-      await loadVendors();
-    } catch (error) {
-      setToast({ type: "error", message: getApiErrorMessage(error, "Unable to delete vendor") });
-    } finally {
-      setActionLoadingId(null);
-    }
-  };
+     try {
+       setActionLoadingId(vendor.id);
+       await api.delete(`/admin/vendors/${vendor.id}`);
+       setToast({ type: "success", message: "Vendor deleted successfully" });
+       await loadVendors();
+     } catch (error) {
+       setToast({ type: "error", message: getApiErrorMessage(error, "Unable to delete vendor") });
+     } finally {
+       setActionLoadingId(null);
+     }
+   };
 
-  const clearFilters = () => { setSearch(""); setStatusFilter("ALL"); };
+   const handleOpenCommission = (vendor: AdminVendor) => setCommissionTarget(vendor);
+   const handleCloseCommission = () => setCommissionTarget(null);
+   const handleCommissionUpdated = async () => { setCommissionTarget(null); await loadVendors(); };
+
+   const clearFilters = () => { setSearch(""); setStatusFilter("ALL"); };
 
   return (
     <div className="space-y-5">
@@ -621,6 +693,7 @@ export default function VendorsPage() {
       <CreateVendorModal open={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onCreated={loadVendors} />
       <RejectVendorModal open={!!rejectTarget} onClose={handleRejectClose} vendor={rejectTarget} onRejected={handleRejected} />
       <ViewKycModal open={!!viewTarget} onClose={() => setViewTarget(null)} vendor={viewTarget} />
+      <CommissionModal open={!!commissionTarget} onClose={handleCloseCommission} vendor={commissionTarget} onUpdated={handleCommissionUpdated} />
 
       <section className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <div className="flex items-center gap-3">
@@ -722,6 +795,9 @@ export default function VendorsPage() {
                         <button type="button" onClick={() => setViewTarget(vendor)} className="inline-flex h-9 items-center justify-center gap-2 rounded-control border border-info/30 bg-info-soft px-3 text-xs font-bold text-info transition hover:bg-info/10">
                           <EyeIcon /> View
                         </button>
+                        <button type="button" onClick={() => handleOpenCommission(vendor)} className="inline-flex h-9 items-center justify-center gap-2 rounded-control border border-primary-300 bg-primary-50 px-3 text-xs font-bold text-primary-700 transition hover:bg-primary-100">
+                          Commission
+                        </button>
                         {canApprove(vendor) && (
                           <button type="button" onClick={() => void handleApprove(vendor)} disabled={actionLoadingId === vendor.id} className="inline-flex h-9 items-center justify-center gap-2 rounded-control bg-success px-3 text-xs font-bold text-white transition hover:bg-success/90 disabled:cursor-not-allowed disabled:opacity-60">
                             <span className={actionLoadingId === vendor.id ? "animate-spin" : ""}><CheckIcon /></span> Approve
@@ -780,6 +856,7 @@ export default function VendorsPage() {
                   </div>
                   <div className="flex flex-col gap-2">
                   <button type="button" onClick={() => setViewTarget(vendor)} className="inline-flex h-9 items-center justify-center gap-1 rounded-control border border-info/30 bg-info-soft px-3 text-xs font-bold text-info"><EyeIcon /> View</button>
+                  <button type="button" onClick={() => handleOpenCommission(vendor)} className="inline-flex h-9 items-center justify-center gap-1 rounded-control border border-primary-300 bg-primary-50 px-3 text-xs font-bold text-primary-700">Commission</button>
                   {(canApprove(vendor) || canReject(vendor)) && (
                     <div className="flex gap-2">
                       {canApprove(vendor) && (

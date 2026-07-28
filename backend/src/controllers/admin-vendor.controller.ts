@@ -9,10 +9,14 @@ import type {
 
 import prisma from "../config/database.js";
 
-import type {
+import {
   KycStatus,
   Prisma,
 } from "../generated/prisma/client.js";
+
+import {
+  CommissionStatus,
+} from "../generated/prisma/enums.js";
 
 /*
 |--------------------------------------------------------------------------
@@ -822,3 +826,503 @@ export const rejectAdminVendor = async (
     });
   }
 };
+
+/*
+|--------------------------------------------------------------------------
+| Admin: Update Vendor Commission Rate
+|--------------------------------------------------------------------------
+|
+| PATCH /api/admin/vendors/:id/commission
+|
+| Request body:
+| {
+|   "commissionRate": "15.5"
+| }
+|
+*/
+
+export const updateVendorCommission =
+  async (
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<Response> => {
+    try {
+      const vendorId =
+        typeof req.params.id ===
+        "string"
+          ? req.params.id.trim()
+          : "";
+
+      const commissionRate =
+        typeof req.body.commissionRate ===
+        "number"
+          ? req.body.commissionRate
+          : Number(
+              req.body.commissionRate
+            );
+
+      if (
+        !vendorId ||
+        !Number.isFinite(
+          commissionRate
+        ) ||
+        commissionRate < 0 ||
+        commissionRate > 100
+      ) {
+        return res.status(422).json({
+          success: false,
+          message:
+            "Valid vendor ID and commission rate (0-100) are required",
+        });
+      }
+
+      const vendorIdNumber =
+        typeof vendorId === "string"
+          ? Number(vendorId)
+          : vendorId;
+
+      const vendor =
+        await prisma.vendor.findFirst({
+          where: { id: vendorIdNumber },
+        });
+
+      if (!vendor) {
+        return res.status(404).json({
+          success: false,
+          message:
+            "Vendor not found",
+        });
+      }
+
+      const updatedVendor =
+        await prisma.vendor.update({
+          where: { id: vendorIdNumber },
+          data: {
+            commissionRate: new Prisma.Decimal(
+              commissionRate
+            ),
+          },
+          select: {
+            id: true,
+            businessName: true,
+            commissionRate: true,
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        });
+
+      return res.status(200).json({
+        success: true,
+        message:
+          "Commission rate updated successfully",
+        data: updatedVendor,
+      });
+    } catch (error) {
+      console.error(
+        "Update vendor commission error:",
+        error
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Unable to update commission rate",
+      });
+    }
+  };
+
+/*
+|--------------------------------------------------------------------------
+| Admin: Get Vendor Commission History
+|--------------------------------------------------------------------------
+|
+| GET /api/admin/vendors/:id/commissions
+|
+| Optional query parameters:
+|
+| ?status=PENDING
+| ?status=PAID
+| ?status=CANCELLED
+|
+*/
+
+export const getVendorCommissions =
+  async (
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<Response> => {
+    try {
+      const vendorId =
+        typeof req.params.id ===
+        "string"
+          ? req.params.id.trim()
+          : "";
+
+      const requestedStatus =
+        typeof req.query.status ===
+        "string"
+          ? req.query.status
+              .trim()
+              .toUpperCase()
+          : "ALL";
+
+      if (!vendorId) {
+        return res.status(422).json({
+          success: false,
+          message:
+            "Vendor ID is required",
+        });
+      }
+
+      const vendorIdNumber =
+        typeof vendorId === "string"
+          ? Number(vendorId)
+          : vendorId;
+
+      const where: Prisma.VendorCommissionWhereInput =
+        {
+          vendorId: vendorIdNumber,
+        };
+
+      if (requestedStatus !== "ALL") {
+        where.status =
+          requestedStatus as CommissionStatus;
+      }
+
+      const commissions =
+        await prisma.vendorCommission.findMany({
+          where,
+          orderBy: {
+            createdAt: "desc",
+          },
+          include: {
+            booking: {
+              select: {
+                id: true,
+                checkIn: true,
+                checkOut: true,
+                estimatedTotal: true,
+                guestName: true,
+                guestEmail: true,
+                property: {
+                  select: {
+                    id: true,
+                    title: true,
+                    city: true,
+                    state: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+      const summary =
+        await prisma.vendorCommission.aggregate(
+          {
+            where,
+            _sum: {
+              bookingAmount: true,
+              commissionAmount: true,
+              vendorEarning: true,
+            },
+            _count: {
+              id: true,
+            },
+          }
+        );
+
+      return res.status(200).json({
+        success: true,
+        message:
+          "Vendor commissions fetched successfully",
+        data: commissions,
+        summary: {
+          totalCommissions:
+            summary._count.id || 0,
+          totalBookingAmount:
+            summary._sum.bookingAmount
+              ? Number(
+                  summary._sum.bookingAmount
+                )
+              : 0,
+          totalCommissionAmount:
+            summary._sum.commissionAmount
+              ? Number(
+                  summary._sum.commissionAmount
+                )
+              : 0,
+          totalVendorEarning:
+            summary._sum.vendorEarning
+              ? Number(
+                  summary._sum.vendorEarning
+                )
+              : 0,
+        },
+      });
+    } catch (error) {
+      console.error(
+        "Get vendor commissions error:",
+        error
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Unable to fetch vendor commissions",
+      });
+    }
+  };
+
+/*
+|--------------------------------------------------------------------------
+| Admin: Get All Commissions Across Vendors
+|--------------------------------------------------------------------------
+|
+| GET /api/admin/vendors/commissions
+|
+| Optional query parameters:
+|
+| ?status=PENDING
+| ?status=PAID
+| ?status=CANCELLED
+|
+*/
+
+export const getAllCommissions =
+  async (
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<Response> => {
+    try {
+      const requestedStatus =
+        typeof req.query.status ===
+        "string"
+          ? req.query.status
+              .trim()
+              .toUpperCase()
+          : "ALL";
+
+      const where: Prisma.VendorCommissionWhereInput =
+        {};
+
+      if (requestedStatus !== "ALL") {
+        where.status =
+          requestedStatus as CommissionStatus;
+      }
+
+      const commissions =
+        await prisma.vendorCommission.findMany({
+          where,
+          orderBy: {
+            createdAt: "desc",
+          },
+          include: {
+            vendor: {
+              select: {
+                id: true,
+                businessName: true,
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+            booking: {
+              select: {
+                id: true,
+                checkIn: true,
+                checkOut: true,
+                estimatedTotal: true,
+                guestName: true,
+                guestEmail: true,
+                property: {
+                  select: {
+                    id: true,
+                    title: true,
+                    city: true,
+                    state: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+      const summary =
+        await prisma.vendorCommission.aggregate(
+          {
+            where,
+            _sum: {
+              bookingAmount: true,
+              commissionAmount: true,
+              vendorEarning: true,
+            },
+            _count: {
+              id: true,
+            },
+          }
+        );
+
+      return res.status(200).json({
+        success: true,
+        message:
+          "Commissions fetched successfully",
+        data: commissions,
+        summary: {
+          totalCommissions:
+            summary._count.id || 0,
+          totalBookingAmount:
+            summary._sum.bookingAmount
+              ? Number(
+                  summary._sum.bookingAmount
+                )
+              : 0,
+          totalCommissionAmount:
+            summary._sum.commissionAmount
+              ? Number(
+                  summary._sum.commissionAmount
+                )
+              : 0,
+          totalVendorEarning:
+            summary._sum.vendorEarning
+              ? Number(
+                  summary._sum.vendorEarning
+                )
+              : 0,
+        },
+      });
+    } catch (error) {
+      console.error(
+        "Get all commissions error:",
+        error
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Unable to fetch commissions",
+      });
+    }
+  };
+
+/*
+|--------------------------------------------------------------------------
+| Admin: Mark Commission as Paid
+|--------------------------------------------------------------------------
+|
+| PATCH /api/admin/commissions/:id/pay
+|
+*/
+
+export const payVendorCommission =
+  async (
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<Response> => {
+    try {
+      const commissionId =
+        typeof req.params.id ===
+        "string"
+          ? req.params.id.trim()
+          : "";
+
+      if (!commissionId) {
+        return res.status(422).json({
+          success: false,
+          message:
+            "Commission ID is required",
+        });
+      }
+
+      const commission =
+        await prisma.vendorCommission.findFirst({
+          where: { id: commissionId },
+        });
+
+      if (!commission) {
+        return res.status(404).json({
+          success: false,
+          message:
+            "Commission record not found",
+        });
+      }
+
+      if (
+        commission.status ===
+        CommissionStatus.PAID
+      ) {
+        return res.status(409).json({
+          success: false,
+          message:
+            "This commission has already been paid",
+        });
+      }
+
+      const updatedCommission =
+        await prisma.vendorCommission.update(
+          {
+            where: { id: commissionId },
+            data: {
+              status:
+                CommissionStatus.PAID,
+              paidAt: new Date(),
+            },
+            include: {
+              vendor: {
+                select: {
+                  businessName: true,
+                  user: {
+                    select: {
+                      firstName: true,
+                      lastName: true,
+                      email: true,
+                    },
+                  },
+                },
+              },
+              booking: {
+                select: {
+                  id: true,
+                  checkIn: true,
+                  checkOut: true,
+                  estimatedTotal: true,
+                  guestName: true,
+                  property: {
+                    select: {
+                      title: true,
+                    },
+                  },
+                },
+              },
+            },
+          }
+        );
+
+      return res.status(200).json({
+        success: true,
+        message:
+          "Commission marked as paid successfully",
+        data: updatedCommission,
+      });
+    } catch (error) {
+      console.error(
+        "Pay vendor commission error:",
+        error
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Unable to process commission payment",
+      });
+    }
+  };

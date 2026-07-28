@@ -1,4 +1,5 @@
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 import BookingsView from "../../shared/components/BookingsView";
 
@@ -35,16 +36,39 @@ export default function VendorBookingsPage() {
   };
 
   return (
-    <BookingsView
-      endpoint="/vendor/bookings"
-      title="Bookings"
-      description="Manage booking requests received for your properties."
-      showVendor={false}
-      allowActions
-      allowCashPayment
-      onAccept={handleAccept}
-      onReject={handleReject}
-      onPay={handlePay}
-    />
+    <div className="space-y-5">
+      <section className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+        <div className="flex items-center gap-3">
+          <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary-50 text-primary-700">
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+            </svg>
+          </span>
+          <div>
+            <h1 className="text-2xl font-extrabold text-text-main">Bookings</h1>
+            <p className="mt-1 text-sm text-text-muted">Manage booking requests received for your properties.</p>
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <Link to="/vendor/earnings" className="inline-flex h-11 items-center justify-center gap-2 rounded-control border border-success/30 bg-success-soft px-5 text-sm font-bold text-success transition hover:bg-success/10">
+            View Earnings
+          </Link>
+          <Link to="/vendor/payouts" className="inline-flex h-11 items-center justify-center gap-2 rounded-control border border-primary-300 bg-primary-50 px-5 text-sm font-bold text-primary-700 transition hover:bg-primary-100">
+            View Payouts
+          </Link>
+        </div>
+      </section>
+      <BookingsView
+        endpoint="/vendor/bookings"
+        title=""
+        description=""
+        showVendor={false}
+        allowActions
+        allowCashPayment
+        onAccept={handleAccept}
+        onReject={handleReject}
+        onPay={handlePay}
+      />
+    </div>
   );
 }

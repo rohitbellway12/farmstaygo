@@ -29,6 +29,10 @@ import {
 } from "./vendor-kyc.routes.js";
 
 import {
+  vendorEarningsRoutes,
+} from "./vendor-earnings.routes.js";
+
+import {
   wishlistRoutes,
 } from "./wishlist.routes.js";
 
@@ -216,6 +220,17 @@ router.use(
 router.use(
   "/vendor/kyc",
   vendorKycRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
+| Vendor Earnings Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/vendor",
+  vendorEarningsRoutes
 );
 
 /*

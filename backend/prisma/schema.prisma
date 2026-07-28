@@ -68,13 +68,43 @@ model Vendor {
   kycReviewedAt      DateTime? @map("kyc_reviewed_at")
   kycRejectionReason String?   @map("kyc_rejection_reason")
   commissionRate     Decimal?  @map("commission_rate") @db.Decimal(5, 2)
+  totalEarnings      Decimal?  @default(0) @map("total_earnings") @db.Decimal(12, 2)
+  totalCommission    Decimal?  @default(0) @map("total_commission") @db.Decimal(12, 2)
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("updated_at")
 
   user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   properties Property[]
+  commissions VendorCommission[]
 
   @@map("vendors")
+}
+
+model VendorCommission {
+  id              String    @id @default(cuid())
+  vendorId        Int       @map("vendor_id")
+  bookingId       String    @map("booking_id")
+  bookingAmount   Decimal   @db.Decimal(12, 2) @map("booking_amount")
+  commissionRate  Decimal   @db.Decimal(5, 2) @map("commission_rate")
+  commissionAmount Decimal  @db.Decimal(12, 2) @map("commission_amount")
+  vendorEarning   Decimal   @db.Decimal(12, 2) @map("vendor_earning")
+  status          CommissionStatus @default(PENDING) @map("status")
+  paidAt          DateTime? @map("paid_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  vendor  Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  booking Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId, status])
+  @@index([bookingId])
+  @@map("vendor_commissions")
+}
+
+enum CommissionStatus {
+  PENDING
+  PAID
+  CANCELLED
 }
 
 model PropertyCategory {
@@ -595,6 +625,8 @@ model Booking {
   specialRequest String?      @map("special_request")
   reservationAmount Decimal?  @db.Decimal(12, 2) @map("reservation_amount")
   paymentStatus  String       @default("PENDING") @map("payment_status")
+  adminCommission Decimal?   @map("admin_commission") @db.Decimal(12, 2)
+  vendorCommission Decimal?  @map("vendor_commission") @db.Decimal(12, 2)
   acceptedAt     DateTime?    @map("accepted_at")
   rejectedAt     DateTime?    @map("rejected_at")
   createdAt      DateTime     @default(now()) @map("created_at")
@@ -604,6 +636,7 @@ model Booking {
   property Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   roomType RoomType? @relation(fields: [roomTypeId], references: [id], onDelete: SetNull)
   payments Payment[]
+  commissions VendorCommission[]
 
   @@index([userId, status])
   @@index([propertyId, status, checkIn, checkOut])

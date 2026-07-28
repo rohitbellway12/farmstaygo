@@ -1,6 +1,11 @@
 import crypto from "crypto";
 import type { Response } from "express";
 
+import {
+  Prisma,
+  CommissionStatus,
+} from "../generated/prisma/client.js";
+
 import prisma from "../config/database.js";
 
 import type {
@@ -378,6 +383,73 @@ export const verifyRazorpayPayment = async (
           where: { id: bookingId },
           data: {
             paymentStatus: newPaymentStatus,
+          },
+        });
+      }
+
+      const bookingWithProperty =
+        await tx.booking.findFirst({
+          where: { id: bookingId },
+          include: {
+            property: {
+              include: {
+                vendor: {
+                  select: {
+                    id: true,
+                    commissionRate: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+      if (bookingWithProperty) {
+        const vendor = bookingWithProperty.property.vendor;
+        const commissionRate =
+          vendor?.commissionRate
+            ? Number(vendor.commissionRate)
+            : 0;
+
+        const bookingAmount =
+          Number(
+            bookingWithProperty.estimatedTotal
+          ) || 0;
+        const commissionAmount =
+          bookingAmount *
+          (commissionRate / 100);
+        const vendorEarning =
+          bookingAmount - commissionAmount;
+
+        await tx.vendorCommission.create(
+          {
+            data: {
+              vendorId: vendor.id,
+              bookingId,
+              bookingAmount: new Prisma.Decimal(
+                bookingAmount
+              ),
+              commissionRate: new Prisma.Decimal(
+                commissionRate
+              ),
+              commissionAmount: new Prisma.Decimal(
+                commissionAmount
+              ),
+              vendorEarning: new Prisma.Decimal(
+                vendorEarning
+              ),
+              status: CommissionStatus.PENDING,
+            },
+          }
+        );
+
+        await tx.vendor.update({
+          where: { id: vendor.id },
+          data: {
+            totalEarnings:
+              { increment: vendorEarning },
+            totalCommission:
+              { increment: commissionAmount },
           },
         });
       }

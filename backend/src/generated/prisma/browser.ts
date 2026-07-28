@@ -28,6 +28,11 @@ export type User = Prisma.UserModel
  */
 export type Vendor = Prisma.VendorModel
 /**
+ * Model VendorCommission
+ * 
+ */
+export type VendorCommission = Prisma.VendorCommissionModel
+/**
  * Model PropertyCategory
  * 
  */

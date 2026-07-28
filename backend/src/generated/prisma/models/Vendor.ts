@@ -30,12 +30,16 @@ export type VendorAvgAggregateOutputType = {
   id: number | null
   userId: number | null
   commissionRate: runtime.Decimal | null
+  totalEarnings: runtime.Decimal | null
+  totalCommission: runtime.Decimal | null
 }
 
 export type VendorSumAggregateOutputType = {
   id: number | null
   userId: number | null
   commissionRate: runtime.Decimal | null
+  totalEarnings: runtime.Decimal | null
+  totalCommission: runtime.Decimal | null
 }
 
 export type VendorMinAggregateOutputType = {
@@ -57,6 +61,8 @@ export type VendorMinAggregateOutputType = {
   kycReviewedAt: Date | null
   kycRejectionReason: string | null
   commissionRate: runtime.Decimal | null
+  totalEarnings: runtime.Decimal | null
+  totalCommission: runtime.Decimal | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -80,6 +86,8 @@ export type VendorMaxAggregateOutputType = {
   kycReviewedAt: Date | null
   kycRejectionReason: string | null
   commissionRate: runtime.Decimal | null
+  totalEarnings: runtime.Decimal | null
+  totalCommission: runtime.Decimal | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -103,6 +111,8 @@ export type VendorCountAggregateOutputType = {
   kycReviewedAt: number
   kycRejectionReason: number
   commissionRate: number
+  totalEarnings: number
+  totalCommission: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -113,12 +123,16 @@ export type VendorAvgAggregateInputType = {
   id?: true
   userId?: true
   commissionRate?: true
+  totalEarnings?: true
+  totalCommission?: true
 }
 
 export type VendorSumAggregateInputType = {
   id?: true
   userId?: true
   commissionRate?: true
+  totalEarnings?: true
+  totalCommission?: true
 }
 
 export type VendorMinAggregateInputType = {
@@ -140,6 +154,8 @@ export type VendorMinAggregateInputType = {
   kycReviewedAt?: true
   kycRejectionReason?: true
   commissionRate?: true
+  totalEarnings?: true
+  totalCommission?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -163,6 +179,8 @@ export type VendorMaxAggregateInputType = {
   kycReviewedAt?: true
   kycRejectionReason?: true
   commissionRate?: true
+  totalEarnings?: true
+  totalCommission?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -186,6 +204,8 @@ export type VendorCountAggregateInputType = {
   kycReviewedAt?: true
   kycRejectionReason?: true
   commissionRate?: true
+  totalEarnings?: true
+  totalCommission?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -296,6 +316,8 @@ export type VendorGroupByOutputType = {
   kycReviewedAt: Date | null
   kycRejectionReason: string | null
   commissionRate: runtime.Decimal | null
+  totalEarnings: runtime.Decimal | null
+  totalCommission: runtime.Decimal | null
   createdAt: Date
   updatedAt: Date
   _count: VendorCountAggregateOutputType | null
@@ -342,10 +364,13 @@ export type VendorWhereInput = {
   kycReviewedAt?: Prisma.DateTimeNullableFilter<"Vendor"> | Date | string | null
   kycRejectionReason?: Prisma.StringNullableFilter<"Vendor"> | string | null
   commissionRate?: Prisma.DecimalNullableFilter<"Vendor"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: Prisma.DecimalNullableFilter<"Vendor"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: Prisma.DecimalNullableFilter<"Vendor"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFilter<"Vendor"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Vendor"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   properties?: Prisma.PropertyListRelationFilter
+  commissions?: Prisma.VendorCommissionListRelationFilter
 }
 
 export type VendorOrderByWithRelationInput = {
@@ -367,10 +392,13 @@ export type VendorOrderByWithRelationInput = {
   kycReviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   kycRejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   commissionRate?: Prisma.SortOrderInput | Prisma.SortOrder
+  totalEarnings?: Prisma.SortOrderInput | Prisma.SortOrder
+  totalCommission?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   properties?: Prisma.PropertyOrderByRelationAggregateInput
+  commissions?: Prisma.VendorCommissionOrderByRelationAggregateInput
 }
 
 export type VendorWhereUniqueInput = Prisma.AtLeast<{
@@ -395,10 +423,13 @@ export type VendorWhereUniqueInput = Prisma.AtLeast<{
   kycReviewedAt?: Prisma.DateTimeNullableFilter<"Vendor"> | Date | string | null
   kycRejectionReason?: Prisma.StringNullableFilter<"Vendor"> | string | null
   commissionRate?: Prisma.DecimalNullableFilter<"Vendor"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: Prisma.DecimalNullableFilter<"Vendor"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: Prisma.DecimalNullableFilter<"Vendor"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFilter<"Vendor"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Vendor"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   properties?: Prisma.PropertyListRelationFilter
+  commissions?: Prisma.VendorCommissionListRelationFilter
 }, "id" | "userId">
 
 export type VendorOrderByWithAggregationInput = {
@@ -420,6 +451,8 @@ export type VendorOrderByWithAggregationInput = {
   kycReviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   kycRejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   commissionRate?: Prisma.SortOrderInput | Prisma.SortOrder
+  totalEarnings?: Prisma.SortOrderInput | Prisma.SortOrder
+  totalCommission?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.VendorCountOrderByAggregateInput
@@ -451,6 +484,8 @@ export type VendorScalarWhereWithAggregatesInput = {
   kycReviewedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Vendor"> | Date | string | null
   kycRejectionReason?: Prisma.StringNullableWithAggregatesFilter<"Vendor"> | string | null
   commissionRate?: Prisma.DecimalNullableWithAggregatesFilter<"Vendor"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: Prisma.DecimalNullableWithAggregatesFilter<"Vendor"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: Prisma.DecimalNullableWithAggregatesFilter<"Vendor"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Vendor"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Vendor"> | Date | string
 }
@@ -472,10 +507,13 @@ export type VendorCreateInput = {
   kycReviewedAt?: Date | string | null
   kycRejectionReason?: string | null
   commissionRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutVendorInput
   properties?: Prisma.PropertyCreateNestedManyWithoutVendorInput
+  commissions?: Prisma.VendorCommissionCreateNestedManyWithoutVendorInput
 }
 
 export type VendorUncheckedCreateInput = {
@@ -497,9 +535,12 @@ export type VendorUncheckedCreateInput = {
   kycReviewedAt?: Date | string | null
   kycRejectionReason?: string | null
   commissionRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutVendorInput
+  commissions?: Prisma.VendorCommissionUncheckedCreateNestedManyWithoutVendorInput
 }
 
 export type VendorUpdateInput = {
@@ -519,10 +560,13 @@ export type VendorUpdateInput = {
   kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutVendorNestedInput
   properties?: Prisma.PropertyUpdateManyWithoutVendorNestedInput
+  commissions?: Prisma.VendorCommissionUpdateManyWithoutVendorNestedInput
 }
 
 export type VendorUncheckedUpdateInput = {
@@ -544,9 +588,12 @@ export type VendorUncheckedUpdateInput = {
   kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   properties?: Prisma.PropertyUncheckedUpdateManyWithoutVendorNestedInput
+  commissions?: Prisma.VendorCommissionUncheckedUpdateManyWithoutVendorNestedInput
 }
 
 export type VendorCreateManyInput = {
@@ -568,6 +615,8 @@ export type VendorCreateManyInput = {
   kycReviewedAt?: Date | string | null
   kycRejectionReason?: string | null
   commissionRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -589,6 +638,8 @@ export type VendorUpdateManyMutationInput = {
   kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -612,6 +663,8 @@ export type VendorUncheckedUpdateManyInput = {
   kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -640,6 +693,8 @@ export type VendorCountOrderByAggregateInput = {
   kycReviewedAt?: Prisma.SortOrder
   kycRejectionReason?: Prisma.SortOrder
   commissionRate?: Prisma.SortOrder
+  totalEarnings?: Prisma.SortOrder
+  totalCommission?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -648,6 +703,8 @@ export type VendorAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   commissionRate?: Prisma.SortOrder
+  totalEarnings?: Prisma.SortOrder
+  totalCommission?: Prisma.SortOrder
 }
 
 export type VendorMaxOrderByAggregateInput = {
@@ -669,6 +726,8 @@ export type VendorMaxOrderByAggregateInput = {
   kycReviewedAt?: Prisma.SortOrder
   kycRejectionReason?: Prisma.SortOrder
   commissionRate?: Prisma.SortOrder
+  totalEarnings?: Prisma.SortOrder
+  totalCommission?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -692,6 +751,8 @@ export type VendorMinOrderByAggregateInput = {
   kycReviewedAt?: Prisma.SortOrder
   kycRejectionReason?: Prisma.SortOrder
   commissionRate?: Prisma.SortOrder
+  totalEarnings?: Prisma.SortOrder
+  totalCommission?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -700,6 +761,8 @@ export type VendorSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   commissionRate?: Prisma.SortOrder
+  totalEarnings?: Prisma.SortOrder
+  totalCommission?: Prisma.SortOrder
 }
 
 export type VendorScalarRelationFilter = {
@@ -755,6 +818,20 @@ export type NullableDecimalFieldUpdateOperationsInput = {
   divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
+export type VendorCreateNestedOneWithoutCommissionsInput = {
+  create?: Prisma.XOR<Prisma.VendorCreateWithoutCommissionsInput, Prisma.VendorUncheckedCreateWithoutCommissionsInput>
+  connectOrCreate?: Prisma.VendorCreateOrConnectWithoutCommissionsInput
+  connect?: Prisma.VendorWhereUniqueInput
+}
+
+export type VendorUpdateOneRequiredWithoutCommissionsNestedInput = {
+  create?: Prisma.XOR<Prisma.VendorCreateWithoutCommissionsInput, Prisma.VendorUncheckedCreateWithoutCommissionsInput>
+  connectOrCreate?: Prisma.VendorCreateOrConnectWithoutCommissionsInput
+  upsert?: Prisma.VendorUpsertWithoutCommissionsInput
+  connect?: Prisma.VendorWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.VendorUpdateToOneWithWhereWithoutCommissionsInput, Prisma.VendorUpdateWithoutCommissionsInput>, Prisma.VendorUncheckedUpdateWithoutCommissionsInput>
+}
+
 export type VendorCreateNestedOneWithoutPropertiesInput = {
   create?: Prisma.XOR<Prisma.VendorCreateWithoutPropertiesInput, Prisma.VendorUncheckedCreateWithoutPropertiesInput>
   connectOrCreate?: Prisma.VendorCreateOrConnectWithoutPropertiesInput
@@ -786,9 +863,12 @@ export type VendorCreateWithoutUserInput = {
   kycReviewedAt?: Date | string | null
   kycRejectionReason?: string | null
   commissionRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   properties?: Prisma.PropertyCreateNestedManyWithoutVendorInput
+  commissions?: Prisma.VendorCommissionCreateNestedManyWithoutVendorInput
 }
 
 export type VendorUncheckedCreateWithoutUserInput = {
@@ -809,9 +889,12 @@ export type VendorUncheckedCreateWithoutUserInput = {
   kycReviewedAt?: Date | string | null
   kycRejectionReason?: string | null
   commissionRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutVendorInput
+  commissions?: Prisma.VendorCommissionUncheckedCreateNestedManyWithoutVendorInput
 }
 
 export type VendorCreateOrConnectWithoutUserInput = {
@@ -847,9 +930,12 @@ export type VendorUpdateWithoutUserInput = {
   kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   properties?: Prisma.PropertyUpdateManyWithoutVendorNestedInput
+  commissions?: Prisma.VendorCommissionUpdateManyWithoutVendorNestedInput
 }
 
 export type VendorUncheckedUpdateWithoutUserInput = {
@@ -870,6 +956,127 @@ export type VendorUncheckedUpdateWithoutUserInput = {
   kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  properties?: Prisma.PropertyUncheckedUpdateManyWithoutVendorNestedInput
+  commissions?: Prisma.VendorCommissionUncheckedUpdateManyWithoutVendorNestedInput
+}
+
+export type VendorCreateWithoutCommissionsInput = {
+  businessName: string
+  kycStatus?: $Enums.KycStatus
+  panNumber?: string | null
+  aadhaarNumber?: string | null
+  addressLine?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  bankAccountName?: string | null
+  bankAccountNumber?: string | null
+  bankIfscCode?: string | null
+  gstNumber?: string | null
+  kycSubmittedAt?: Date | string | null
+  kycReviewedAt?: Date | string | null
+  kycRejectionReason?: string | null
+  commissionRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutVendorInput
+  properties?: Prisma.PropertyCreateNestedManyWithoutVendorInput
+}
+
+export type VendorUncheckedCreateWithoutCommissionsInput = {
+  id?: number
+  userId: number
+  businessName: string
+  kycStatus?: $Enums.KycStatus
+  panNumber?: string | null
+  aadhaarNumber?: string | null
+  addressLine?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  bankAccountName?: string | null
+  bankAccountNumber?: string | null
+  bankIfscCode?: string | null
+  gstNumber?: string | null
+  kycSubmittedAt?: Date | string | null
+  kycReviewedAt?: Date | string | null
+  kycRejectionReason?: string | null
+  commissionRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutVendorInput
+}
+
+export type VendorCreateOrConnectWithoutCommissionsInput = {
+  where: Prisma.VendorWhereUniqueInput
+  create: Prisma.XOR<Prisma.VendorCreateWithoutCommissionsInput, Prisma.VendorUncheckedCreateWithoutCommissionsInput>
+}
+
+export type VendorUpsertWithoutCommissionsInput = {
+  update: Prisma.XOR<Prisma.VendorUpdateWithoutCommissionsInput, Prisma.VendorUncheckedUpdateWithoutCommissionsInput>
+  create: Prisma.XOR<Prisma.VendorCreateWithoutCommissionsInput, Prisma.VendorUncheckedCreateWithoutCommissionsInput>
+  where?: Prisma.VendorWhereInput
+}
+
+export type VendorUpdateToOneWithWhereWithoutCommissionsInput = {
+  where?: Prisma.VendorWhereInput
+  data: Prisma.XOR<Prisma.VendorUpdateWithoutCommissionsInput, Prisma.VendorUncheckedUpdateWithoutCommissionsInput>
+}
+
+export type VendorUpdateWithoutCommissionsInput = {
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  kycStatus?: Prisma.EnumKycStatusFieldUpdateOperationsInput | $Enums.KycStatus
+  panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aadhaarNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankIfscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kycSubmittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutVendorNestedInput
+  properties?: Prisma.PropertyUpdateManyWithoutVendorNestedInput
+}
+
+export type VendorUncheckedUpdateWithoutCommissionsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.IntFieldUpdateOperationsInput | number
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  kycStatus?: Prisma.EnumKycStatusFieldUpdateOperationsInput | $Enums.KycStatus
+  panNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aadhaarNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankIfscCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gstNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kycSubmittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   properties?: Prisma.PropertyUncheckedUpdateManyWithoutVendorNestedInput
@@ -892,9 +1099,12 @@ export type VendorCreateWithoutPropertiesInput = {
   kycReviewedAt?: Date | string | null
   kycRejectionReason?: string | null
   commissionRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutVendorInput
+  commissions?: Prisma.VendorCommissionCreateNestedManyWithoutVendorInput
 }
 
 export type VendorUncheckedCreateWithoutPropertiesInput = {
@@ -916,8 +1126,11 @@ export type VendorUncheckedCreateWithoutPropertiesInput = {
   kycReviewedAt?: Date | string | null
   kycRejectionReason?: string | null
   commissionRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  commissions?: Prisma.VendorCommissionUncheckedCreateNestedManyWithoutVendorInput
 }
 
 export type VendorCreateOrConnectWithoutPropertiesInput = {
@@ -953,9 +1166,12 @@ export type VendorUpdateWithoutPropertiesInput = {
   kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutVendorNestedInput
+  commissions?: Prisma.VendorCommissionUpdateManyWithoutVendorNestedInput
 }
 
 export type VendorUncheckedUpdateWithoutPropertiesInput = {
@@ -977,8 +1193,11 @@ export type VendorUncheckedUpdateWithoutPropertiesInput = {
   kycReviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   kycRejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commissionRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalEarnings?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  commissions?: Prisma.VendorCommissionUncheckedUpdateManyWithoutVendorNestedInput
 }
 
 
@@ -988,10 +1207,12 @@ export type VendorUncheckedUpdateWithoutPropertiesInput = {
 
 export type VendorCountOutputType = {
   properties: number
+  commissions: number
 }
 
 export type VendorCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   properties?: boolean | VendorCountOutputTypeCountPropertiesArgs
+  commissions?: boolean | VendorCountOutputTypeCountCommissionsArgs
 }
 
 /**
@@ -1009,6 +1230,13 @@ export type VendorCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exten
  */
 export type VendorCountOutputTypeCountPropertiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.PropertyWhereInput
+}
+
+/**
+ * VendorCountOutputType without action
+ */
+export type VendorCountOutputTypeCountCommissionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.VendorCommissionWhereInput
 }
 
 
@@ -1031,10 +1259,13 @@ export type VendorSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   kycReviewedAt?: boolean
   kycRejectionReason?: boolean
   commissionRate?: boolean
+  totalEarnings?: boolean
+  totalCommission?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   properties?: boolean | Prisma.Vendor$propertiesArgs<ExtArgs>
+  commissions?: boolean | Prisma.Vendor$commissionsArgs<ExtArgs>
   _count?: boolean | Prisma.VendorCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["vendor"]>
 
@@ -1057,6 +1288,8 @@ export type VendorSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   kycReviewedAt?: boolean
   kycRejectionReason?: boolean
   commissionRate?: boolean
+  totalEarnings?: boolean
+  totalCommission?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1081,6 +1314,8 @@ export type VendorSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   kycReviewedAt?: boolean
   kycRejectionReason?: boolean
   commissionRate?: boolean
+  totalEarnings?: boolean
+  totalCommission?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1105,14 +1340,17 @@ export type VendorSelectScalar = {
   kycReviewedAt?: boolean
   kycRejectionReason?: boolean
   commissionRate?: boolean
+  totalEarnings?: boolean
+  totalCommission?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type VendorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "businessName" | "kycStatus" | "panNumber" | "aadhaarNumber" | "addressLine" | "city" | "state" | "postalCode" | "bankAccountName" | "bankAccountNumber" | "bankIfscCode" | "gstNumber" | "kycSubmittedAt" | "kycReviewedAt" | "kycRejectionReason" | "commissionRate" | "createdAt" | "updatedAt", ExtArgs["result"]["vendor"]>
+export type VendorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "businessName" | "kycStatus" | "panNumber" | "aadhaarNumber" | "addressLine" | "city" | "state" | "postalCode" | "bankAccountName" | "bankAccountNumber" | "bankIfscCode" | "gstNumber" | "kycSubmittedAt" | "kycReviewedAt" | "kycRejectionReason" | "commissionRate" | "totalEarnings" | "totalCommission" | "createdAt" | "updatedAt", ExtArgs["result"]["vendor"]>
 export type VendorInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   properties?: boolean | Prisma.Vendor$propertiesArgs<ExtArgs>
+  commissions?: boolean | Prisma.Vendor$commissionsArgs<ExtArgs>
   _count?: boolean | Prisma.VendorCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type VendorIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1127,6 +1365,7 @@ export type $VendorPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   objects: {
     user: Prisma.$UserPayload<ExtArgs>
     properties: Prisma.$PropertyPayload<ExtArgs>[]
+    commissions: Prisma.$VendorCommissionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1147,6 +1386,8 @@ export type $VendorPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     kycReviewedAt: Date | null
     kycRejectionReason: string | null
     commissionRate: runtime.Decimal | null
+    totalEarnings: runtime.Decimal | null
+    totalCommission: runtime.Decimal | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["vendor"]>
@@ -1545,6 +1786,7 @@ export interface Prisma__VendorClient<T, Null = never, ExtArgs extends runtime.T
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   properties<T extends Prisma.Vendor$propertiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Vendor$propertiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PropertyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  commissions<T extends Prisma.Vendor$commissionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Vendor$commissionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VendorCommissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1592,6 +1834,8 @@ export interface VendorFieldRefs {
   readonly kycReviewedAt: Prisma.FieldRef<"Vendor", 'DateTime'>
   readonly kycRejectionReason: Prisma.FieldRef<"Vendor", 'String'>
   readonly commissionRate: Prisma.FieldRef<"Vendor", 'Decimal'>
+  readonly totalEarnings: Prisma.FieldRef<"Vendor", 'Decimal'>
+  readonly totalCommission: Prisma.FieldRef<"Vendor", 'Decimal'>
   readonly createdAt: Prisma.FieldRef<"Vendor", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Vendor", 'DateTime'>
 }
@@ -2016,6 +2260,30 @@ export type Vendor$propertiesArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.PropertyScalarFieldEnum | Prisma.PropertyScalarFieldEnum[]
+}
+
+/**
+ * Vendor.commissions
+ */
+export type Vendor$commissionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VendorCommission
+   */
+  select?: Prisma.VendorCommissionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the VendorCommission
+   */
+  omit?: Prisma.VendorCommissionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VendorCommissionInclude<ExtArgs> | null
+  where?: Prisma.VendorCommissionWhereInput
+  orderBy?: Prisma.VendorCommissionOrderByWithRelationInput | Prisma.VendorCommissionOrderByWithRelationInput[]
+  cursor?: Prisma.VendorCommissionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.VendorCommissionScalarFieldEnum | Prisma.VendorCommissionScalarFieldEnum[]
 }
 
 /**

@@ -18,6 +18,8 @@ import AdminPropertiesPage from "../admin/pages/PropertiesPage";
 import AdminBookingsPage from "../admin/pages/BookingsPage";
 import VendorsPage from "../admin/pages/VendorsPage";
 import UsersPage from "../admin/pages/UsersPage";
+import AdminPaymentsPage from "../admin/pages/PaymentsPage";
+import AdminCommissionsPage from "../admin/pages/CommissionsPage";
 
 import VendorLoginPage from "../vendor/pages/LoginPage";
 import VendorRegisterPage from "../vendor/pages/RegisterPage";
@@ -26,6 +28,8 @@ import VendorLayout from "../vendor/layouts/VendorLayout";
 
 import VendorPropertiesPage from "../vendor/pages/PropertiesPage";
 import VendorBookingsPage from "../vendor/pages/BookingsPage";
+import VendorEarningsPage from "../vendor/pages/EarningsPage";
+import VendorPayoutsPage from "../vendor/pages/PayoutsPage";
 import AddPropertyPage from "../vendor/pages/AddPropertyPage";
 import RoomInventoryPage from "../vendor/pages/RoomInventoryPage";
 import RoomFormPage from "../vendor/pages/RoomFormPage";
@@ -160,22 +164,12 @@ export default function AppRoutes() {
 
           <Route
             path="payments"
-            element={
-              <ModulePlaceholder
-                title="Payments"
-                description="Manage payments and settlements."
-              />
-            }
+            element={<AdminPaymentsPage />}
           />
 
           <Route
             path="commissions"
-            element={
-              <ModulePlaceholder
-                title="Commissions"
-                description="Manage platform commission records."
-              />
-            }
+            element={<AdminCommissionsPage />}
           />
 
           <Route
@@ -334,22 +328,12 @@ export default function AppRoutes() {
 
           <Route
             path="earnings"
-            element={
-              <ModulePlaceholder
-                title="Earnings"
-                description="View your revenue and earning reports."
-              />
-            }
+            element={<VendorEarningsPage />}
           />
 
           <Route
             path="payouts"
-            element={
-              <ModulePlaceholder
-                title="Payouts"
-                description="View payout status and settlement history."
-              />
-            }
+            element={<VendorPayoutsPage />}
           />
 
           <Route

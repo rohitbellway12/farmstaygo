@@ -1,13 +1,17 @@
 import { Router } from "express";
 
 import {
-  createAdminVendor,
-  deleteAdminVendor,
-  deactivateAdminVendor,
   activateAdminVendor,
-  getAdminVendors,
-  rejectAdminVendor,
   approveAdminVendor,
+  createAdminVendor,
+  deactivateAdminVendor,
+  deleteAdminVendor,
+  getAllCommissions,
+  getAdminVendors,
+  getVendorCommissions,
+  payVendorCommission,
+  rejectAdminVendor,
+  updateVendorCommission,
 } from "../controllers/admin-vendor.controller.js";
 
 import {
@@ -135,6 +139,50 @@ adminVendorRoutes.patch(
 adminVendorRoutes.delete(
   "/:id",
   deleteAdminVendor
+);
+
+/*
+|--------------------------------------------------------------------------
+| Update Vendor Commission Rate
+|--------------------------------------------------------------------------
+*/
+
+adminVendorRoutes.patch(
+  "/:id/commission",
+  updateVendorCommission
+);
+
+/*
+|--------------------------------------------------------------------------
+| Get All Commissions Across Vendors
+|--------------------------------------------------------------------------
+*/
+
+adminVendorRoutes.get(
+  "/commissions",
+  getAllCommissions
+);
+
+/*
+|--------------------------------------------------------------------------
+| Get Vendor Commissions
+|--------------------------------------------------------------------------
+*/
+
+adminVendorRoutes.get(
+  "/:id/commissions",
+  getVendorCommissions
+);
+
+/*
+|--------------------------------------------------------------------------
+| Pay Vendor Commission
+|--------------------------------------------------------------------------
+*/
+
+adminVendorRoutes.patch(
+  "/commissions/:id/pay",
+  payVendorCommission
 );
 
 export {

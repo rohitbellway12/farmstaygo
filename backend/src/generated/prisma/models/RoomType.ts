@@ -787,14 +787,6 @@ export type RoomTypeUncheckedUpdateManyWithoutPropertyNestedInput = {
   deleteMany?: Prisma.RoomTypeScalarWhereInput | Prisma.RoomTypeScalarWhereInput[]
 }
 
-export type DecimalFieldUpdateOperationsInput = {
-  set?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
-}
-
 export type RoomTypeCreateNestedOneWithoutAmenitiesInput = {
   create?: Prisma.XOR<Prisma.RoomTypeCreateWithoutAmenitiesInput, Prisma.RoomTypeUncheckedCreateWithoutAmenitiesInput>
   connectOrCreate?: Prisma.RoomTypeCreateOrConnectWithoutAmenitiesInput

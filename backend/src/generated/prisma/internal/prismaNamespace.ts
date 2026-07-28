@@ -386,6 +386,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   User: 'User',
   Vendor: 'Vendor',
+  VendorCommission: 'VendorCommission',
   PropertyCategory: 'PropertyCategory',
   Amenity: 'Amenity',
   Property: 'Property',
@@ -414,7 +415,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "vendor" | "propertyCategory" | "amenity" | "property" | "propertyAmenity" | "propertyImage" | "roomType" | "roomAmenity" | "roomImage" | "propertyAvailabilityBlock" | "roomAvailabilityBlock" | "wishlist" | "booking" | "payment"
+    modelProps: "user" | "vendor" | "vendorCommission" | "propertyCategory" | "amenity" | "property" | "propertyAmenity" | "propertyImage" | "roomType" | "roomAmenity" | "roomImage" | "propertyAvailabilityBlock" | "roomAvailabilityBlock" | "wishlist" | "booking" | "payment"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -563,6 +564,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.VendorCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.VendorCountAggregateOutputType> | number
+        }
+      }
+    }
+    VendorCommission: {
+      payload: Prisma.$VendorCommissionPayload<ExtArgs>
+      fields: Prisma.VendorCommissionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.VendorCommissionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorCommissionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.VendorCommissionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorCommissionPayload>
+        }
+        findFirst: {
+          args: Prisma.VendorCommissionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorCommissionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.VendorCommissionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorCommissionPayload>
+        }
+        findMany: {
+          args: Prisma.VendorCommissionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorCommissionPayload>[]
+        }
+        create: {
+          args: Prisma.VendorCommissionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorCommissionPayload>
+        }
+        createMany: {
+          args: Prisma.VendorCommissionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.VendorCommissionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorCommissionPayload>[]
+        }
+        delete: {
+          args: Prisma.VendorCommissionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorCommissionPayload>
+        }
+        update: {
+          args: Prisma.VendorCommissionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorCommissionPayload>
+        }
+        deleteMany: {
+          args: Prisma.VendorCommissionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.VendorCommissionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.VendorCommissionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorCommissionPayload>[]
+        }
+        upsert: {
+          args: Prisma.VendorCommissionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VendorCommissionPayload>
+        }
+        aggregate: {
+          args: Prisma.VendorCommissionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVendorCommission>
+        }
+        groupBy: {
+          args: Prisma.VendorCommissionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VendorCommissionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.VendorCommissionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VendorCommissionCountAggregateOutputType> | number
         }
       }
     }
@@ -1604,11 +1679,30 @@ export const VendorScalarFieldEnum = {
   kycReviewedAt: 'kycReviewedAt',
   kycRejectionReason: 'kycRejectionReason',
   commissionRate: 'commissionRate',
+  totalEarnings: 'totalEarnings',
+  totalCommission: 'totalCommission',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type VendorScalarFieldEnum = (typeof VendorScalarFieldEnum)[keyof typeof VendorScalarFieldEnum]
+
+
+export const VendorCommissionScalarFieldEnum = {
+  id: 'id',
+  vendorId: 'vendorId',
+  bookingId: 'bookingId',
+  bookingAmount: 'bookingAmount',
+  commissionRate: 'commissionRate',
+  commissionAmount: 'commissionAmount',
+  vendorEarning: 'vendorEarning',
+  status: 'status',
+  paidAt: 'paidAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VendorCommissionScalarFieldEnum = (typeof VendorCommissionScalarFieldEnum)[keyof typeof VendorCommissionScalarFieldEnum]
 
 
 export const PropertyCategoryScalarFieldEnum = {
@@ -1814,6 +1908,8 @@ export const BookingScalarFieldEnum = {
   specialRequest: 'specialRequest',
   reservationAmount: 'reservationAmount',
   paymentStatus: 'paymentStatus',
+  adminCommission: 'adminCommission',
+  vendorCommission: 'vendorCommission',
   acceptedAt: 'acceptedAt',
   rejectedAt: 'rejectedAt',
   createdAt: 'createdAt',
@@ -1971,6 +2067,20 @@ export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
  * Reference to a field of type 'Decimal[]'
  */
 export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
+    
+
+
+/**
+ * Reference to a field of type 'CommissionStatus'
+ */
+export type EnumCommissionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CommissionStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'CommissionStatus[]'
+ */
+export type ListEnumCommissionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CommissionStatus[]'>
     
 
 
@@ -2211,6 +2321,7 @@ export type PrismaClientOptions = ({
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   vendor?: Prisma.VendorOmit
+  vendorCommission?: Prisma.VendorCommissionOmit
   propertyCategory?: Prisma.PropertyCategoryOmit
   amenity?: Prisma.AmenityOmit
   property?: Prisma.PropertyOmit

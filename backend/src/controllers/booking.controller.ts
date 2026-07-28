@@ -3,6 +3,7 @@ import type { Response } from "express";
 import {
   BookingMode,
   BookingStatus,
+  CommissionStatus,
   PaymentMethod,
   PaymentStatus,
   PaymentType,
@@ -283,6 +284,17 @@ const bookingListInclude = {
       status: true,
       transactionId: true,
       notes: true,
+      createdAt: true,
+    },
+  },
+  commissions: {
+    select: {
+      id: true,
+      bookingAmount: true,
+      commissionRate: true,
+      commissionAmount: true,
+      vendorEarning: true,
+      status: true,
       createdAt: true,
     },
   },
@@ -611,6 +623,41 @@ export const createBookingRequest =
               }
             }
 
+            const estimatedTotalValue =
+              Number(property.basePrice) *
+              nights.length;
+
+            const vendor =
+              await transaction.vendor.findFirst(
+                {
+                  where: {
+                    properties: {
+                      some: {
+                        id: propertyId,
+                      },
+                    },
+                  },
+                  select: {
+                    commissionRate: true,
+                  },
+                }
+              );
+
+            const commissionRate =
+              vendor?.commissionRate
+                ? Number(
+                    vendor.commissionRate
+                  )
+                : 0;
+
+            const adminCommissionValue =
+              estimatedTotalValue *
+              (commissionRate / 100);
+
+            const vendorCommissionValue =
+              estimatedTotalValue -
+              adminCommissionValue;
+
             return transaction.booking.create(
               {
                 data: {
@@ -625,16 +672,21 @@ export const createBookingRequest =
                   totalNights:
                     nights.length,
                   estimatedTotal:
-                    Number(
-                      property.basePrice
-                    ) *
-                    nights.length,
+                    estimatedTotalValue,
                   reservationAmount:
                     property.reservationAmount
                       ? Number(
                           property.reservationAmount
                         ) * nights.length
                       : null,
+                  adminCommission:
+                    new Prisma.Decimal(
+                      adminCommissionValue
+                    ),
+                  vendorCommission:
+                    new Prisma.Decimal(
+                      vendorCommissionValue
+                    ),
                   guestName:
                     [
                       customer.firstName,
@@ -645,7 +697,8 @@ export const createBookingRequest =
                   guestEmail:
                     customer.email,
                   guestMobile:
-                    customer.mobile,
+                    customer
+                      .mobile,
                   specialRequest,
                 },
               }
@@ -820,51 +873,94 @@ export const createBookingRequest =
             );
           }
 
-          return transaction.booking.create(
-            {
-              data: {
-                userId:
-                  customer.id,
-                propertyId,
-                roomTypeId,
-                bookingMode,
-                checkIn,
-                checkOut,
-                guests,
-                rooms,
-                totalNights:
-                  nights.length,
-                estimatedTotal:
-                  Number(
-                    roomType.basePrice
-                  ) *
-                  rooms *
-                  nights.length,
-                reservationAmount:
-                  roomType.reservationAmount
-                    ? Number(
-                        roomType.reservationAmount
-                      ) * rooms * nights.length
-                    : property.reservationAmount
+            const estimatedTotalValue =
+              Number(roomType.basePrice) *
+              rooms *
+              nights.length;
+
+            const vendor =
+              await transaction.vendor.findFirst(
+                {
+                  where: {
+                    properties: {
+                      some: {
+                        id: propertyId,
+                      },
+                    },
+                  },
+                  select: {
+                    commissionRate: true,
+                  },
+                }
+              );
+
+            const commissionRate =
+              vendor?.commissionRate
+                ? Number(
+                    vendor.commissionRate
+                  )
+                : 0;
+
+            const adminCommissionValue =
+              estimatedTotalValue *
+              (commissionRate / 100);
+
+            const vendorCommissionValue =
+              estimatedTotalValue -
+              adminCommissionValue;
+
+            return transaction.booking.create(
+              {
+                data: {
+                  userId:
+                    customer.id,
+                  propertyId,
+                  roomTypeId,
+                  bookingMode,
+                  checkIn,
+                  checkOut,
+                  guests,
+                  rooms,
+                  totalNights:
+                    nights.length,
+                  estimatedTotal:
+                    estimatedTotalValue,
+                  reservationAmount:
+                    roomType.reservationAmount
                       ? Number(
-                          property.reservationAmount
-                        ) * rooms * nights.length
-                      : null,
-                guestName:
-                  [
-                    customer.firstName,
-                    customer.lastName,
-                  ]
-                    .filter(Boolean)
-                    .join(" "),
-                guestEmail:
-                  customer.email,
-                guestMobile:
-                  customer.mobile,
-                specialRequest,
-              },
-            }
-          );
+                          roomType.reservationAmount
+                        ) * rooms *
+                        nights.length
+                      : property.reservationAmount
+                        ? Number(
+                            property.reservationAmount
+                          ) * rooms *
+                          nights.length
+                        : null,
+                  adminCommission:
+                    new Prisma.Decimal(
+                      adminCommissionValue
+                    ),
+                  vendorCommission:
+                    new Prisma.Decimal(
+                      vendorCommissionValue
+                    ),
+                  guestName:
+                    [
+                      customer.firstName,
+                      customer.lastName,
+                    ]
+                      .filter(Boolean)
+                      .join(" "),
+                  guestEmail:
+                    customer.email,
+                  guestMobile:
+                    customer
+                      .mobile,
+                  specialRequest,
+                },
+              }
+            );
         }
       );
 

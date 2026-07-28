@@ -71,6 +71,16 @@ interface Booking {
     notes: string | null;
     createdAt: string;
   }>;
+  adminCommission: string | number | null;
+  vendorCommission: string | number | null;
+  commissions: Array<{
+    id: string;
+    bookingAmount: string;
+    commissionRate: string;
+    commissionAmount: string;
+    vendorEarning: string;
+    status: string;
+  }>;
 }
 
 interface BookingsResponse {
@@ -488,6 +498,26 @@ export default function BookingsView({
                               Reservation:{" "}
                               {formatMoney(
                                 booking.reservationAmount,
+                                booking.currency
+                              )}
+                            </p>
+                          )}
+                        {booking.adminCommission &&
+                          Number(booking.adminCommission) > 0 && (
+                            <p className="mt-1 text-ui-xs font-semibold text-danger">
+                              Admin Commission:{" "}
+                              {formatMoney(
+                                booking.adminCommission,
+                                booking.currency
+                              )}
+                            </p>
+                          )}
+                        {booking.vendorCommission &&
+                          Number(booking.vendorCommission) > 0 && (
+                            <p className="mt-1 text-ui-xs font-semibold text-success">
+                              Vendor Earning:{" "}
+                              {formatMoney(
+                                booking.vendorCommission,
                                 booking.currency
                               )}
                             </p>
