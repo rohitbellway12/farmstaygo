@@ -8,9 +8,6 @@ import {
 import { Link } from "react-router-dom";
 
 import api from "../../shared/api/api";
-import {
-  getAuth,
-} from "../../shared/utils/auth";
 
 /*
 |--------------------------------------------------------------------------
@@ -845,10 +842,6 @@ function PropertyCard({
 */
 
 export default function PropertiesPage() {
-  const auth = getAuth();
-  const kycApproved =
-    auth?.vendor?.kycStatus === "APPROVED";
-
   const [properties, setProperties] =
     useState<VendorProperty[]>([]);
 
@@ -1028,49 +1021,14 @@ export default function PropertiesPage() {
           </div>
 
           <Link
-            to={
-              kycApproved
-                ? "/vendor/properties/new"
-                : "/vendor/kyc-bank"
-            }
+            to="/vendor/properties/new"
             className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 text-sm font-bold text-white shadow-md shadow-emerald-200/60 transition-all hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-lg"
           >
             <PlusIcon />
-            {kycApproved
-              ? "Add Property"
-              : "Complete KYC"}
+            Add Property
           </Link>
         </div>
       </section>
-
-      {!kycApproved && (
-        <section className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50/50 p-5 text-amber-900 shadow-sm">
-          <div className="flex items-start gap-3">
-            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-amber-200 text-xs font-extrabold text-amber-800">
-              !
-            </span>
-
-            <div>
-              <h2 className="text-base font-extrabold">
-                KYC approval required
-              </h2>
-
-              <p className="mt-1 text-sm font-semibold leading-6 text-amber-800">
-                You can view this page, but property
-                creation unlocks only after admin approves
-                your KYC.
-              </p>
-
-              <Link
-                to="/vendor/kyc-bank"
-                className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-amber-600 px-4 text-sm font-bold text-white shadow-sm transition hover:bg-amber-700"
-              >
-                Go to KYC
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Statistics */}
 
@@ -1290,17 +1248,11 @@ export default function PropertiesPage() {
             </p>
 
             <Link
-              to={
-                kycApproved
-                  ? "/vendor/properties/new"
-                  : "/vendor/kyc-bank"
-              }
+              to="/vendor/properties/new"
               className="mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-8 text-sm font-bold text-white shadow-md shadow-emerald-200/60 transition-all hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-lg"
             >
               <PlusIcon />
-              {kycApproved
-                ? "Create Property"
-                : "Complete KYC"}
+              Create Property
             </Link>
           </section>
         )}

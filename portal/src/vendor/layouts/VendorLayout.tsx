@@ -307,11 +307,7 @@ export default function VendorLayout() {
       : "KYC Required";
 
   const goToAddProperty = () => {
-    navigate(
-      kycApproved
-        ? "/vendor/properties/new"
-        : "/vendor/kyc-bank"
-    );
+    navigate("/vendor/properties/new");
   };
 
   const logout = () => {
@@ -544,7 +540,7 @@ export default function VendorLayout() {
                 className="flex h-9 items-center gap-2 rounded-lg bg-primary-700 px-4 text-xs font-bold text-white hover:bg-primary-800"
               >
                 <span className="text-base leading-none">+</span>
-                {kycApproved ? "Add Property" : "Complete KYC"}
+                Add Property
                 <svg
                   viewBox="0 0 24 24"
                   className={`h-4 w-4 transition ${addPropertyOpen ? "rotate-180" : ""}`}
@@ -563,7 +559,7 @@ export default function VendorLayout() {
                     onClick={goToAddProperty}
                     className="block w-full rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-text-secondary hover:bg-primary-50 hover:text-primary-700"
                   >
-                    {kycApproved ? "Add New Property" : "Complete KYC First"}
+                    Add New Property
                   </button>
                   <button
                     type="button"

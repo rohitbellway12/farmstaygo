@@ -18,10 +18,6 @@ import {
 } from "../middleware/role.middleware.js";
 
 import {
-  requireApprovedVendorKyc,
-} from "../middleware/vendor-kyc.middleware.js";
-
-import {
   createPropertyImageUpload,
 } from "../config/upload.js";
 
@@ -77,7 +73,6 @@ vendorPropertyRoutes.use(
 
 vendorPropertyRoutes.use(
   "/:propertyId/availability",
-  requireApprovedVendorKyc,
   vendorAvailabilityRoutes
 );
 
@@ -93,7 +88,6 @@ vendorPropertyRoutes.use(
 
 vendorPropertyRoutes.use(
   "/:propertyId/rooms",
-  requireApprovedVendorKyc,
   vendorRoomRoutes
 );
 
@@ -124,7 +118,6 @@ vendorPropertyRoutes.get(
 
 vendorPropertyRoutes.post(
   "/draft",
-  requireApprovedVendorKyc,
   createPropertyDraft
 );
 
@@ -153,7 +146,6 @@ vendorPropertyRoutes.get(
 
 vendorPropertyRoutes.put(
   "/:id/basic-info",
-  requireApprovedVendorKyc,
   updatePropertyBasicInfo
 );
 
@@ -165,7 +157,6 @@ vendorPropertyRoutes.put(
 
 vendorPropertyRoutes.put(
   "/:id/location",
-  requireApprovedVendorKyc,
   updatePropertyLocation
 );
 
@@ -182,7 +173,6 @@ vendorPropertyRoutes.put(
 
 vendorPropertyRoutes.post(
   "/:id/images",
-  requireApprovedVendorKyc,
   propertyImageUpload.array(
     "images",
     10
@@ -198,7 +188,6 @@ vendorPropertyRoutes.post(
 
 vendorPropertyRoutes.put(
   "/:id/images/reorder",
-  requireApprovedVendorKyc,
   reorderPropertyImages
 );
 
@@ -210,7 +199,6 @@ vendorPropertyRoutes.put(
 
 vendorPropertyRoutes.patch(
   "/:id/images/:imageId/cover",
-  requireApprovedVendorKyc,
   setPropertyCoverImage
 );
 
@@ -222,7 +210,6 @@ vendorPropertyRoutes.patch(
 
 vendorPropertyRoutes.delete(
   "/:id/images/:imageId",
-  requireApprovedVendorKyc,
   deletePropertyImage
 );
 
@@ -234,7 +221,6 @@ vendorPropertyRoutes.delete(
 
 vendorPropertyRoutes.put(
   "/:id/pricing",
-  requireApprovedVendorKyc,
   updatePropertyPricing
 );
 
@@ -246,7 +232,6 @@ vendorPropertyRoutes.put(
 
 vendorPropertyRoutes.put(
   "/:id/amenities",
-  requireApprovedVendorKyc,
   updatePropertyAmenities
 );
 
@@ -258,7 +243,6 @@ vendorPropertyRoutes.put(
 
 vendorPropertyRoutes.post(
   "/:id/submit",
-  requireApprovedVendorKyc,
   submitPropertyForApproval
 );
 
@@ -270,7 +254,6 @@ vendorPropertyRoutes.post(
 
 vendorPropertyRoutes.delete(
   "/:id",
-  requireApprovedVendorKyc,
   deleteProperty
 );
 

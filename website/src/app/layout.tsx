@@ -43,8 +43,12 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} h-full scroll-smooth antialiased`}
+      suppressHydrationWarning
     >
-      <body className="flex min-h-full flex-col bg-white text-ink-900">
+      <body
+        className="flex min-h-full flex-col bg-white text-ink-900"
+        suppressHydrationWarning
+      >
         <SiteHeader />
 
         <main className="flex-1">

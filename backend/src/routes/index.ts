@@ -12,6 +12,11 @@ import {
   publicCmsPageRoutes,
 } from "./cms-page.routes.js";
 
+import {
+  adminBlogRoutes,
+  blogRoutes,
+} from "./blog.routes.js";
+
 import authRoutes from "./auth.routes.js";
 
 import {
@@ -37,6 +42,10 @@ import {
 } from "./vendor-earnings.routes.js";
 
 import {
+  vendorDashboardRoutes,
+} from "./vendor-dashboard.routes.js";
+
+import {
   wishlistRoutes,
 } from "./wishlist.routes.js";
 
@@ -45,6 +54,10 @@ import {
   bookingRoutes,
   vendorBookingRoutes,
 } from "./booking.routes.js";
+
+import {
+  adminDashboardRoutes,
+} from "./admin-dashboard.routes.js";
 
 import {
   adminPropertyApprovalRoutes,
@@ -116,6 +129,34 @@ router.use(
 router.use(
   "/public/cms-pages",
   publicCmsPageRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
+| Public Blog Routes
+|--------------------------------------------------------------------------
+|
+| No authentication required.
+|
+*/
+
+router.use(
+  "/public/blog",
+  blogRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
+| Admin Blog Routes
+|--------------------------------------------------------------------------
+|
+| Requires admin authentication.
+|
+*/
+
+router.use(
+  "/admin/blog",
+  adminBlogRoutes
 );
 
 /*
@@ -216,6 +257,17 @@ router.use(
 
 /*
 |--------------------------------------------------------------------------
+| Admin Dashboard Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/admin",
+  adminDashboardRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
 | Admin Booking Routes
 |--------------------------------------------------------------------------
 */
@@ -278,6 +330,17 @@ router.use(
 router.use(
   "/vendor",
   vendorEarningsRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
+| Vendor Dashboard Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/vendor",
+  vendorDashboardRoutes
 );
 
 /*

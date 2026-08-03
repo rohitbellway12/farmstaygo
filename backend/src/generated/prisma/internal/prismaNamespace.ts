@@ -390,6 +390,7 @@ export const ModelName = {
   PropertyCategory: 'PropertyCategory',
   ServiceCity: 'ServiceCity',
   CmsPage: 'CmsPage',
+  BlogPost: 'BlogPost',
   Amenity: 'Amenity',
   Property: 'Property',
   PropertyAmenity: 'PropertyAmenity',
@@ -417,7 +418,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "vendor" | "vendorCommission" | "propertyCategory" | "serviceCity" | "cmsPage" | "amenity" | "property" | "propertyAmenity" | "propertyImage" | "roomType" | "roomAmenity" | "roomImage" | "propertyAvailabilityBlock" | "roomAvailabilityBlock" | "wishlist" | "booking" | "payment"
+    modelProps: "user" | "vendor" | "vendorCommission" | "propertyCategory" | "serviceCity" | "cmsPage" | "blogPost" | "amenity" | "property" | "propertyAmenity" | "propertyImage" | "roomType" | "roomAmenity" | "roomImage" | "propertyAvailabilityBlock" | "roomAvailabilityBlock" | "wishlist" | "booking" | "payment"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -862,6 +863,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.CmsPageCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.CmsPageCountAggregateOutputType> | number
+        }
+      }
+    }
+    BlogPost: {
+      payload: Prisma.$BlogPostPayload<ExtArgs>
+      fields: Prisma.BlogPostFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BlogPostFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BlogPostFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload>
+        }
+        findFirst: {
+          args: Prisma.BlogPostFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BlogPostFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload>
+        }
+        findMany: {
+          args: Prisma.BlogPostFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload>[]
+        }
+        create: {
+          args: Prisma.BlogPostCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload>
+        }
+        createMany: {
+          args: Prisma.BlogPostCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BlogPostCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload>[]
+        }
+        delete: {
+          args: Prisma.BlogPostDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload>
+        }
+        update: {
+          args: Prisma.BlogPostUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload>
+        }
+        deleteMany: {
+          args: Prisma.BlogPostDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BlogPostUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BlogPostUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload>[]
+        }
+        upsert: {
+          args: Prisma.BlogPostUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPostPayload>
+        }
+        aggregate: {
+          args: Prisma.BlogPostAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBlogPost>
+        }
+        groupBy: {
+          args: Prisma.BlogPostGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BlogPostGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BlogPostCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BlogPostCountAggregateOutputType> | number
         }
       }
     }
@@ -1905,6 +1980,27 @@ export const CmsPageScalarFieldEnum = {
 export type CmsPageScalarFieldEnum = (typeof CmsPageScalarFieldEnum)[keyof typeof CmsPageScalarFieldEnum]
 
 
+export const BlogPostScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  slug: 'slug',
+  excerpt: 'excerpt',
+  description: 'description',
+  content: 'content',
+  imageUrl: 'imageUrl',
+  metaTitle: 'metaTitle',
+  metaDescription: 'metaDescription',
+  metaKeywords: 'metaKeywords',
+  isPublished: 'isPublished',
+  author: 'author',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BlogPostScalarFieldEnum = (typeof BlogPostScalarFieldEnum)[keyof typeof BlogPostScalarFieldEnum]
+
+
 export const AmenityScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -2509,6 +2605,7 @@ export type GlobalOmitConfig = {
   propertyCategory?: Prisma.PropertyCategoryOmit
   serviceCity?: Prisma.ServiceCityOmit
   cmsPage?: Prisma.CmsPageOmit
+  blogPost?: Prisma.BlogPostOmit
   amenity?: Prisma.AmenityOmit
   property?: Prisma.PropertyOmit
   propertyAmenity?: Prisma.PropertyAmenityOmit

@@ -24,6 +24,8 @@ import ServiceCitiesPage from "../admin/pages/ServiceCitiesPage";
 import CmsPagesPage, {
   CmsPageFormPage,
 } from "../admin/pages/CmsPagesPage";
+import BlogPage from "../admin/pages/BlogPage";
+import BlogEditPage from "../admin/pages/BlogEditPage";
 
 import VendorLoginPage from "../vendor/pages/LoginPage";
 import VendorRegisterPage from "../vendor/pages/RegisterPage";
@@ -205,6 +207,21 @@ export default function AppRoutes() {
           <Route
             path="cms/:id/edit"
             element={<CmsPageFormPage />}
+          />
+
+          <Route
+            path="blog"
+            element={<BlogPage />}
+          />
+
+          <Route
+            path="blog/new"
+            element={<BlogEditPage />}
+          />
+
+          <Route
+            path="blog/:id/edit"
+            element={<BlogEditPage />}
           />
 
           <Route

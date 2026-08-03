@@ -5,7 +5,6 @@ import {
   useState,
   type FormEvent,
 } from "react";
-import { Link } from "react-router-dom";
 
 import api from "../../shared/api/api";
 import {
@@ -88,7 +87,7 @@ const statusConfig: Record<
     className:
       "border-slate-200 bg-slate-100 text-slate-700",
     description:
-      "Submit KYC to unlock property listing.",
+      "Submit KYC for payout eligibility.",
   },
   PENDING: {
     label: "Pending Admin Approval",
@@ -102,7 +101,7 @@ const statusConfig: Record<
     className:
       "border-emerald-200 bg-emerald-50 text-emerald-700",
     description:
-      "Your KYC is approved. You can now add and manage properties.",
+      "Your KYC is approved.",
   },
   REJECTED: {
     label: "Rejected",
@@ -326,8 +325,7 @@ export default function KycBankPage() {
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-text-muted">
               Submit identity, address and payout
-              details. Property listing unlocks only
-              after admin approval.
+              details.
             </p>
           </div>
 
@@ -346,19 +344,10 @@ export default function KycBankPage() {
           vendorKyc.kycRejectionReason && (
             <div className="mt-4 rounded-control border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
               Rejection reason:{" "}
-              {vendorKyc.kycRejectionReason}
-            </div>
-          )}
-
-        {vendorKyc?.kycStatus === "APPROVED" && (
-          <Link
-            to="/vendor/properties/new"
-            className="mt-4 inline-flex h-11 items-center justify-center rounded-control bg-primary-700 px-5 text-sm font-bold text-white"
-          >
-            Add Property
-          </Link>
-        )}
-      </section>
+           {vendorKyc.kycRejectionReason}
+             </div>
+           )}
+         </section>
 
       {pageError && (
         <section className="rounded-control border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
@@ -589,10 +578,9 @@ export default function KycBankPage() {
           {!formLocked && (
             <section className="sticky bottom-4 rounded-dashboard-card border border-border bg-surface/95 p-4 shadow-dashboard-lg backdrop-blur">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm font-semibold text-text-muted">
-                  After submission, admin approval is
-                  required before you can add property.
-                </p>
+                 <p className="text-sm font-semibold text-text-muted">
+                   After submission, your details will be reviewed.
+                 </p>
                 <button
                   type="submit"
                   disabled={submitting}

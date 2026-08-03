@@ -1,1015 +1,452 @@
-import type { ReactNode } from "react";
+import axios from "axios";
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { Link } from "react-router-dom";
 
-interface StatItem {
-  title: string;
-  value: string;
-  change: string;
-  icon: ReactNode;
-  iconClass: string;
+import api from "../../shared/api/api";
+
+interface DashboardStats {
+  totalUsers: number;
+  totalVendors: number;
+  totalProperties: number;
+  totalBookings: number;
+  totalRevenue: number;
+  totalCommission: number;
+  vendorStats: { pending: number; approved: number; rejected: number };
+  propertyStats: { total: number; pending: number; approved: number };
+  bookingStats: { total: number; pending: number; confirmed: number; completed: number; cancelled: number; rejected: number };
+  paymentStats: { total: number; totalPaid: number; totalPending: number };
+  payoutStats: { total: number; totalPaid: number; pending: number };
+  monthlyRevenue: number[];
+  monthlyBookings: number[];
+  recentBookings: Array<{
+    id: string;
+    status: string;
+    checkIn: string;
+    checkOut: string;
+    estimatedTotal: string | number | null;
+    guestName: string;
+    property: { title: string; city: string | null; state: string | null };
+  }>;
 }
 
-const propertyImages = [
-  "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=300&q=80",
-  "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=300&q=80",
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=300&q=80",
-  "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=300&q=80",
-];
+interface DashboardResponse {
+  success: boolean;
+  message: string;
+  data: DashboardStats;
+}
 
-const bookingBars = [
-  35, 48, 70, 62, 43, 78, 54, 84, 65, 35, 72, 46,
-  55, 81, 63, 90, 67, 49, 82, 58, 88, 76, 53, 69,
-  91, 62, 78, 54,
-];
+const statusStyles: Record<string, string> = {
+  REQUESTED: "border-amber-200 bg-amber-50 text-amber-700",
+  CONFIRMED: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  CANCELLED: "border-slate-200 bg-slate-100 text-slate-700",
+  REJECTED: "border-red-200 bg-red-50 text-red-700",
+  COMPLETED: "border-blue-200 bg-blue-50 text-blue-700",
+};
 
-const bookingLinePoints = [
-  "0,118",
-  "22,102",
-  "44,108",
-  "66,65",
-  "88,55",
-  "110,73",
-  "132,94",
-  "154,84",
-  "176,40",
-  "198,58",
-  "220,92",
-  "242,103",
-  "264,79",
-  "286,70",
-  "308,45",
-  "330,62",
-  "352,85",
-  "374,90",
-  "396,71",
-  "418,37",
-  "440,48",
-  "462,88",
-  "484,74",
-  "506,46",
-  "528,68",
-  "550,81",
-  "572,63",
-  "594,44",
-].join(" ");
+const statusLabels: Record<string, string> = {
+  REQUESTED: "Requested",
+  CONFIRMED: "Confirmed",
+  CANCELLED: "Cancelled",
+  REJECTED: "Rejected",
+  COMPLETED: "Completed",
+};
 
-const revenuePoints = [
-  "0,135",
-  "28,110",
-  "56,75",
-  "84,95",
-  "112,59",
-  "140,83",
-  "168,48",
-  "196,72",
-  "224,39",
-  "252,88",
-  "280,64",
-  "308,101",
-  "336,67",
-  "364,53",
-  "392,25",
-  "420,41",
-  "448,18",
-  "476,38",
-  "504,29",
-].join(" ");
+const formatMoney = (value: number | null, currency = "INR"): string => {
+  if (value === null || value === undefined) return "₹0";
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(value);
+};
 
-const stats: StatItem[] = [
-  {
-    title: "Total Users",
-    value: "124,568",
-    change: "↑ 12.5% vs last month",
-    iconClass: "bg-success-soft text-success",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        className="h-6 w-6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      >
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M19 8v6" />
-        <path d="M22 11h-6" />
-      </svg>
-    ),
-  },
-  {
-    title: "Total Vendors",
-    value: "2,845",
-    change: "↑ 8.4% vs last month",
-    iconClass: "bg-info-soft text-info",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        className="h-6 w-6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      >
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M17 11a4 4 0 0 0 0-8" />
-        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      </svg>
-    ),
-  },
-  {
-    title: "Total Properties",
-    value: "6,892",
-    change: "↑ 10.2% vs last month",
-    iconClass: "bg-warning-soft text-warning",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        className="h-6 w-6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      >
-        <path d="M3 11 12 4l9 7" />
-        <path d="M5 10v10h14V10" />
-        <path d="M9 20v-6h6v6" />
-      </svg>
-    ),
-  },
-  {
-    title: "Total Bookings",
-    value: "18,734",
-    change: "↑ 15.6% vs last month",
-    iconClass: "bg-chart-red-soft text-chart-red",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        className="h-6 w-6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      >
-        <rect x="3" y="5" width="18" height="16" rx="2" />
-        <path d="M8 3v4" />
-        <path d="M16 3v4" />
-        <path d="M3 10h18" />
-        <circle cx="16" cy="16" r="3" />
-      </svg>
-    ),
-  },
-  {
-    title: "Platform Revenue",
-    value: "₹8.47 Cr",
-    change: "↑ 18.7% vs last month",
-    iconClass: "bg-purple-soft text-purple",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        className="h-6 w-6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      >
-        <rect x="3" y="5" width="18" height="14" rx="2" />
-        <path d="M3 10h18" />
-        <path d="M8 15h4" />
-      </svg>
-    ),
-  },
-  {
-    title: "Commission Earned",
-    value: "₹1.27 Cr",
-    change: "↑ 16.3% vs last month",
-    iconClass: "bg-danger-soft text-danger",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        className="h-6 w-6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      >
-        <circle cx="8" cy="8" r="3" />
-        <circle cx="16" cy="16" r="3" />
-        <path d="m18 6-12 12" />
-      </svg>
-    ),
-  },
-];
+const formatNumber = (value: number): string => {
+  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+  if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+  return String(value);
+};
 
-function Card({
-  children,
-  className = "",
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
+const getApiErrorMessage = (error: unknown, fallbackMessage: string): string => {
+  if (axios.isAxiosError(error)) {
+    return error.response?.data?.message || error.message || fallbackMessage;
+  }
+  return fallbackMessage;
+};
+
+function IconUsers() {
   return (
-    <section
-      className={`rounded-dashboard-card border border-border bg-surface shadow-dashboard-card ${className}`}
-    >
-      {children}
-    </section>
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
   );
 }
 
-function CardHeader({
-  title,
-  badge,
-  action,
-}: {
-  title: string;
-  badge?: ReactNode;
-  action?: ReactNode;
-}) {
+function IconVendors() {
   return (
-    <div className="flex items-center justify-between gap-3 px-5 pt-5">
-      <div className="flex items-center gap-2">
-        <h2 className="text-sm font-extrabold text-text-main">
-          {title}
-        </h2>
-        {badge}
-      </div>
-      {action}
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
+function IconProperties() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M3 11 12 4l9 7" /><path d="M5 10v10h14V10" /><path d="M9 20v-6h6v6" />
+    </svg>
+  );
+}
+
+function IconBookings() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="3" y="5" width="18" height="16" rx="2" /><path d="M8 3v4" /><path d="M16 3v4" /><path d="M3 10h18" /><circle cx="16" cy="16" r="3" />
+    </svg>
+  );
+}
+
+function IconRevenue() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18" /><path d="M8 15h4" />
+    </svg>
+  );
+}
+
+function IconCommission() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <circle cx="8" cy="8" r="3" /><circle cx="16" cy="16" r="3" /><path d="m18 6-12 12" />
+    </svg>
+  );
+}
+
+function IconArrowUp() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <path d="m18 15-6-6-6 6" />
+    </svg>
+  );
+}
+
+function MiniBarChart({ data, color = "bg-chart-green" }: { data: number[]; color?: string }) {
+  const max = Math.max(...data, 1);
+  return (
+    <div className="flex items-end gap-[3px] h-8">
+      {data.map((value, index) => (
+        <div
+          key={index}
+          className={`flex-1 rounded-sm ${color} transition-all`}
+          style={{ height: `${Math.max((value / max) * 100, 8)}%`, opacity: index % 3 === 0 ? 1 : 0.7 }}
+        />
+      ))}
     </div>
   );
 }
 
-function ViewAllLink({ to = "#" }: { to?: string }) {
+function LoadingCards() {
   return (
-    <Link
-      to={to}
-      className="text-xs font-extrabold text-primary-700 hover:text-primary-900"
-    >
-      View all
-    </Link>
+    <>
+      {[1, 2, 3, 4, 5, 6].map((item) => (
+        <div key={item} className="h-28 animate-pulse rounded-dashboard-card border border-border bg-surface shadow-dashboard-card" />
+      ))}
+    </>
   );
 }
 
-function StatCard({ item }: { item: StatItem }) {
+function StatCard({ title, value, change, iconClass, icon, trend }: { title: string; value: string; change: string; iconClass: string; icon: React.ReactNode; trend?: "up" | "down" | "neutral" }) {
+  const trendColor = trend === "up" ? "text-success" : trend === "down" ? "text-danger" : "text-text-muted";
+  const trendIcon = trend === "up" ? <IconArrowUp /> : trend === "down" ? <IconArrowUp /> : null;
+
   return (
-    <Card className="relative overflow-hidden p-5">
-      <div className="flex items-center gap-4">
-        <span
-          className={`grid h-12 w-12 shrink-0 place-items-center rounded-full ${item.iconClass}`}
-        >
-          {item.icon}
-        </span>
+    <section className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card hover:shadow-dashboard-card-hover transition-shadow">
+      <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <span className="block truncate text-sm font-semibold text-text-muted">
-            {item.title}
-          </span>
-          <strong className="mt-1 block truncate text-2xl font-extrabold leading-none text-text-main">
-            {item.value}
-          </strong>
-          <span className="mt-1.5 block truncate text-xs font-bold text-success">
-            {item.change}
+          <span className="text-xs font-semibold text-text-muted uppercase tracking-wide">{title}</span>
+          <strong className="mt-1.5 block text-2xl font-extrabold leading-none text-text-main">{value}</strong>
+          <span className={`mt-1.5 inline-flex items-center gap-1 text-xs font-bold ${trendColor}`}>
+            {trendIcon}
+            {change}
           </span>
         </div>
+        <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${iconClass}`}>{icon}</span>
       </div>
-    </Card>
+    </section>
   );
 }
 
-function BookingOverview() {
+function DonutChart({ segments, size = 120 }: { segments: Array<{ label: string; value: number; color: string }>; size?: number }) {
+  const total = segments.reduce((sum, s) => sum + s.value, 0);
+  const radius = size / 2 - 8;
+  const circumference = 2 * Math.PI * radius;
+  let offset = 0;
+
   return (
-    <Card className="min-h-[260px]">
-      <CardHeader
-        title="Bookings Overview"
-        action={
-          <div className="flex items-center rounded-lg border border-border bg-surface-muted p-1">
-            {["7D", "30D", "90D", "1Y"].map((item) => (
-              <button
-                type="button"
-                key={item}
-                className={`rounded-md px-3 py-1 text-xs font-bold ${
-                  item === "30D"
-                    ? "bg-primary-50 text-primary-700"
-                    : "text-text-muted"
-                }`}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-        }
-      />
-      <div className="mt-3 flex items-center gap-4 px-5 text-xs font-semibold text-text-muted">
-        <span className="flex items-center gap-1.5">
-          <i className="h-2.5 w-2.5 rounded-full bg-chart-green" />
-          Bookings
-        </span>
-        <span className="flex items-center gap-1.5">
-          <i className="h-2.5 w-2.5 rounded-full bg-chart-blue" />
-          Revenue (₹)
-        </span>
-      </div>
-      <div className="relative mt-2 h-[170px] px-5 pb-3">
-        <div className="absolute inset-x-5 inset-y-0 flex flex-col justify-between">
-          {[1, 2, 3, 4].map((line) => (
-            <div key={line} className="border-t border-dashed border-border" />
-          ))}
-        </div>
-        <div className="absolute inset-x-5 bottom-6 top-2 flex items-end gap-[5px]">
-          {bookingBars.map((value, index) => (
-            <div
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full -rotate-90">
+        {segments.map((segment, index) => {
+          const fraction = segment.value / total;
+          const dashArray = fraction * circumference;
+          const dashOffset = -offset * circumference;
+          offset += fraction;
+          return (
+            <circle
               key={index}
-              className="flex-1 rounded-t-sm bg-gradient-to-t from-chart-green to-chart-green-light"
-              style={{
-                height: `${value}%`,
-                opacity: index % 4 === 0 ? 1 : 0.8,
-              }}
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="none"
+              stroke={segment.color}
+              strokeWidth="8"
+              strokeDasharray={`${dashArray} ${circumference - dashArray}`}
+              strokeDashoffset={dashOffset}
+              strokeLinecap="round"
             />
-          ))}
-        </div>
-        <svg
-          viewBox="0 0 600 150"
-          preserveAspectRatio="none"
-          className="absolute inset-x-5 top-2 h-[125px] w-[calc(100%-40px)]"
-        >
-          <polyline
-            points={bookingLinePoints}
-            fill="none"
-            stroke="var(--color-chart-blue)"
-            strokeWidth="3"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-        </svg>
-        <div className="absolute inset-x-5 bottom-0 flex justify-between text-xs text-text-soft">
-          <span>Apr 20</span>
-          <span>Apr 25</span>
-          <span>Apr 30</span>
-          <span>May 5</span>
-          <span>May 10</span>
-          <span>May 15</span>
-          <span>May 20</span>
-        </div>
+          );
+        })}
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <strong className="text-lg font-extrabold text-text-main">{formatNumber(total)}</strong>
+        <span className="text-xs text-text-muted">Total</span>
       </div>
-    </Card>
-  );
-}
-
-function RevenueTrend() {
-  return (
-    <Card className="min-h-[260px]">
-      <CardHeader title="Revenue Trend" />
-      <p className="px-5 pt-1 text-xs text-text-muted">By day</p>
-      <div className="relative mt-4 h-[175px] px-5 pb-4">
-        <div className="absolute inset-x-5 inset-y-0 flex flex-col justify-between">
-          {[1, 2, 3, 4].map((line) => (
-            <div key={line} className="border-t border-dashed border-border" />
-          ))}
-        </div>
-        <svg
-          viewBox="0 0 510 150"
-          preserveAspectRatio="none"
-          className="absolute inset-x-5 top-1 h-[135px] w-[calc(100%-40px)]"
-        >
-          <defs>
-            <linearGradient id="revenueArea" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="var(--color-chart-green)" stopOpacity="0.22" />
-              <stop offset="100%" stopColor="var(--color-chart-green)" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <polygon points={`0,150 ${revenuePoints} 504,150`} fill="url(#revenueArea)" />
-          <polyline
-            points={revenuePoints}
-            fill="none"
-            stroke="var(--color-chart-green)"
-            strokeWidth="3"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-        </svg>
-        <div className="absolute inset-x-5 bottom-0 flex justify-between text-xs text-text-soft">
-          <span>Apr 20</span>
-          <span>Apr 27</span>
-          <span>May 4</span>
-          <span>May 11</span>
-          <span>May 18</span>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-function PropertyApprovals() {
-  const items = [
-    {
-      name: "Rustic Greens Farmhouse",
-      details: "Farmhouse • 4 BHK • Nashik, MH",
-      vendor: "GreenStays Pvt. Ltd.",
-      time: "2h ago",
-      image: propertyImages[0],
-    },
-    {
-      name: "The Lakeview Villa",
-      details: "Villa • 5 BHK • Udaipur, RJ",
-      vendor: "Lakeview Hospitality",
-      time: "5h ago",
-      image: propertyImages[1],
-    },
-    {
-      name: "Hilltop Resort & Spa",
-      details: "Resort • 24 Rooms • Coorg, KA",
-      vendor: "Hilltop Retreats",
-      time: "8h ago",
-      image: propertyImages[2],
-    },
-  ];
-
-  return (
-    <Card className="min-h-[260px]">
-      <CardHeader
-        title="Property Approvals"
-        badge={
-          <span className="rounded-md bg-danger-soft px-2.5 py-1 text-xs font-bold text-danger">
-            23 Pending
-          </span>
-        }
-        action={<ViewAllLink to="/admin/property-approvals" />}
-      />
-      <div className="mt-3 divide-y divide-border px-4">
-        {items.map((item) => (
-          <div key={item.name} className="flex items-center gap-3 py-3">
-            <img
-              src={item.image}
-              alt={item.name}
-              className="h-[56px] w-[72px] shrink-0 rounded-lg object-cover"
-            />
-            <div className="min-w-0 flex-1">
-              <strong className="block truncate text-sm font-extrabold text-text-main">
-                {item.name}
-              </strong>
-              <span className="mt-0.5 block truncate text-xs text-text-secondary">
-                {item.details}
-              </span>
-              <span className="mt-0.5 block truncate text-xs text-text-muted">
-                Submitted by {item.vendor}
-              </span>
-              <span className="block text-xs text-text-soft">Submitted: {item.time}</span>
-            </div>
-            <div className="grid shrink-0 gap-1.5">
-              <button
-                type="button"
-                className="h-7 rounded-md border border-primary-300 px-3.5 text-xs font-bold text-primary-700 hover:bg-primary-50"
-              >
-                Review
-              </button>
-              <button
-                type="button"
-                className="h-7 rounded-md border border-danger/40 px-3.5 text-xs font-bold text-danger hover:bg-danger-soft"
-              >
-                Reject
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-}
-
-function VendorVerification() {
-  const vendors = [
-    ["GreenStays Pvt. Ltd.", "Mumbai, MH"],
-    ["Serene Escapes", "Bengaluru, KA"],
-    ["Wanderer Holidays", "Pune, MH"],
-    ["Nature's Nook Stays", "Dehradun, UK"],
-  ];
-
-  return (
-    <Card className="min-h-[225px]">
-      <CardHeader
-        title="Vendor Verification (KYC)"
-        badge={
-          <span className="rounded-md bg-warning-soft px-2.5 py-1 text-xs font-bold text-warning">
-            14 Pending
-          </span>
-        }
-        action={<ViewAllLink to="/admin/vendors" />}
-      />
-      <div className="mt-3 divide-y divide-border px-4">
-        {vendors.map(([name, city], index) => (
-          <div key={name} className="flex items-center gap-3 py-2.5">
-            <img
-              src={propertyImages[index]}
-              alt={name}
-              className="h-9 w-9 rounded-lg object-cover"
-            />
-            <div className="min-w-0 flex-1">
-              <strong className="block truncate text-sm font-bold text-text-main">
-                {name}
-              </strong>
-              <span className="block text-xs text-text-muted">{city}</span>
-            </div>
-            <span className="rounded-md bg-warning-soft px-2.5 py-1 text-xs font-bold text-warning">
-              Pending
-            </span>
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-}
-
-function PaymentsSettlements() {
-  return (
-    <Card className="min-h-[225px]">
-      <CardHeader
-        title="Payments & Settlements"
-        action={<ViewAllLink to="/admin/payments" />}
-      />
-      <div className="mt-3 grid grid-cols-2 gap-3 px-4">
-        <div className="rounded-lg bg-primary-50 p-4">
-          <span className="text-xs text-text-muted">Pending Settlements</span>
-          <strong className="mt-1 block text-lg font-extrabold text-text-main">
-            ₹2.84 Cr
-          </strong>
-          <span className="text-xs text-text-muted">24 payouts</span>
-        </div>
-        <div className="rounded-lg bg-success-soft p-4">
-          <span className="text-xs text-text-muted">Paid This Month</span>
-          <strong className="mt-1 block text-lg font-extrabold text-text-main">
-            ₹5.62 Cr
-          </strong>
-          <span className="text-xs text-text-muted">128 payouts</span>
-        </div>
-      </div>
-      <div className="px-4 pb-4 pt-3">
-        <span className="block text-xs font-bold text-text-secondary">
-          Recent Payouts
-        </span>
-        <div className="mt-2 space-y-2">
-          {[
-            ["GreenStays Pvt. Ltd.", "₹28.45 L"],
-            ["Serene Escapes", "₹18.75 L"],
-            ["Hilltop Retreats", "₹32.10 L"],
-          ].map(([name, amount]) => (
-            <div key={name} className="flex items-center gap-2 text-xs">
-              <span className="h-5 w-5 rounded-full bg-primary-100" />
-              <span className="min-w-0 flex-1 truncate text-text-secondary">
-                {name}
-              </span>
-              <strong className="text-text-main">{amount}</strong>
-              <span className="rounded bg-success-soft px-2 py-0.5 text-xs font-bold text-success">
-                Paid
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-function SupportTickets() {
-  const items = [
-    ["Refund & Cancellation", "12", "bg-danger-soft text-danger"],
-    ["Property / Stay Related", "9", "bg-warning-soft text-warning"],
-    ["Payment Issues", "7", "bg-info-soft text-info"],
-    ["Account & KYC", "4", "bg-success-soft text-success"],
-    ["Other Queries", "3", "bg-surface-muted text-text-muted"],
-  ];
-
-  return (
-    <Card className="min-h-[225px]">
-      <CardHeader
-        title="Support Tickets"
-        badge={
-          <span className="rounded-md bg-danger-soft px-2.5 py-1 text-xs font-bold text-danger">
-            35 Open
-          </span>
-        }
-        action={<ViewAllLink to="/admin/support" />}
-      />
-      <div className="mt-3 divide-y divide-border px-4">
-        {items.map(([label, count, classes]) => (
-          <div key={label} className="flex items-center gap-3 py-2.5">
-            <span
-              className={`grid h-7 w-7 place-items-center rounded-md text-xs font-extrabold ${classes}`}
-            >
-              {count}
-            </span>
-            <span className="flex-1 text-xs font-semibold text-text-secondary">
-              {label}
-            </span>
-            <strong className="text-xs text-text-main">{count}</strong>
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-}
-
-function FraudAlerts() {
-  const alerts = [
-    ["Multiple bookings same card", "Booking ID: #BK98321", "High"],
-    ["Suspicious vendor activity", "Vendor ID: #VND7721", "High"],
-    ["Unusual refund requests", "Booking ID: #BK98112", "Medium"],
-    ["Repeated failed payments", "User ID: #USR55621", "Low"],
-  ];
-
-  return (
-    <Card className="min-h-[225px]">
-      <CardHeader
-        title="Fraud Detection & Alerts"
-        badge={
-          <span className="rounded-md bg-warning-soft px-2.5 py-1 text-xs font-bold text-warning">
-            6 Alerts
-          </span>
-        }
-        action={<ViewAllLink />}
-      />
-      <div className="mt-3 divide-y divide-border px-4">
-        {alerts.map(([title, subtitle, level]) => (
-          <div key={title} className="flex items-center gap-3 py-2.5">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-danger-soft text-danger">
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 3 2 21h20Z" />
-                <path d="M12 9v5" />
-                <path d="M12 18h.01" />
-              </svg>
-            </span>
-            <div className="min-w-0 flex-1">
-              <strong className="block truncate text-sm font-bold text-text-main">
-                {title}
-              </strong>
-              <span className="block truncate text-xs text-text-muted">{subtitle}</span>
-            </div>
-            <span
-              className={`rounded px-2.5 py-1 text-xs font-bold ${
-                level === "High"
-                  ? "bg-danger-soft text-danger"
-                  : level === "Medium"
-                  ? "bg-warning-soft text-warning"
-                  : "bg-info-soft text-info"
-              }`}
-            >
-              {level}
-            </span>
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-}
-
-function RecentBookings() {
-  const bookings = [
-    {
-      id: "#BK98321",
-      guest: "Rohit Sharma",
-      property: "Rustic Greens Farmhouse",
-      type: "Entire Property",
-      city: "Nashik, MH",
-      checkin: "24 May 2024",
-      amount: "₹38,500",
-      status: "Confirmed",
-      image: propertyImages[0],
-    },
-    {
-      id: "#BK98320",
-      guest: "Priya Mehta",
-      property: "The Lakeview Villa",
-      type: "Entire Property",
-      city: "Udaipur, RJ",
-      checkin: "25 May 2024",
-      amount: "₹52,000",
-      status: "Upcoming",
-      image: propertyImages[1],
-    },
-    {
-      id: "#BK98319",
-      guest: "Amit Verma",
-      property: "Hilltop Resort & Spa",
-      type: "Room Booking",
-      city: "Coorg, KA",
-      checkin: "24 May 2024",
-      amount: "₹15,600",
-      status: "Checked-in",
-      image: propertyImages[2],
-    },
-    {
-      id: "#BK98318",
-      guest: "Neha Kapoor",
-      property: "Green Valley Homestay",
-      type: "Room Booking",
-      city: "Manali, HP",
-      checkin: "23 May 2024",
-      amount: "₹9,800",
-      status: "Completed",
-      image: propertyImages[3],
-    },
-  ];
-
-  return (
-    <Card className="overflow-hidden">
-      <CardHeader
-        title="Recent Bookings"
-        action={<ViewAllLink to="/admin/bookings" />}
-      />
-      <div className="mt-3 overflow-x-auto">
-        <table className="w-full min-w-[720px] border-collapse">
-          <thead>
-            <tr className="border-y border-border bg-surface-soft">
-              {[
-                "Booking ID",
-                "Guest",
-                "Property",
-                "Type",
-                "City",
-                "Check-in",
-                "Amount",
-                "Status",
-              ].map((heading) => (
-                <th
-                  key={heading}
-                  className="px-4 py-2.5 text-left text-xs font-extrabold text-text-muted"
-                >
-                  {heading}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {bookings.map((booking) => (
-              <tr key={booking.id} className="hover:bg-surface-soft">
-                <td className="px-4 py-3 text-xs font-extrabold text-primary-700">
-                  {booking.id}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <span className="grid h-7 w-7 place-items-center rounded-full bg-primary-100 text-xs font-bold text-primary-700">
-                      {booking.guest
-                        .split(" ")
-                        .map((name) => name[0])
-                        .join("")}
-                    </span>
-                    <span className="text-xs font-semibold text-text-main">
-                      {booking.guest}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <img
-                      src={booking.image}
-                      alt={booking.property}
-                      className="h-8 w-10 rounded object-cover"
-                    />
-                    <span className="max-w-32 truncate text-xs text-text-secondary">
-                      {booking.property}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-xs text-text-secondary">
-                  {booking.type}
-                </td>
-                <td className="px-4 py-3 text-xs text-text-secondary">
-                  {booking.city}
-                </td>
-                <td className="px-4 py-3 text-xs text-text-secondary">
-                  {booking.checkin}
-                </td>
-                <td className="px-4 py-3 text-xs font-bold text-text-main">
-                  {booking.amount}
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`rounded-md px-2.5 py-1 text-xs font-bold ${
-                      booking.status === "Confirmed" ||
-                      booking.status === "Completed"
-                        ? "bg-success-soft text-success"
-                        : booking.status === "Upcoming"
-                        ? "bg-info-soft text-info"
-                        : "bg-purple-soft text-purple"
-                    }`}
-                  >
-                    {booking.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </Card>
-  );
-}
-
-function PropertyTypeDonut() {
-  const items = [
-    ["Farmhouse", "35% (6,557)", "bg-chart-green"],
-    ["Villas", "28% (5,248)", "bg-chart-blue"],
-    ["Resorts", "18% (3,374)", "bg-chart-cyan"],
-    ["Homestays", "11% (2,061)", "bg-chart-purple"],
-    ["Other Stays", "8% (1,494)", "bg-chart-gray"],
-  ];
-
-  return (
-    <Card className="min-h-[240px]">
-      <CardHeader
-        title="Bookings by Property Type"
-        action={
-          <select className="h-8 rounded-md border border-border bg-surface px-3 text-xs text-text-muted outline-none">
-            <option>This Month</option>
-          </select>
-        }
-      />
-      <div className="flex items-center justify-center gap-6 p-5">
-        <div className="relative grid h-36 w-36 shrink-0 place-items-center rounded-full bg-[conic-gradient(var(--color-chart-green)_0_35%,var(--color-chart-blue)_35%_63%,var(--color-chart-cyan)_63%_81%,var(--color-chart-purple)_81%_92%,var(--color-chart-gray)_92%_100%)]">
-          <div className="grid h-[92px] w-[92px] place-items-center rounded-full bg-surface text-center">
-            <div>
-              <strong className="block text-xl font-extrabold text-text-main">
-                18,734
-              </strong>
-              <span className="text-xs font-semibold text-text-muted">Total</span>
-            </div>
-          </div>
-        </div>
-        <div className="min-w-0 flex-1 space-y-3">
-          {items.map(([label, value, color]) => (
-            <div key={label} className="flex items-center gap-2.5 text-xs">
-              <span className={`h-2.5 w-2.5 rounded-full ${color}`} />
-              <span className="min-w-0 flex-1 truncate text-text-secondary">
-                {label}
-              </span>
-              <strong className="text-text-muted">{value}</strong>
-            </div>
-          ))}
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-function TopCities() {
-  const cities = [
-    ["Lonavala", "2,845"],
-    ["Udaipur", "2,231"],
-    ["Coorg", "1,987"],
-    ["Mahabaleshwar", "1,642"],
-    ["Jaipur", "1,420"],
-  ];
-
-  return (
-    <Card className="min-h-[240px]">
-      <CardHeader
-        title="Top Cities by Bookings"
-        action={
-          <select className="h-8 rounded-md border border-border bg-surface px-3 text-xs text-text-muted outline-none">
-            <option>This Month</option>
-          </select>
-        }
-      />
-      <div className="grid grid-cols-[1fr_0.9fr] gap-4 p-5">
-        <div className="relative flex items-center justify-center">
-          <svg viewBox="0 0 210 170" className="h-36 w-full">
-            <path
-              d="M88 8 112 23 123 43 147 52 139 71 154 89 144 105 130 110 126 135 108 161 92 151 78 128 58 121 45 97 56 76 44 58 61 39 69 18Z"
-              fill="var(--color-primary-100)"
-              stroke="var(--color-primary-200)"
-              strokeWidth="2"
-            />
-            {[
-              [88, 44],
-              [62, 75],
-              [107, 81],
-              [95, 111],
-            ].map(([cx, cy], index) => (
-              <g key={index}>
-                <circle cx={cx} cy={cy} r="8" fill="var(--color-primary-700)" />
-                <circle cx={cx} cy={cy} r="3" fill="white" />
-              </g>
-            ))}
-          </svg>
-        </div>
-        <div className="space-y-2.5">
-          {cities.map(([city, count], index) => (
-            <div key={city} className="flex items-center gap-2.5 text-xs">
-              <span className="grid h-6 w-6 place-items-center rounded-md bg-primary-50 font-extrabold text-primary-700">
-                {index + 1}
-              </span>
-              <span className="flex-1 font-semibold text-text-secondary">
-                {city}
-              </span>
-              <strong className="text-text-main">{count}</strong>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="px-5 pb-3.5 text-right">
-        <Link to="/admin/reports" className="text-xs font-extrabold text-primary-700">
-          View full report →
-        </Link>
-      </div>
-    </Card>
-  );
-}
-
-function BottomSummary() {
-  const items = [
-    {
-      title: "Active Offers",
-      value: "24",
-      subtitle: "Live coupons & deals",
-      classes: "bg-primary-50 text-primary-700",
-    },
-    {
-      title: "Total Coupons Used",
-      value: "12,458",
-      subtitle: "This month",
-      classes: "bg-success-soft text-success",
-    },
-    {
-      title: "Active CMS Pages",
-      value: "48",
-      subtitle: "Published pages",
-      classes: "bg-purple-soft text-purple",
-    },
-    {
-      title: "Scheduled Notifications",
-      value: "7",
-      subtitle: "Upcoming campaigns",
-      classes: "bg-info-soft text-info",
-    },
-  ];
-
-  return (
-    <Card className="overflow-hidden">
-      <div className="grid sm:grid-cols-2 xl:grid-cols-4">
-        {items.map((item, index) => (
-          <div
-            key={item.title}
-            className={`flex items-center gap-4 px-5 py-4 ${
-              index > 0 ? "border-l border-border" : ""
-            }`}
-          >
-            <span
-              className={`grid h-11 w-11 place-items-center rounded-xl ${item.classes}`}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              >
-                <path d="M4 9a2 2 0 0 0 0 4v6h16v-6a2 2 0 0 0 0-4V5H4Z" />
-                <path d="M9 5v14" />
-              </svg>
-            </span>
-            <div>
-              <span className="block text-sm font-semibold text-text-muted">
-                {item.title}
-              </span>
-              <strong className="mt-0.5 block text-xl font-extrabold text-text-main">
-                {item.value}
-              </strong>
-              <span className="block text-xs text-text-muted">{item.subtitle}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </Card>
+    </div>
   );
 }
 
 export default function AdminDashboardPage() {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [pageError, setPageError] = useState("");
+
+  const loadStats = useCallback(async () => {
+    try {
+      setLoading(true);
+      setPageError("");
+      const response = await api.get<DashboardResponse>("/admin/dashboard/stats");
+      setStats(response.data.data);
+    } catch (error) {
+      setPageError(getApiErrorMessage(error, "Unable to load dashboard stats."));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { void loadStats(); }, [loadStats]);
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <LoadingCards />
+        </section>
+      </div>
+    );
+  }
+
+  if (pageError) {
+    return (
+      <div className="rounded-dashboard-card border border-red-100 bg-surface p-5 text-sm font-bold text-red-600 shadow-dashboard-card">
+        {pageError}
+        <button type="button" onClick={() => void loadStats()} className="ml-4 rounded-control bg-red-600 px-4 py-2 text-sm font-bold text-white">Retry</button>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className="rounded-dashboard-card border border-border bg-surface p-8 text-center shadow-dashboard-card">
+        <h2 className="text-lg font-extrabold text-text-main">No data available</h2>
+        <p className="mt-2 text-sm text-text-muted">Dashboard data will appear once you start using the platform.</p>
+      </div>
+    );
+  }
+
+  const bookingDonutSegments = [
+    { label: "Requested", value: stats.bookingStats.pending, color: "var(--color-amber-500)" },
+    { label: "Confirmed", value: stats.bookingStats.confirmed, color: "var(--color-emerald-500)" },
+    { label: "Completed", value: stats.bookingStats.completed, color: "var(--color-blue-500)" },
+    { label: "Cancelled", value: stats.bookingStats.cancelled, color: "var(--color-slate-400)" },
+    { label: "Rejected", value: stats.bookingStats.rejected, color: "var(--color-red-500)" },
+  ];
+
+  const vendorDonutSegments = [
+    { label: "Approved", value: stats.vendorStats.approved, color: "var(--color-emerald-500)" },
+    { label: "Pending", value: stats.vendorStats.pending, color: "var(--color-amber-500)" },
+    { label: "Rejected", value: stats.vendorStats.rejected, color: "var(--color-red-500)" },
+  ];
+
+  const propertyDonutSegments = [
+    { label: "Approved", value: stats.propertyStats.approved, color: "var(--color-emerald-500)" },
+    { label: "Pending", value: stats.propertyStats.pending, color: "var(--color-amber-500)" },
+  ];
+
   return (
     <div className="space-y-4">
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {stats.map((item) => (
-          <StatCard key={item.title} item={item} />
-        ))}
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-[1.65fr_1.05fr_1.28fr]">
-        <BookingOverview />
-        <RevenueTrend />
-        <PropertyApprovals />
+        <StatCard title="Total Users" value={formatNumber(stats.totalUsers)} change="All registered users" iconClass="bg-success-soft text-success" icon={<IconUsers />} trend="up" />
+        <StatCard title="Total Vendors" value={formatNumber(stats.totalVendors)} change={`${stats.vendorStats.approved} approved`} iconClass="bg-info-soft text-info" icon={<IconVendors />} trend="up" />
+        <StatCard title="Total Properties" value={formatNumber(stats.totalProperties)} change={`${stats.propertyStats.approved} approved`} iconClass="bg-warning-soft text-warning" icon={<IconProperties />} trend="up" />
+        <StatCard title="Total Bookings" value={formatNumber(stats.totalBookings)} change={`${stats.bookingStats.completed} completed`} iconClass="bg-chart-red-soft text-chart-red" icon={<IconBookings />} trend="up" />
+        <StatCard title="Platform Revenue" value={formatMoney(stats.totalRevenue)} change={`${stats.paymentStats.total} payments`} iconClass="bg-purple-soft text-purple" icon={<IconRevenue />} trend="up" />
+        <StatCard title="Commission Earned" value={formatMoney(stats.totalCommission)} change={`${stats.payoutStats.pending} pending`} iconClass="bg-danger-soft text-danger" icon={<IconCommission />} trend="up" />
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <VendorVerification />
-        <PaymentsSettlements />
-        <SupportTickets />
-        <FraudAlerts />
+        <section className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-extrabold text-text-main">Booking Status</h3>
+            <span className="text-xs text-text-muted">{stats.bookingStats.total} total</span>
+          </div>
+          <div className="mt-4 flex items-center gap-4">
+            <DonutChart segments={bookingDonutSegments} size={100} />
+            <div className="space-y-2">
+              {bookingDonutSegments.map((segment) => (
+                <div key={segment.label} className="flex items-center gap-2 text-xs">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: segment.color }} />
+                  <span className="text-text-muted">{segment.label}</span>
+                  <strong className="ml-auto text-text-main">{segment.value}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-extrabold text-text-main">Vendor KYC</h3>
+            <span className="text-xs text-text-muted">{stats.vendorStats.pending + stats.vendorStats.approved + stats.vendorStats.rejected} total</span>
+          </div>
+          <div className="mt-4 flex items-center gap-4">
+            <DonutChart segments={vendorDonutSegments} size={100} />
+            <div className="space-y-2">
+              {vendorDonutSegments.map((segment) => (
+                <div key={segment.label} className="flex items-center gap-2 text-xs">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: segment.color }} />
+                  <span className="text-text-muted">{segment.label}</span>
+                  <strong className="ml-auto text-text-main">{segment.value}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-extrabold text-text-main">Property Status</h3>
+            <span className="text-xs text-text-muted">{stats.propertyStats.total} total</span>
+          </div>
+          <div className="mt-4 flex items-center gap-4">
+            <DonutChart segments={propertyDonutSegments} size={100} />
+            <div className="space-y-2">
+              {propertyDonutSegments.map((segment) => (
+                <div key={segment.label} className="flex items-center gap-2 text-xs">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: segment.color }} />
+                  <span className="text-text-muted">{segment.label}</span>
+                  <strong className="ml-auto text-text-main">{segment.value}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card">
+          <h3 className="text-sm font-extrabold text-text-main">Revenue Trend</h3>
+          <div className="mt-4">
+            <MiniBarChart data={stats.monthlyRevenue} color="bg-chart-green" />
+          </div>
+          <div className="mt-3 flex justify-between text-xs text-text-muted">
+            <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+          </div>
+        </section>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[2fr_0.88fr_1.08fr]">
-        <RecentBookings />
-        <PropertyTypeDonut />
-        <TopCities />
+      <section className="grid gap-4 md:grid-cols-2">
+        <section className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card">
+          <h3 className="text-sm font-extrabold text-text-main">Quick Actions</h3>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <Link to="/admin/vendors" className="flex items-center gap-3 rounded-control border border-border bg-surface-soft p-4 transition hover:bg-surface-muted">
+              <span className="grid h-10 w-10 place-items-center rounded-lg bg-info-soft text-info"><IconVendors /></span>
+              <div>
+                <strong className="block text-sm font-extrabold text-text-main">Manage Vendors</strong>
+                <span className="text-xs text-text-muted">{stats.vendorStats.pending} pending approval</span>
+              </div>
+            </Link>
+            <Link to="/admin/property-approvals" className="flex items-center gap-3 rounded-control border border-border bg-surface-soft p-4 transition hover:bg-surface-muted">
+              <span className="grid h-10 w-10 place-items-center rounded-lg bg-warning-soft text-warning"><IconProperties /></span>
+              <div>
+                <strong className="block text-sm font-extrabold text-text-main">Property Approvals</strong>
+                <span className="text-xs text-text-muted">{stats.propertyStats.pending} pending</span>
+              </div>
+            </Link>
+            <Link to="/admin/commissions" className="flex items-center gap-3 rounded-control border border-border bg-surface-soft p-4 transition hover:bg-surface-muted">
+              <span className="grid h-10 w-10 place-items-center rounded-lg bg-danger-soft text-danger"><IconCommission /></span>
+              <div>
+                <strong className="block text-sm font-extrabold text-text-main">Commissions</strong>
+                <span className="text-xs text-text-muted">{stats.payoutStats.pending} pending</span>
+              </div>
+            </Link>
+            <Link to="/admin/payments" className="flex items-center gap-3 rounded-control border border-border bg-surface-soft p-4 transition hover:bg-surface-muted">
+              <span className="grid h-10 w-10 place-items-center rounded-lg bg-success-soft text-success"><IconRevenue /></span>
+              <div>
+                <strong className="block text-sm font-extrabold text-text-main">Payments</strong>
+                <span className="text-xs text-text-muted">{stats.paymentStats.totalPaid} paid</span>
+              </div>
+            </Link>
+          </div>
+        </section>
+
+        <section className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card">
+          <h3 className="text-sm font-extrabold text-text-main">Recent Bookings</h3>
+          {stats.recentBookings.length === 0 ? (
+            <div className="mt-4 text-center text-sm text-text-muted">No bookings yet.</div>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {stats.recentBookings.map((booking) => (
+                <div key={booking.id} className="flex items-center gap-3 rounded-control border border-border bg-surface-soft p-3 transition hover:bg-surface-muted">
+                  <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-extrabold ${statusStyles[booking.status] || statusStyles.REQUESTED}`}>
+                    {statusLabels[booking.status] || booking.status}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <strong className="block truncate text-sm font-extrabold text-text-main">{booking.guestName}</strong>
+                    <span className="block truncate text-xs text-text-muted">{booking.property.title}</span>
+                  </div>
+                  <strong className="text-sm font-extrabold text-text-main">{formatMoney(Number(booking.estimatedTotal))}</strong>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="mt-4 text-center">
+            <Link to="/admin/bookings" className="text-xs font-extrabold text-primary-700 hover:text-primary-900">View all bookings →</Link>
+          </div>
+        </section>
       </section>
 
-      <BottomSummary />
-
-      <div className="rounded-control border border-warning/30 bg-warning-soft px-4 py-2.5 text-xs font-semibold text-warning">
-        Dashboard data is currently static for UI development.
-        It will be replaced with live API data later.
-      </div>
+      <section className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-extrabold text-text-main">Booking Overview</h3>
+          <div className="flex items-center gap-4 text-xs">
+            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-chart-green" />Bookings</span>
+            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-chart-blue" />Revenue (₹)</span>
+          </div>
+        </div>
+        <div className="mt-4 flex items-end gap-[2px] h-32">
+          {stats.monthlyBookings.map((bookingCount, index) => {
+            const maxBookings = Math.max(...stats.monthlyBookings, 1);
+            const maxRevenue = Math.max(...stats.monthlyRevenue, 1);
+            const bookingHeight = Math.max((bookingCount / maxBookings) * 100, 4);
+            const revenueHeight = Math.max((stats.monthlyRevenue[index] / maxRevenue) * 100, 4);
+            return (
+              <div key={index} className="flex-1 flex flex-col items-center gap-[2px] justify-end h-full">
+                <div className="w-full rounded-t-sm bg-chart-blue/50 transition hover:bg-chart-blue" style={{ height: `${revenueHeight}%` }} />
+                <div className="w-full rounded-t-sm bg-chart-green/60 transition hover:bg-chart-green" style={{ height: `${bookingHeight}%` }} />
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-2 flex justify-between text-xs text-text-muted">
+          <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+        </div>
+      </section>
     </div>
   );
 }

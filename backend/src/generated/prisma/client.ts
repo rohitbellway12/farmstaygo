@@ -72,6 +72,11 @@ export type ServiceCity = Prisma.ServiceCityModel
  */
 export type CmsPage = Prisma.CmsPageModel
 /**
+ * Model BlogPost
+ * 
+ */
+export type BlogPost = Prisma.BlogPostModel
+/**
  * Model Amenity
  * 
  */

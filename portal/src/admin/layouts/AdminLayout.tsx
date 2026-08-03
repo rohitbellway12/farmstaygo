@@ -275,16 +275,32 @@ const menuItems: MenuItem[] = [
         <path d="M7 16h8" />
       </svg>
     ),
-  },
-  {
-    label: "Reports",
-    path: "/admin/reports",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        className={iconClass}
-        fill="none"
-        stroke="currentColor"
+    },
+    {
+      label: "Blog",
+      path: "/admin/blog",
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          className={iconClass}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+        >
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" />
+        </svg>
+      ),
+    },
+    {
+      label: "Reports",
+      path: "/admin/reports",
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          className={iconClass}
+          fill="none"
+          stroke="currentColor"
         strokeWidth="1.8"
       >
         <path d="M5 19V9" />
@@ -379,6 +395,8 @@ const pageTitles: Record<string, string> = {
   "/admin/coupons": "Coupons",
   "/admin/cms": "CMS",
   "/admin/cms/new": "Create CMS Page",
+  "/admin/blog": "Blog",
+  "/admin/blog/new": "New Blog Post",
   "/admin/reports": "Reports",
   "/admin/analytics": "Analytics",
   "/admin/notifications": "Notifications",
@@ -416,7 +434,7 @@ const menuGroups = [
   },
   {
     title: "Content",
-    paths: ["/admin/cms", "/admin/notifications"],
+    paths: ["/admin/cms", "/admin/blog", "/admin/notifications"],
   },
   {
     title: "Insights",

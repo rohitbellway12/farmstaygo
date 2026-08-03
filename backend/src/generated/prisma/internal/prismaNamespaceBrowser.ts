@@ -57,6 +57,7 @@ export const ModelName = {
   PropertyCategory: 'PropertyCategory',
   ServiceCity: 'ServiceCity',
   CmsPage: 'CmsPage',
+  BlogPost: 'BlogPost',
   Amenity: 'Amenity',
   Property: 'Property',
   PropertyAmenity: 'PropertyAmenity',
@@ -198,6 +199,27 @@ export const CmsPageScalarFieldEnum = {
 } as const
 
 export type CmsPageScalarFieldEnum = (typeof CmsPageScalarFieldEnum)[keyof typeof CmsPageScalarFieldEnum]
+
+
+export const BlogPostScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  slug: 'slug',
+  excerpt: 'excerpt',
+  description: 'description',
+  content: 'content',
+  imageUrl: 'imageUrl',
+  metaTitle: 'metaTitle',
+  metaDescription: 'metaDescription',
+  metaKeywords: 'metaKeywords',
+  isPublished: 'isPublished',
+  author: 'author',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BlogPostScalarFieldEnum = (typeof BlogPostScalarFieldEnum)[keyof typeof BlogPostScalarFieldEnum]
 
 
 export const AmenityScalarFieldEnum = {
