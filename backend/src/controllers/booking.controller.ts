@@ -36,10 +36,31 @@ const dateOnlyPattern =
 const millisecondsPerDay =
   24 * 60 * 60 * 1000;
 
-const activeBookingStatuses = [
-  BookingStatus.REQUESTED,
-  BookingStatus.CONFIRMED,
-] as const;
+const activeAvailabilityBookingWhere = {
+  OR: [
+    {
+      status: BookingStatus.CONFIRMED,
+    },
+    {
+      status: BookingStatus.REQUESTED,
+      OR: [
+        {
+          reservationAmount: null,
+        },
+        {
+          reservationAmount: {
+            lte: 0,
+          },
+        },
+        {
+          paymentStatus: {
+            not: "PENDING",
+          },
+        },
+      ],
+    },
+  ],
+} satisfies Prisma.BookingWhereInput;
 
 const parseDateOnly = (
   value: unknown
@@ -550,11 +571,7 @@ export const createBookingRequest =
 
           const activeOverlapWhere = {
             propertyId,
-            status: {
-              in: [
-                ...activeBookingStatuses,
-              ],
-            },
+            ...activeAvailabilityBookingWhere,
             ...nightsOverlapWhere(
               checkIn,
               checkOut
@@ -788,11 +805,7 @@ export const createBookingRequest =
               {
                 where: {
                   roomTypeId,
-                  status: {
-                    in: [
-                      ...activeBookingStatuses,
-                    ],
-                  },
+                  ...activeAvailabilityBookingWhere,
                   ...nightsOverlapWhere(
                     checkIn,
                     checkOut

@@ -20,6 +20,10 @@ import VendorsPage from "../admin/pages/VendorsPage";
 import UsersPage from "../admin/pages/UsersPage";
 import AdminPaymentsPage from "../admin/pages/PaymentsPage";
 import AdminCommissionsPage from "../admin/pages/CommissionsPage";
+import ServiceCitiesPage from "../admin/pages/ServiceCitiesPage";
+import CmsPagesPage, {
+  CmsPageFormPage,
+} from "../admin/pages/CmsPagesPage";
 
 import VendorLoginPage from "../vendor/pages/LoginPage";
 import VendorRegisterPage from "../vendor/pages/RegisterPage";
@@ -31,6 +35,7 @@ import VendorBookingsPage from "../vendor/pages/BookingsPage";
 import VendorEarningsPage from "../vendor/pages/EarningsPage";
 import VendorPayoutsPage from "../vendor/pages/PayoutsPage";
 import AddPropertyPage from "../vendor/pages/AddPropertyPage";
+import ManageRoomsPage from "../vendor/pages/ManageRoomsPage";
 import RoomInventoryPage from "../vendor/pages/RoomInventoryPage";
 import RoomFormPage from "../vendor/pages/RoomFormPage";
 import AvailabilityCalendarPage from "../vendor/pages/AvailabilityCalendarPage";
@@ -146,10 +151,15 @@ export default function AppRoutes() {
   element={<PropertyCategoriesPage />}
 />
 
-<Route
+          <Route
   path="amenities"
   element={<AmenitiesPage />}
 />
+
+          <Route
+            path="service-cities"
+            element={<ServiceCitiesPage />}
+          />
 
 
          <Route
@@ -184,12 +194,17 @@ export default function AppRoutes() {
 
           <Route
             path="cms"
-            element={
-              <ModulePlaceholder
-                title="CMS"
-                description="Manage website pages and content."
-              />
-            }
+            element={<CmsPagesPage />}
+          />
+
+          <Route
+            path="cms/new"
+            element={<CmsPageFormPage />}
+          />
+
+          <Route
+            path="cms/:id/edit"
+            element={<CmsPageFormPage />}
           />
 
           <Route
@@ -287,6 +302,11 @@ export default function AppRoutes() {
 <Route
   path="properties/:id/edit"
   element={<AddPropertyPage />}
+/>
+
+<Route
+  path="rooms"
+  element={<ManageRoomsPage />}
 />
 
 <Route

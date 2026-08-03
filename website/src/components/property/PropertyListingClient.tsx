@@ -22,6 +22,8 @@ import type {
   PublicCategory,
   PublicPropertiesResponse,
   PublicPropertyCard,
+  PublicServiceCitiesResponse,
+  PublicServiceCity,
 } from "@/types/public";
 
 type PropertyBookingFilter =
@@ -38,7 +40,7 @@ type PropertySort =
   | "FEATURED";
 
 interface FilterFormState {
-  search: string;
+  city: string;
   category: string;
   bookingType: PropertyBookingFilter;
   checkIn: string;
@@ -55,7 +57,7 @@ interface ToastState {
 }
 
 const defaultFilters: FilterFormState = {
-  search: "",
+  city: "",
   category: "",
   bookingType: "",
   checkIn: "",
@@ -99,7 +101,7 @@ function getInitialFilters(
       : "";
 
   return {
-    search: searchParams.get("search") || "",
+    city: searchParams.get("city") || "",
     category: searchParams.get("category") || "",
     bookingType: validBookingType,
     checkIn: searchParams.get("checkIn") || "",
@@ -259,6 +261,7 @@ function ChevronRightIcon() {
 function FilterPanel({
   filters,
   categories,
+  cities,
   minimumDate,
   onFieldChange,
   onApply,
@@ -266,6 +269,7 @@ function FilterPanel({
 }: {
   filters: FilterFormState;
   categories: PublicCategory[];
+  cities: PublicServiceCity[];
   minimumDate: string;
   onFieldChange: <Key extends keyof FilterFormState>(
     key: Key,
@@ -274,11 +278,23 @@ function FilterPanel({
   onApply: (event: FormEvent<HTMLFormElement>) => void;
   onClear: () => void;
 }) {
+  const [cityOpen, setCityOpen] =
+    useState(false);
+
+  const selectedCity =
+    cities.find(
+      (city) => city.name === filters.city
+    );
+
+  const selectedCityLabel = selectedCity
+    ? `${selectedCity.name}, ${selectedCity.state}`
+    : "All available cities";
+
   return (
     <form onSubmit={onApply} className="space-y-6">
       <div>
         <label className="mb-2 block text-[12px] font-extrabold text-ink-800">
-          Search destination
+          Select city
         </label>
 
         <div className="relative">
@@ -286,15 +302,64 @@ function FilterPanel({
             <SearchIcon />
           </span>
 
-          <input
-            type="search"
-            value={filters.search}
-            onChange={(event) =>
-              onFieldChange("search", event.target.value)
+          <button
+            type="button"
+            onClick={() =>
+              setCityOpen((open) => !open)
             }
-            placeholder="City, area or category"
-            className="h-11 w-full rounded-lg border border-ink-200 bg-white pl-11 pr-3 text-sm text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
-          />
+            className="flex h-11 w-full items-center justify-between rounded-lg border border-ink-200 bg-white pl-11 pr-3 text-left text-sm font-extrabold text-ink-800 outline-none transition hover:border-brand-300 hover:bg-brand-50/35 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15"
+          >
+            <span className="truncate">
+              {selectedCityLabel}
+            </span>
+
+            <svg
+              viewBox="0 0 24 24"
+              className="ml-2 h-4 w-4 shrink-0 text-brand-700"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+
+          {cityOpen && (
+            <div className="absolute left-0 top-[48px] z-50 w-full overflow-hidden rounded-xl border border-brand-200 bg-white shadow-[0_18px_40px_rgba(23,35,27,0.16)]">
+              {[
+                {
+                  id: "all",
+                  name: "",
+                  label:
+                    "All available cities",
+                },
+                ...cities.map((city) => ({
+                  id: city.id,
+                  name: city.name,
+                  label: `${city.name}, ${city.state}`,
+                })),
+              ].map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => {
+                    onFieldChange(
+                      "city",
+                      option.name
+                    );
+                    setCityOpen(false);
+                  }}
+                  className={`block w-full px-3 py-2.5 text-left text-sm font-bold transition ${
+                    filters.city === option.name
+                      ? "bg-brand-700 text-white"
+                      : "bg-white text-ink-800 hover:bg-brand-50 hover:text-brand-800"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -571,6 +636,7 @@ export default function PropertyListingClient() {
     getInitialFilters(currentSearchParams)
   );
   const [categories, setCategories] = useState<PublicCategory[]>([]);
+  const [cities, setCities] = useState<PublicServiceCity[]>([]);
   const [properties, setProperties] = useState<PublicPropertyCard[]>([]);
   const [pagination, setPagination] = useState<
     PublicPropertiesResponse["pagination"]
@@ -610,9 +676,16 @@ export default function PropertyListingClient() {
 
       const apiQuery = buildApiQuery(currentSearchParams);
 
-      const [categoriesResponse, propertiesResponse] = await Promise.all([
+      const [
+        categoriesResponse,
+        citiesResponse,
+        propertiesResponse,
+      ] = await Promise.all([
         apiFetch<PublicCategoriesResponse>(
           "/public/property-categories"
+        ),
+        apiFetch<PublicServiceCitiesResponse>(
+          "/public/service-cities"
         ),
         apiFetch<PublicPropertiesResponse>(
           `/public/properties?${apiQuery}`
@@ -620,6 +693,7 @@ export default function PropertyListingClient() {
       ]);
 
       setCategories(categoriesResponse.data || []);
+      setCities(citiesResponse.data || []);
       setProperties(propertiesResponse.data || []);
       setPagination(propertiesResponse.pagination);
     } catch (requestError) {
@@ -745,10 +819,18 @@ export default function PropertyListingClient() {
 
   const summaryParts = useMemo(() => {
     const parts: string[] = [];
-    const search = currentSearchParams.get("search");
+    const cityName = currentSearchParams.get("city");
 
-    if (search) {
-      parts.push(search);
+    if (cityName) {
+      const city = cities.find(
+        (item) => item.name === cityName
+      );
+
+      parts.push(
+        city
+          ? `${city.name}, ${city.state}`
+          : cityName
+      );
     }
 
     const categorySlug = currentSearchParams.get("category");
@@ -788,7 +870,7 @@ export default function PropertyListingClient() {
     }
 
     return parts;
-  }, [categories, currentSearchParams]);
+  }, [categories, cities, currentSearchParams]);
 
   const activeFilterCount = useMemo(() => {
     const ignored = new Set(["page", "limit", "sort"]);
@@ -886,6 +968,7 @@ export default function PropertyListingClient() {
           <FilterPanel
             filters={filters}
             categories={categories}
+            cities={cities}
             minimumDate={minimumDate}
             onFieldChange={updateField}
             onApply={applyFilters}
@@ -1106,6 +1189,7 @@ export default function PropertyListingClient() {
               <FilterPanel
                 filters={filters}
                 categories={categories}
+                cities={cities}
                 minimumDate={minimumDate}
                 onFieldChange={updateField}
                 onApply={applyFilters}

@@ -62,6 +62,16 @@ export type VendorCommission = Prisma.VendorCommissionModel
  */
 export type PropertyCategory = Prisma.PropertyCategoryModel
 /**
+ * Model ServiceCity
+ * 
+ */
+export type ServiceCity = Prisma.ServiceCityModel
+/**
+ * Model CmsPage
+ * 
+ */
+export type CmsPage = Prisma.CmsPageModel
+/**
  * Model Amenity
  * 
  */

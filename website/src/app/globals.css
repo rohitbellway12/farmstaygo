@@ -59,6 +59,31 @@ textarea {
   font: inherit;
 }
 
+select {
+  accent-color: #24632f;
+}
+
+.city-select {
+  appearance: none;
+  background-color: #ffffff;
+  color: #17231b;
+}
+
+.city-select:focus {
+  border-color: #3d8f45;
+  box-shadow: 0 0 0 4px rgba(61, 143, 69, 0.14);
+}
+
+.city-select option {
+  background: #ffffff;
+  color: #17231b;
+}
+
+.city-select option:checked {
+  background: #dceedd;
+  color: #183f21;
+}
+
 button,
 a {
   -webkit-tap-highlight-color: transparent;

@@ -93,8 +93,6 @@ const propertyEditingIsBlocked = (
   status: PropertyStatus
 ): boolean => {
   return (
-    status ===
-      PropertyStatus.PENDING_APPROVAL ||
     status === PropertyStatus.APPROVED ||
     status === PropertyStatus.SUSPENDED
   );

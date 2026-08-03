@@ -18,6 +18,7 @@ import {
 } from "../../shared/utils/auth";
 
 interface MenuItem {
+  group: "overview" | "listings" | "operations" | "money" | "account";
   label: string;
   path: string;
   icon: ReactNode;
@@ -27,10 +28,11 @@ interface MenuItem {
   end?: boolean;
 }
 
-const iconClass = "h-[19px] w-[19px] shrink-0";
+const iconClass = "h-[17px] w-[17px] shrink-0";
 
 const menuItems: MenuItem[] = [
   {
+    group: "overview",
     label: "Dashboard",
     path: "/vendor/dashboard",
     end: true,
@@ -43,17 +45,7 @@ const menuItems: MenuItem[] = [
     ),
   },
   {
-    label: "My Properties",
-    path: "/vendor/properties",
-    icon: (
-      <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path d="M3 21h18" />
-        <path d="M5 21V9l7-5 7 5v12" />
-        <path d="M9 21v-6h6v6" />
-      </svg>
-    ),
-  },
-  {
+    group: "listings",
     label: "Add Property",
     path: "/vendor/properties/new",
     icon: (
@@ -65,6 +57,32 @@ const menuItems: MenuItem[] = [
     ),
   },
   {
+    group: "listings",
+    label: "My Properties",
+    path: "/vendor/properties",
+    icon: (
+      <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M3 21h18" />
+        <path d="M5 21V9l7-5 7 5v12" />
+        <path d="M9 21v-6h6v6" />
+      </svg>
+    ),
+  },
+  {
+    group: "listings",
+    label: "Manage Rooms",
+    path: "/vendor/rooms",
+    icon: (
+      <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.8">
+        <rect x="3" y="8" width="18" height="11" rx="2" />
+        <path d="M7 8V6a3 3 0 0 1 6 0v2" />
+        <path d="M17 8V6a2 2 0 0 0-2-2" />
+        <path d="M3 14h18" />
+      </svg>
+    ),
+  },
+  {
+    group: "operations",
     label: "Bookings",
     path: "/vendor/bookings",
     icon: (
@@ -77,6 +95,7 @@ const menuItems: MenuItem[] = [
     ),
   },
   {
+    group: "operations",
     label: "Calendar",
     path: "/vendor/calendar",
     icon: (
@@ -91,17 +110,7 @@ const menuItems: MenuItem[] = [
     ),
   },
   {
-    label: "Pricing",
-    path: "/vendor/pricing",
-    icon: (
-      <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.8">
-        <circle cx="12" cy="12" r="9" />
-        <path d="M15 8.5c-.7-.7-1.7-1-3-1-1.7 0-3 1-3 2.5s1.1 2.1 3 2.5 3 1 3 2.5-1.3 2.5-3 2.5c-1.3 0-2.4-.4-3.2-1.2" />
-        <path d="M12 6v12" />
-      </svg>
-    ),
-  },
-  {
+    group: "money",
     label: "Earnings",
     path: "/vendor/earnings",
     icon: (
@@ -113,6 +122,7 @@ const menuItems: MenuItem[] = [
     ),
   },
   {
+    group: "money",
     label: "Payouts",
     path: "/vendor/payouts",
     icon: (
@@ -124,36 +134,7 @@ const menuItems: MenuItem[] = [
     ),
   },
   {
-    label: "Messages",
-    path: "/vendor/messages",
-    badge: "8",
-    badgeType: "success",
-    icon: (
-      <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
-      </svg>
-    ),
-  },
-  {
-    label: "Reviews",
-    path: "/vendor/reviews",
-    icon: (
-      <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z" />
-      </svg>
-    ),
-  },
-  {
-    label: "Coupons & Offers",
-    path: "/vendor/offers",
-    icon: (
-      <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path d="M4 9a2 2 0 0 0 0 4v6h16v-6a2 2 0 0 0 0-4V5H4Z" />
-        <path d="M9 5v14" />
-      </svg>
-    ),
-  },
-  {
+    group: "account",
     label: "KYC & Bank Details",
     path: "/vendor/kyc-bank",
     verified: true,
@@ -170,6 +151,7 @@ const menuItems: MenuItem[] = [
     ),
   },
   {
+    group: "account",
     label: "Settings",
     path: "/vendor/settings",
     icon: (
@@ -186,6 +168,7 @@ const pageTitles: Record<string, string> = {
   "/vendor/dashboard": "Dashboard",
   "/vendor/properties": "My Properties",
   "/vendor/properties/new": "Add Property",
+  "/vendor/rooms": "Manage Rooms",
   "/vendor/bookings": "Bookings",
   "/vendor/calendar": "Calendar",
   "/vendor/pricing": "Pricing",
@@ -197,6 +180,32 @@ const pageTitles: Record<string, string> = {
   "/vendor/kyc-bank": "KYC & Bank Details",
   "/vendor/settings": "Settings",
 };
+
+const menuGroups: Array<{
+  key: MenuItem["group"];
+  label: string;
+}> = [
+  {
+    key: "overview",
+    label: "Overview",
+  },
+  {
+    key: "listings",
+    label: "Listing Setup",
+  },
+  {
+    key: "operations",
+    label: "Bookings",
+  },
+  {
+    key: "money",
+    label: "Money",
+  },
+  {
+    key: "account",
+    label: "Account",
+  },
+];
 
 export default function VendorLayout() {
   const navigate = useNavigate();
@@ -351,106 +360,110 @@ export default function VendorLayout() {
         </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-3">
-        <div className="space-y-1.5">
-          {menuItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.end}
-              className={({ isActive }) =>
-                [
-                  "group flex min-h-[40px] items-center gap-3 rounded-[9px] px-3.5 text-sm font-semibold transition",
-                  isActive
-                    ? "bg-primary-700 text-white shadow-sm"
-                    : "text-text-secondary hover:bg-sidebar-hover hover:text-primary-700",
-                ].join(" ")
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <span className={isActive ? "text-white" : "text-text-muted group-hover:text-primary-700"}>
-                    {item.icon}
-                  </span>
+      <nav className="flex-1 overflow-y-auto px-2.5 py-3">
+        <div className="space-y-4">
+          {menuGroups.map((group) => {
+            const groupItems = menuItems.filter(
+              (item) => item.group === group.key
+            );
 
-                  <span className="min-w-0 flex-1 truncate">{item.label}</span>
+            if (groupItems.length === 0) {
+              return null;
+            }
 
-                  {item.badge && (
-                    <span
-                      className={
-                        isActive
-                          ? "rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-extrabold text-white"
-                          : item.badgeType === "danger"
-                          ? "rounded-full bg-danger-soft px-2.5 py-0.5 text-xs font-extrabold text-danger"
-                          : item.badgeType === "info"
-                          ? "rounded-full bg-info-soft px-2.5 py-0.5 text-xs font-extrabold text-info"
-                          : "rounded-full bg-success-soft px-2.5 py-0.5 text-xs font-extrabold text-success"
-                      }
-                    >
-                      {item.badge}
-                    </span>
-                  )}
+            return (
+              <div key={group.key}>
+                <p className="px-3 pb-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-text-soft">
+                  {group.label}
+                </p>
 
-                  {item.verified && (
-                    <span className={`grid h-5 w-5 place-items-center rounded-md ${isActive ? "bg-white/20 text-white" : "bg-success-soft text-success"}`}>
-                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="m5 12 4 4L19 6" />
-                      </svg>
-                    </span>
-                  )}
-                </>
-              )}
-            </NavLink>
-          ))}
+                <div className="space-y-1">
+                  {groupItems.map((item) => {
+                    const isRoomRoute =
+                      item.path === "/vendor/rooms" &&
+                      (location.pathname === "/vendor/rooms" ||
+                        location.pathname.includes("/rooms"));
+
+                    return (
+                      <NavLink
+                        key={item.path}
+                        to={item.path}
+                        end={item.end}
+                        className={({ isActive }) => {
+                          const active = isActive || isRoomRoute;
+
+                          return [
+                            "group flex min-h-[37px] items-center gap-3 rounded-[9px] px-3 text-[12px] font-semibold transition",
+                            active
+                              ? "bg-sidebar-active text-primary-700"
+                              : "text-text-secondary hover:bg-sidebar-hover hover:text-primary-700",
+                          ].join(" ");
+                        }}
+                      >
+                        {({ isActive }) => {
+                          const active = isActive || isRoomRoute;
+
+                          return (
+                            <>
+                              <span
+                                className={
+                                  active
+                                    ? "text-primary-700"
+                                    : "text-text-muted group-hover:text-primary-700"
+                                }
+                              >
+                                {item.icon}
+                              </span>
+
+                              <span className="min-w-0 flex-1 truncate">
+                                {item.label}
+                              </span>
+
+                              {item.badge && (
+                                <span
+                                  className={
+                                    item.badgeType === "danger"
+                                      ? "rounded-full bg-danger-soft px-2 py-0.5 text-[9px] font-extrabold text-danger"
+                                      : item.badgeType === "info"
+                                        ? "rounded-full bg-info-soft px-2 py-0.5 text-[9px] font-extrabold text-info"
+                                        : "rounded-full bg-success-soft px-2 py-0.5 text-[9px] font-extrabold text-success"
+                                  }
+                                >
+                                  {item.badge}
+                                </span>
+                              )}
+
+                              {item.verified && (
+                                <span
+                                  className={
+                                    active
+                                      ? "grid h-5 w-5 place-items-center rounded-md bg-primary-50 text-primary-700"
+                                      : "grid h-5 w-5 place-items-center rounded-md bg-success-soft text-success"
+                                  }
+                                >
+                                  <svg
+                                    viewBox="0 0 24 24"
+                                    className="h-3.5 w-3.5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2.5"
+                                  >
+                                    <path d="m5 12 4 4L19 6" />
+                                  </svg>
+                                </span>
+                              )}
+                            </>
+                          );
+                        }}
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </nav>
-
-      <div className="space-y-3 p-4">
-        <div className="overflow-hidden rounded-dashboard-card border border-border bg-primary-50">
-          <img
-            src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=500&q=80"
-            alt="Farmstay"
-            className="h-20 w-full object-cover"
-          />
-          <div className="p-4 text-center">
-            <strong className="block text-sm font-extrabold text-primary-800">
-              Grow your bookings
-            </strong>
-            <span className="mt-1 block text-xs text-text-muted">
-              List more. Earn more.
-            </span>
-            <button
-              type="button"
-            onClick={goToAddProperty}
-              className="mt-3 inline-flex h-9 items-center gap-2 rounded-lg bg-primary-700 px-5 text-xs font-bold text-white hover:bg-primary-800"
-            >
-              {kycApproved ? "Add New Property" : "Complete KYC"}
-              <span>→</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="rounded-dashboard-card border border-border bg-surface p-4">
-          <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-full bg-primary-50 text-primary-700">
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M4 13a8 8 0 0 1 16 0" />
-                <path d="M4 13v5" />
-                <path d="M20 13v5" />
-                <path d="M4 18h3" />
-                <path d="M17 18h3" />
-                <path d="M9 21h6" />
-              </svg>
-            </span>
-            <div>
-              <strong className="block text-sm font-extrabold text-text-main">Need Help?</strong>
-              <span className="mt-0.5 block text-xs leading-4 text-text-muted">
-                Visit Help Center or contact support
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 
@@ -561,10 +574,10 @@ export default function VendorLayout() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => navigate("/vendor/pricing")}
+                    onClick={() => navigate("/vendor/rooms")}
                     className="block w-full rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-text-secondary hover:bg-primary-50 hover:text-primary-700"
                   >
-                    Update Pricing
+                    Manage Rooms
                   </button>
                 </div>
               )}

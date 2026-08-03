@@ -413,6 +413,42 @@ export const getAdminPropertyApprovalById =
                 },
               },
             },
+
+            roomTypes: {
+              orderBy: [
+                {
+                  sortOrder: "asc",
+                },
+                {
+                  createdAt: "asc",
+                },
+              ],
+
+              include: {
+                images: {
+                  orderBy: [
+                    {
+                      isCover: "desc",
+                    },
+                    {
+                      sortOrder: "asc",
+                    },
+                  ],
+                },
+
+                amenities: {
+                  include: {
+                    amenity: true,
+                  },
+
+                  orderBy: {
+                    amenity: {
+                      sortOrder: "asc",
+                    },
+                  },
+                },
+              },
+            },
           },
         });
 

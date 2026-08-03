@@ -9,6 +9,8 @@ import type {
   PublicCategory,
   PublicPropertiesResponse,
   PublicPropertyCard,
+  PublicServiceCitiesResponse,
+  PublicServiceCity,
 } from "@/types/public";
 
 
@@ -16,13 +18,19 @@ import type {
 async function getHomeData(): Promise<{
   categories: PublicCategory[];
   properties: PublicPropertyCard[];
+  cities: PublicServiceCity[];
 }> {
   const [
     categoriesResult,
+    citiesResult,
     featuredResult,
   ] = await Promise.allSettled([
     apiFetch<PublicCategoriesResponse>(
       "/public/property-categories"
+    ),
+
+    apiFetch<PublicServiceCitiesResponse>(
+      "/public/service-cities"
     ),
 
     apiFetch<PublicPropertiesResponse>(
@@ -33,6 +41,11 @@ async function getHomeData(): Promise<{
   const categories =
     categoriesResult.status === "fulfilled"
       ? categoriesResult.value.data
+      : [];
+
+  const cities =
+    citiesResult.status === "fulfilled"
+      ? citiesResult.value.data
       : [];
 
   let properties =
@@ -55,6 +68,7 @@ async function getHomeData(): Promise<{
 
   return {
     categories,
+    cities,
     properties,
   };
 }
@@ -106,6 +120,7 @@ function CategoryIcon() {
 export default async function Home() {
   const {
     categories,
+    cities,
     properties,
   } = await getHomeData();
 
@@ -145,7 +160,7 @@ export default async function Home() {
           </div>
 
           <div className="mt-9">
-            <HomeSearchForm />
+            <HomeSearchForm cities={cities} />
           </div>
 
           <div className="mt-7 grid gap-4 text-white sm:grid-cols-2 xl:grid-cols-4">

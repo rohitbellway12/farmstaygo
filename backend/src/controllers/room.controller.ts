@@ -439,15 +439,8 @@ const propertySupportsRooms = (
 |
 | Room inventory is operational data.
 |
-| Allowed:
-| DRAFT
-| REJECTED
-| APPROVED
-| INACTIVE
-|
-| Blocked:
-| PENDING_APPROVAL
-| SUSPENDED
+| Room-wise inventory can be completed while a listing is under review.
+| Only suspended properties are blocked from inventory changes.
 |
 */
 
@@ -455,8 +448,6 @@ const roomManagementIsBlocked = (
   status: PropertyStatus
 ): boolean => {
   return (
-    status ===
-      PropertyStatus.PENDING_APPROVAL ||
     status ===
       PropertyStatus.SUSPENDED
   );

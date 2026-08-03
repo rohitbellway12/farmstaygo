@@ -55,6 +55,8 @@ export const ModelName = {
   Vendor: 'Vendor',
   VendorCommission: 'VendorCommission',
   PropertyCategory: 'PropertyCategory',
+  ServiceCity: 'ServiceCity',
+  CmsPage: 'CmsPage',
   Amenity: 'Amenity',
   Property: 'Property',
   PropertyAmenity: 'PropertyAmenity',
@@ -162,6 +164,40 @@ export const PropertyCategoryScalarFieldEnum = {
 } as const
 
 export type PropertyCategoryScalarFieldEnum = (typeof PropertyCategoryScalarFieldEnum)[keyof typeof PropertyCategoryScalarFieldEnum]
+
+
+export const ServiceCityScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  state: 'state',
+  country: 'country',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ServiceCityScalarFieldEnum = (typeof ServiceCityScalarFieldEnum)[keyof typeof ServiceCityScalarFieldEnum]
+
+
+export const CmsPageScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  slug: 'slug',
+  pageType: 'pageType',
+  excerpt: 'excerpt',
+  content: 'content',
+  metaTitle: 'metaTitle',
+  metaDescription: 'metaDescription',
+  isPublished: 'isPublished',
+  showInFooter: 'showInFooter',
+  footerGroup: 'footerGroup',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CmsPageScalarFieldEnum = (typeof CmsPageScalarFieldEnum)[keyof typeof CmsPageScalarFieldEnum]
 
 
 export const AmenityScalarFieldEnum = {

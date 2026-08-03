@@ -84,6 +84,50 @@ interface PropertyAmenity {
   amenity: Amenity;
 }
 
+interface RoomImage {
+  id: string;
+  roomTypeId: string;
+  image: string;
+  altText: string | null;
+  isCover: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface RoomAmenity {
+  roomTypeId: string;
+  amenityId: string;
+  createdAt: string;
+  amenity: Amenity;
+}
+
+interface RoomType {
+  id: string;
+  propertyId: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  totalRooms: number;
+  maxAdults: number;
+  maxChildren: number;
+  maxGuests: number;
+  beds: number;
+  bathrooms: number;
+  basePrice: string | number;
+  weekendPrice: string | number | null;
+  reservationAmount:
+    | string
+    | number
+    | null;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  images: RoomImage[];
+  amenities: RoomAmenity[];
+}
+
 interface VendorUser {
   id: number;
   firstName: string;
@@ -155,6 +199,7 @@ interface AdminProperty {
   vendor: PropertyVendor;
   images: PropertyImage[];
   amenities: PropertyAmenity[];
+  roomTypes: RoomType[];
 }
 
 interface PropertyDetailResponse {
@@ -1601,6 +1646,207 @@ export default function PropertyApprovalReviewPage() {
               />
             </div>
           </SectionCard>
+
+          {/* Room Inventory */}
+
+          {(property.bookingType === "ROOM_WISE" ||
+            property.bookingType === "BOTH") && (
+            <SectionCard
+              title="Room Inventory"
+              description={`${property.roomTypes.length} room types configured`}
+              icon={<PropertyIcon />}
+            >
+              {property.roomTypes.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-dashboard-card bg-surface-soft p-4">
+                      <span className="text-xs font-semibold text-text-muted">
+                        Room Types
+                      </span>
+                      <strong className="mt-2 block text-xl font-extrabold text-text-main">
+                        {property.roomTypes.length}
+                      </strong>
+                    </div>
+
+                    <div className="rounded-dashboard-card bg-primary-50 p-4">
+                      <span className="text-xs font-semibold text-primary-700">
+                        Total Rooms
+                      </span>
+                      <strong className="mt-2 block text-xl font-extrabold text-primary-800">
+                        {property.roomTypes.reduce(
+                          (sum, room) =>
+                            sum + room.totalRooms,
+                          0
+                        )}
+                      </strong>
+                    </div>
+
+                    <div className="rounded-dashboard-card bg-success-soft p-4">
+                      <span className="text-xs font-semibold text-success">
+                        Active Room Types
+                      </span>
+                      <strong className="mt-2 block text-xl font-extrabold text-success">
+                        {
+                          property.roomTypes.filter(
+                            (room) =>
+                              room.isActive
+                          ).length
+                        }
+                      </strong>
+                    </div>
+                  </div>
+
+                  {property.roomTypes.map((room) => (
+                    <article
+                      key={room.id}
+                      className="rounded-dashboard-card border border-border bg-surface-soft p-4"
+                    >
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="text-base font-extrabold text-text-main">
+                              {room.name}
+                            </h3>
+
+                            <span
+                              className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                                room.isActive
+                                  ? "bg-success-soft text-success"
+                                  : "bg-surface-muted text-text-muted"
+                              }`}
+                            >
+                              {room.isActive
+                                ? "Active"
+                                : "Inactive"}
+                            </span>
+                          </div>
+
+                          <p className="mt-1 text-sm leading-6 text-text-muted">
+                            {room.description ||
+                              "No room description added."}
+                          </p>
+                        </div>
+
+                        <code className="rounded-md bg-surface px-2 py-1 text-xs text-text-muted">
+                          {room.slug}
+                        </code>
+                      </div>
+
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        <DetailItem
+                          label="Total Rooms"
+                          value={room.totalRooms}
+                        />
+                        <DetailItem
+                          label="Max Guests"
+                          value={room.maxGuests}
+                        />
+                        <DetailItem
+                          label="Beds"
+                          value={room.beds}
+                        />
+                        <DetailItem
+                          label="Bathrooms"
+                          value={room.bathrooms}
+                        />
+                        <DetailItem
+                          label="Base Price"
+                          value={formatPrice(
+                            room.basePrice
+                          )}
+                        />
+                        <DetailItem
+                          label="Weekend Price"
+                          value={formatPrice(
+                            room.weekendPrice
+                          )}
+                        />
+                        <DetailItem
+                          label="Booking Deposit"
+                          value={formatPrice(
+                            room.reservationAmount
+                          )}
+                        />
+                        <DetailItem
+                          label="Children"
+                          value={room.maxChildren}
+                        />
+                      </div>
+
+                      <div className="mt-4 border-t border-border pt-4">
+                        <span className="text-xs font-semibold text-text-muted">
+                          Room Photos
+                        </span>
+
+                        {room.images.length > 0 ? (
+                          <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
+                            {room.images.map(
+                              (image) => (
+                                <div
+                                  key={image.id}
+                                  className="relative overflow-hidden rounded-xl border border-border bg-surface"
+                                >
+                                  <img
+                                    src={getAssetUrl(
+                                      image.image
+                                    )}
+                                    alt={
+                                      image.altText ||
+                                      room.name
+                                    }
+                                    className="h-20 w-full object-cover"
+                                  />
+
+                                  {image.isCover && (
+                                    <span className="absolute bottom-1 left-1 rounded bg-primary-700 px-1.5 py-0.5 text-[9px] font-bold text-white">
+                                      Cover
+                                    </span>
+                                  )}
+                                </div>
+                              )
+                            )}
+                          </div>
+                        ) : (
+                          <p className="mt-2 text-sm font-semibold text-text-muted">
+                            No room photos uploaded.
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="mt-4 border-t border-border pt-4">
+                        <span className="text-xs font-semibold text-text-muted">
+                          Room Amenities
+                        </span>
+
+                        {room.amenities.length > 0 ? (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {room.amenities.map(
+                              ({ amenity }) => (
+                                <span
+                                  key={amenity.id}
+                                  className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-bold text-text-secondary"
+                                >
+                                  {amenity.name}
+                                </span>
+                              )
+                            )}
+                          </div>
+                        ) : (
+                          <p className="mt-2 text-sm font-semibold text-text-muted">
+                            No room amenities selected.
+                          </p>
+                        )}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-control border border-warning/20 bg-warning-soft p-4 text-sm font-semibold text-warning">
+                  No room types have been added for this room-wise property.
+                </div>
+              )}
+            </SectionCard>
+          )}
 
           {/* Amenities */}
 

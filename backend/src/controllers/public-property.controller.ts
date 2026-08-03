@@ -472,6 +472,32 @@ const parseDateOnly = (
     : null;
 };
 
+const activeAvailabilityBookingWhere = {
+  OR: [
+    {
+      status: BookingStatus.CONFIRMED,
+    },
+    {
+      status: BookingStatus.REQUESTED,
+      OR: [
+        {
+          reservationAmount: null,
+        },
+        {
+          reservationAmount: {
+            lte: 0,
+          },
+        },
+        {
+          paymentStatus: {
+            not: "PENDING",
+          },
+        },
+      ],
+    },
+  ],
+} satisfies Prisma.BookingWhereInput;
+
 const getTodayDateOnly =
   (): Date => {
     const currentDate =
@@ -1365,12 +1391,7 @@ const fetchAvailabilityMaps =
           propertyId: {
             in: propertyIds,
           },
-          status: {
-            in: [
-              BookingStatus.REQUESTED,
-              BookingStatus.CONFIRMED,
-            ],
-          },
+          ...activeAvailabilityBookingWhere,
           checkIn: {
             lt: dateRange.checkOut,
           },

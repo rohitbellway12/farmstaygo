@@ -565,6 +565,7 @@ function PropertyCard({
 
   const editAllowed = [
     "DRAFT",
+    "PENDING_APPROVAL",
     "REJECTED",
     "INACTIVE",
   ].includes(property.status);

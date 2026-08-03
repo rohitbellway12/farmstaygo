@@ -84,6 +84,30 @@ const cleanOptionalString = (
   return cleanedValue || null;
 };
 
+const findActiveServiceCity = async (
+  city: string,
+  state: string,
+  country: string
+) => {
+  return prisma.serviceCity.findFirst({
+    where: {
+      isActive: true,
+      name: {
+        equals: city,
+        mode: "insensitive",
+      },
+      state: {
+        equals: state,
+        mode: "insensitive",
+      },
+      country: {
+        equals: country,
+        mode: "insensitive",
+      },
+    },
+  });
+};
+
 const isPropertyBookingType = (
   value: unknown
 ): value is PropertyBookingType => {
@@ -429,6 +453,24 @@ export const getVendorProperties = async (
             select: {
               images: true,
               amenities: true,
+              roomTypes: true,
+            },
+          },
+
+          roomTypes: {
+            orderBy: [
+              {
+                sortOrder: "asc",
+              },
+              {
+                createdAt: "asc",
+              },
+            ],
+            select: {
+              id: true,
+              name: true,
+              totalRooms: true,
+              isActive: true,
             },
           },
         },
@@ -814,8 +856,6 @@ export const updatePropertyBasicInfo = async (
 
     if (
   existingProperty.status ===
-    PropertyStatus.PENDING_APPROVAL ||
-  existingProperty.status ===
     PropertyStatus.APPROVED ||
   existingProperty.status ===
     PropertyStatus.SUSPENDED
@@ -1098,8 +1138,6 @@ export const updatePropertyLocation = async (
 
     if (
   existingProperty.status ===
-    PropertyStatus.PENDING_APPROVAL ||
-  existingProperty.status ===
     PropertyStatus.APPROVED ||
   existingProperty.status ===
     PropertyStatus.SUSPENDED
@@ -1254,6 +1292,25 @@ export const updatePropertyLocation = async (
       });
     }
 
+    const serviceCity =
+      await findActiveServiceCity(
+        (city as string).trim(),
+        (state as string).trim(),
+        (country as string).trim()
+      );
+
+    if (!serviceCity) {
+      return res.status(422).json({
+        success: false,
+        message:
+          "Please select a city currently enabled by admin.",
+        errors: {
+          city:
+            "This city is not enabled for property listings.",
+        },
+      });
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Update Property Location
@@ -1286,17 +1343,11 @@ export const updatePropertyLocation = async (
               locality
             ) ?? null,
 
-          city: (
-            city as string
-          ).trim(),
+          city: serviceCity.name,
 
-          state: (
-            state as string
-          ).trim(),
+          state: serviceCity.state,
 
-          country: (
-            country as string
-          ).trim(),
+          country: serviceCity.country,
 
           postalCode: (
             postalCode as string

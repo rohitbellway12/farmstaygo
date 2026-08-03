@@ -154,6 +154,23 @@ const menuItems: MenuItem[] = [
   ),
 },
 
+{
+  label: "Service Cities",
+  path: "/admin/service-cities",
+  icon: (
+    <svg
+      viewBox="0 0 24 24"
+      className={iconClass}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <path d="M12 21s7-4.4 7-11a7 7 0 1 0-14 0c0 6.6 7 11 7 11Z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </svg>
+  ),
+},
+
   {
     label: "Properties",
     path: "/admin/properties",
@@ -354,18 +371,69 @@ const pageTitles: Record<string, string> = {
   "/admin/property-approvals": "Property Approvals",
   "/admin/property-categories": "Property Categories",
   "/admin/amenities": "Amenities",
+  "/admin/service-cities": "Service Cities",
   "/admin/properties": "Properties",
   "/admin/bookings": "Bookings",
   "/admin/payments": "Payments",
   "/admin/commissions": "Commissions",
   "/admin/coupons": "Coupons",
   "/admin/cms": "CMS",
+  "/admin/cms/new": "Create CMS Page",
   "/admin/reports": "Reports",
   "/admin/analytics": "Analytics",
   "/admin/notifications": "Notifications",
   "/admin/support": "Support Tickets",
   "/admin/settings": "Settings",
 };
+
+const menuGroups = [
+  {
+    title: "Overview",
+    paths: ["/admin/dashboard"],
+  },
+  {
+    title: "People",
+    paths: ["/admin/users", "/admin/vendors"],
+  },
+  {
+    title: "Listings",
+    paths: [
+      "/admin/property-approvals",
+      "/admin/properties",
+      "/admin/property-categories",
+      "/admin/amenities",
+      "/admin/service-cities",
+    ],
+  },
+  {
+    title: "Operations",
+    paths: [
+      "/admin/bookings",
+      "/admin/payments",
+      "/admin/commissions",
+      "/admin/coupons",
+    ],
+  },
+  {
+    title: "Content",
+    paths: ["/admin/cms", "/admin/notifications"],
+  },
+  {
+    title: "Insights",
+    paths: ["/admin/reports", "/admin/analytics"],
+  },
+  {
+    title: "System",
+    paths: ["/admin/support", "/admin/settings"],
+  },
+].map((group) => ({
+  ...group,
+  items: group.paths
+    .map((path) =>
+      menuItems.find((item) => item.path === path)
+    )
+    .filter((item): item is MenuItem => Boolean(item)),
+}));
 
 export default function AdminLayout() {
   const navigate = useNavigate();
@@ -539,97 +607,70 @@ const currentTitle = useMemo(() => {
         </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-2.5 py-4">
-        <div className="space-y-1">
-          {menuItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.end}
-              className={({ isActive }) =>
-                [
-                  "group flex min-h-[37px] items-center gap-3 rounded-[9px] px-3 text-[12px] font-semibold transition",
-                  isActive
-                    ? "bg-sidebar-active text-primary-700"
-                    : "text-text-secondary hover:bg-sidebar-hover hover:text-primary-700",
-                ].join(" ")
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {/*
-                    Sidebar badges are loaded from the live admin APIs.
-                  */}
-                  <span
-                    className={
-                      isActive
-                        ? "text-primary-700"
-                        : "text-text-muted group-hover:text-primary-700"
+      <nav className="flex-1 overflow-y-auto px-2.5 py-3">
+        <div className="space-y-4">
+          {menuGroups.map((group) => (
+            <div key={group.title}>
+              <p className="px-3 pb-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-text-soft">
+                {group.title}
+              </p>
+
+              <div className="space-y-1">
+                {group.items.map((item) => (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    end={item.end}
+                    className={({ isActive }) =>
+                      [
+                        "group flex min-h-[37px] items-center gap-3 rounded-[9px] px-3 text-[12px] font-semibold transition",
+                        isActive
+                          ? "bg-sidebar-active text-primary-700"
+                          : "text-text-secondary hover:bg-sidebar-hover hover:text-primary-700",
+                      ].join(" ")
                     }
                   >
-                    {item.icon}
-                  </span>
+                    {({ isActive }) => (
+                      <>
+                        <span
+                          className={
+                            isActive
+                              ? "text-primary-700"
+                              : "text-text-muted group-hover:text-primary-700"
+                          }
+                        >
+                          {item.icon}
+                        </span>
 
-                  <span className="min-w-0 flex-1 truncate">
-                    {item.label}
-                  </span>
+                        <span className="min-w-0 flex-1 truncate">
+                          {item.label}
+                        </span>
 
-                  {(item.badge ||
-                    (
-                      item.badgeKey &&
-                      sidebarCounts[item.badgeKey] > 0
-                    )) && (
-                    <span
-                      className={
-                        item.badgeType === "danger"
-                          ? "rounded-full bg-danger-soft px-2 py-0.5 text-[9px] font-extrabold text-danger"
-                          : "rounded-full bg-success-soft px-2 py-0.5 text-[9px] font-extrabold text-success"
-                      }
-                    >
-                      {item.badge ||
-                        (
-                          item.badgeKey
-                            ? sidebarCounts[
-                                item.badgeKey
-                              ]
-                            : ""
+                        {(item.badge ||
+                          (item.badgeKey &&
+                            sidebarCounts[item.badgeKey] > 0)) && (
+                          <span
+                            className={
+                              item.badgeType === "danger"
+                                ? "rounded-full bg-danger-soft px-2 py-0.5 text-[9px] font-extrabold text-danger"
+                                : "rounded-full bg-success-soft px-2 py-0.5 text-[9px] font-extrabold text-success"
+                            }
+                          >
+                            {item.badge ||
+                              (item.badgeKey
+                                ? sidebarCounts[item.badgeKey]
+                                : "")}
+                          </span>
                         )}
-                    </span>
-                  )}
-                </>
-              )}
-            </NavLink>
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </nav>
-
-      <div className="p-3">
-        <div className="overflow-hidden rounded-dashboard-card border border-border bg-primary-50">
-          <img
-            src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=500&q=80"
-            alt="Farmstay"
-            className="h-24 w-full object-cover"
-          />
-
-          <div className="p-4 text-center">
-            <strong className="block text-[13px] font-extrabold text-primary-800">
-              Grow with FarmStayGo
-            </strong>
-
-            <span className="mt-1 block text-[10px] text-text-muted">
-              List more. Earn more.
-            </span>
-
-            <button
-              type="button"
-              className="mt-3 inline-flex h-8 items-center gap-2 rounded-lg bg-primary-700 px-4 text-[10px] font-bold text-white hover:bg-primary-800"
-            >
-              Explore Growth Tools
-              <span>→</span>
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 

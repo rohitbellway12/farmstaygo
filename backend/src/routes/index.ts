@@ -7,6 +7,10 @@ import {
 
 import publicCategoryRoutes from "./public-category.routes.js";
 import publicPropertyRoutes from "./public-property.routes.js";
+import {
+  adminCmsPageRoutes,
+  publicCmsPageRoutes,
+} from "./cms-page.routes.js";
 
 import authRoutes from "./auth.routes.js";
 
@@ -58,6 +62,12 @@ import {
   adminPropertyRoutes,
 } from "./admin-property.routes.js";
 
+import {
+  adminServiceCityRoutes,
+  publicServiceCityRoutes,
+  vendorServiceCityRoutes,
+} from "./service-city.routes.js";
+
 const router = Router();
 
 /*
@@ -96,6 +106,16 @@ router.use(
 router.use(
   "/public/property-categories",
   publicCategoryRoutes
+);
+
+router.use(
+  "/public/service-cities",
+  publicServiceCityRoutes
+);
+
+router.use(
+  "/public/cms-pages",
+  publicCmsPageRoutes
 );
 
 /*
@@ -158,6 +178,22 @@ router.use(
 
 /*
 |--------------------------------------------------------------------------
+| Admin Service City Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/admin/service-cities",
+  adminServiceCityRoutes
+);
+
+router.use(
+  "/admin/cms-pages",
+  adminCmsPageRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
 | Admin Vendor Routes
 |--------------------------------------------------------------------------
 */
@@ -209,6 +245,17 @@ router.use(
 router.use(
   "/vendor/amenities",
   vendorAmenityRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
+| Vendor Service City Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/vendor/service-cities",
+  vendorServiceCityRoutes
 );
 
 /*

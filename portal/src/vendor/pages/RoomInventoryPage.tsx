@@ -283,7 +283,6 @@ const roomManagementBlocked = (
   status?: PropertyStatus
 ): boolean => {
   return (
-    status === "PENDING_APPROVAL" ||
     status === "SUSPENDED"
   );
 };
@@ -929,10 +928,7 @@ export default function RoomInventoryPage() {
 
       {editingBlocked && (
         <section className="rounded-dashboard-card border border-warning/20 bg-warning-soft p-4 text-sm font-semibold text-warning">
-          {property?.status ===
-          "PENDING_APPROVAL"
-            ? "Room inventory editing is temporarily blocked while this property is under Admin review."
-            : "Room inventory editing is blocked because this property is suspended."}
+          Room inventory editing is blocked because this property is suspended.
         </section>
       )}
 

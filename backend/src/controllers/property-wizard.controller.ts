@@ -63,8 +63,6 @@ const propertyEditingIsBlocked = (
   status: PropertyStatus
 ): boolean => {
   return (
-    status ===
-      PropertyStatus.PENDING_APPROVAL ||
     status === PropertyStatus.APPROVED ||
     status === PropertyStatus.SUSPENDED
   );
@@ -619,6 +617,8 @@ export const submitPropertyForApproval =
                 amenity: true,
               },
             },
+
+            roomTypes: true,
           },
         });
 
@@ -743,9 +743,20 @@ export const submitPropertyForApproval =
       */
 
       const isRoomWise = property.bookingType === "ROOM_WISE";
+      const supportsRoomPricing =
+        property.bookingType === "ROOM_WISE" ||
+        property.bookingType === "BOTH";
+      const hasPricedRoom =
+        !supportsRoomPricing ||
+        property.roomTypes.some(
+          (roomType) =>
+            roomType.isActive &&
+            Number(roomType.basePrice) > 0
+        );
 
       const pricingComplete =
         (isRoomWise || (property.basePrice !== null && Number(property.basePrice) > 0)) &&
+        hasPricedRoom &&
         Boolean(property.checkInTime) &&
         Boolean(property.checkOutTime) &&
         property.minimumStay >= 1;
@@ -755,7 +766,7 @@ export const submitPropertyForApproval =
           step: 4,
           title: "Pricing",
           message:
-            "Set check-in time, check-out time, minimum stay, and base price (if full property booking).",
+            "Set check-in time, check-out time, minimum stay, full-property price when required, and at least one active room price for room-wise booking.",
         });
       }
 

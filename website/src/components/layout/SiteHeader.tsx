@@ -3,18 +3,20 @@
 import { useEffect, useState } from "react";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import BrandLogo from "../common/BrandLogo";
 
 const navigation = [
   { label: "Home", href: "/" },
-  { label: "All Stays", href: "/properties" },
+  { label: "Stays", href: "/properties" },
   { label: "Blog", href: "/blog" },
-  { label: "About Us", href: "/about" },
-  { label: "Help", href: "/contact" },
+  { label: "Wishlist", href: "/wishlist" },
 ];
 
 export default function SiteHeader() {
+  const router = useRouter();
+
   const [mobileOpen, setMobileOpen] =
     useState(false);
 
@@ -62,12 +64,24 @@ export default function SiteHeader() {
     process.env.NEXT_PUBLIC_PORTAL_URL ||
     "http://localhost:5173";
 
+  const handleLogout = () => {
+    localStorage.removeItem("farmstaygo_customer_auth");
+    window.dispatchEvent(new Event("auth-change"));
+    setIsLoggedIn(false);
+    setCustomerName("");
+    setMobileOpen(false);
+    router.push("/");
+    router.refresh();
+  };
+
   return (
     <header className="sticky top-0 z-50 border-b border-ink-100 bg-white/95 shadow-[0_8px_28px_rgba(23,35,27,0.07)] backdrop-blur">
-      <div className="site-container flex h-[76px] items-center gap-5">
-        <BrandLogo />
+      <div className="site-container flex h-[72px] items-center gap-4">
+        <div className="flex min-w-0 flex-1 items-center">
+          <BrandLogo />
+        </div>
 
-        <nav className="ml-auto hidden items-center rounded-full border border-ink-100 bg-ink-50/70 p-1 xl:flex">
+        <nav className="hidden items-center rounded-full border border-ink-100 bg-ink-50/70 p-1 lg:flex">
           {navigation.map((item) => (
             <Link
               key={item.href}
@@ -79,24 +93,7 @@ export default function SiteHeader() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 xl:flex">
-          <Link
-            href="/wishlist"
-            className="inline-flex h-10 items-center gap-2 rounded-full px-3 text-[13px] font-bold text-ink-700 transition hover:bg-brand-50 hover:text-brand-700"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="h-[18px] w-[18px]"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              aria-hidden="true"
-            >
-              <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
-            </svg>
-            Wishlist
-          </Link>
-
+        <div className="hidden flex-1 items-center justify-end gap-2 lg:flex">
           {isLoggedIn && (
             <Link
               href="/bookings"
@@ -126,9 +123,18 @@ export default function SiteHeader() {
           )}
 
           {isLoggedIn ? (
-            <span className="inline-flex h-10 max-w-[150px] items-center truncate rounded-full border border-ink-200 bg-white px-4 text-[13px] font-bold text-ink-800 shadow-sm">
-              Hi, {customerName}
-            </span>
+            <>
+              <span className="inline-flex h-10 max-w-[150px] items-center truncate rounded-full border border-ink-200 bg-white px-4 text-[13px] font-bold text-ink-800 shadow-sm">
+                Hi, {customerName}
+              </span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex h-10 items-center rounded-full border border-red-200 bg-white px-4 text-[13px] font-bold text-red-700 shadow-sm transition hover:border-red-300 hover:bg-red-50"
+              >
+                Logout
+              </button>
+            </>
           ) : (
             <Link
               href="/login"
@@ -140,9 +146,9 @@ export default function SiteHeader() {
 
           <a
             href={`${portalUrl}/vendor/login`}
-            className="inline-flex h-10 items-center rounded-full bg-brand-700 px-5 text-[13px] font-extrabold text-white shadow-[0_8px_18px_rgba(36,99,47,0.20)] transition hover:bg-brand-800"
+            className="inline-flex h-10 items-center rounded-full bg-brand-700 px-4 text-[13px] font-extrabold text-white shadow-[0_8px_18px_rgba(36,99,47,0.20)] transition hover:bg-brand-800"
           >
-            Become a Host
+            Host
           </a>
         </div>
 
@@ -151,7 +157,7 @@ export default function SiteHeader() {
           onClick={() =>
             setMobileOpen((value) => !value)
           }
-          className="ml-auto grid h-11 w-11 place-items-center rounded-full border border-ink-200 bg-white text-ink-700 shadow-sm xl:hidden"
+          className="ml-auto grid h-11 w-11 place-items-center rounded-full border border-ink-200 bg-white text-ink-700 shadow-sm lg:hidden"
           aria-label="Toggle navigation"
           aria-expanded={mobileOpen}
         >
@@ -179,7 +185,7 @@ export default function SiteHeader() {
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-ink-100 bg-white px-4 py-4 shadow-[0_18px_30px_rgba(23,35,27,0.08)] xl:hidden">
+        <div className="border-t border-ink-100 bg-white px-4 py-4 shadow-[0_18px_30px_rgba(23,35,27,0.08)] lg:hidden">
           <nav className="site-container grid gap-2">
             {navigation.map((item) => (
               <Link
@@ -191,14 +197,6 @@ export default function SiteHeader() {
                 {item.label}
               </Link>
             ))}
-
-            <Link
-              href="/wishlist"
-              onClick={() => setMobileOpen(false)}
-              className="rounded-xl px-4 py-3 text-sm font-bold text-ink-700 hover:bg-brand-50 hover:text-brand-700"
-            >
-              Wishlist
-            </Link>
 
             {isLoggedIn && (
               <Link
@@ -214,9 +212,18 @@ export default function SiteHeader() {
 
             <div className="mt-3 grid grid-cols-2 gap-2 border-t border-ink-100 pt-4">
               {isLoggedIn ? (
-                <span className="inline-flex h-11 items-center justify-center truncate rounded-full border border-ink-200 px-4 text-sm font-bold text-ink-800">
-                  Hi, {customerName}
-                </span>
+                <>
+                  <span className="inline-flex h-11 items-center justify-center truncate rounded-full border border-ink-200 px-4 text-sm font-bold text-ink-800">
+                    Hi, {customerName}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="inline-flex h-11 items-center justify-center rounded-full border border-red-200 px-4 text-sm font-bold text-red-700"
+                  >
+                    Logout
+                  </button>
+                </>
               ) : (
                 <Link
                   href="/login"
@@ -231,7 +238,7 @@ export default function SiteHeader() {
                 href={`${portalUrl}/vendor/login`}
                 className="inline-flex h-11 items-center justify-center rounded-full bg-brand-700 px-4 text-sm font-extrabold text-white"
               >
-                Become a Host
+                Host Login
               </a>
             </div>
           </nav>

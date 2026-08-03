@@ -118,6 +118,10 @@ interface RoomType {
   totalRooms: number;
   basePrice: string | number;
   weekendPrice: string | number | null;
+  reservationAmount:
+    | string
+    | number
+    | null;
   isActive: boolean;
 }
 
@@ -125,11 +129,6 @@ interface RoomInventoryResponse {
   success: boolean;
   message: string;
   data: RoomType[];
-}
-
-interface RoomPricingFormState {
-  basePrice: string;
-  weekendPrice: string;
 }
 
 interface ApiResponse<T> {
@@ -368,18 +367,6 @@ export default function PropertyFinalSteps({
   const [roomTypes, setRoomTypes] =
     useState<RoomType[]>([]);
 
-  const [
-    roomPricingForms,
-    setRoomPricingForms,
-  ] = useState<
-    Record<string, RoomPricingFormState>
-  >({});
-
-  const [
-    roomPricingErrors,
-    setRoomPricingErrors,
-  ] = useState<Record<string, string>>({});
-
   const [amenitySearch, setAmenitySearch] =
     useState("");
 
@@ -397,6 +384,10 @@ export default function PropertyFinalSteps({
 
   const [missingSections, setMissingSections] =
     useState<MissingSection[]>([]);
+  const [
+    submitConfirmOpen,
+    setSubmitConfirmOpen,
+  ] = useState(false);
 
   /*
   |--------------------------------------------------------------------------
@@ -506,31 +497,8 @@ export default function PropertyFinalSteps({
           roomResponse.data.data || [];
 
         setRoomTypes(loadedRooms);
-        setRoomPricingForms(
-          loadedRooms.reduce<
-            Record<
-              string,
-              RoomPricingFormState
-            >
-          >((forms, room) => {
-            forms[room.id] = {
-              basePrice: String(
-                room.basePrice ?? ""
-              ),
-              weekendPrice:
-                room.weekendPrice !== null
-                  ? String(
-                      room.weekendPrice
-                    )
-                  : "",
-            };
-
-            return forms;
-          }, {})
-        );
       } else {
         setRoomTypes([]);
-        setRoomPricingForms({});
       }
     } catch (error) {
       setPageError(
@@ -644,64 +612,6 @@ export default function PropertyFinalSteps({
     return Object.keys(errors).length === 0;
   };
 
-  const updateRoomPricingForm = (
-    roomTypeId: string,
-    field: keyof RoomPricingFormState,
-    value: string
-  ) => {
-    setRoomPricingForms((currentForms) => ({
-      ...currentForms,
-      [roomTypeId]: {
-        ...(currentForms[roomTypeId] || {
-          basePrice: "",
-          weekendPrice: "",
-        }),
-        [field]: value,
-      },
-    }));
-  };
-
-  const validateRoomPricing = (): boolean => {
-    if (
-      !property ||
-      !(
-        property.bookingType === "BOTH" ||
-        property.bookingType === "ROOM_WISE"
-      )
-    ) {
-      setRoomPricingErrors({});
-      return true;
-    }
-
-    const errors: Record<string, string> = {};
-
-    roomTypes.forEach((room) => {
-      const form =
-        roomPricingForms[room.id];
-
-      if (
-        !form?.basePrice ||
-        Number(form.basePrice) <= 0
-      ) {
-        errors[room.id] =
-          "Room base price must be greater than 0.";
-        return;
-      }
-
-      if (
-        form.weekendPrice &&
-        Number(form.weekendPrice) < 0
-      ) {
-        errors[room.id] =
-          "Room weekend price cannot be negative.";
-      }
-    });
-
-    setRoomPricingErrors(errors);
-
-    return Object.keys(errors).length === 0;
-  };
-
   const handlePricingSubmit = async (
     event: FormEvent<HTMLFormElement>
   ) => {
@@ -710,8 +620,7 @@ export default function PropertyFinalSteps({
     if (
       submitting ||
       editingBlocked ||
-      !validatePricing() ||
-      !validateRoomPricing()
+      !validatePricing()
     ) {
       return;
     }
@@ -776,39 +685,6 @@ export default function PropertyFinalSteps({
           }
         );
 
-      if (
-        property &&
-        (
-          property.bookingType ===
-            "BOTH" ||
-          property.bookingType ===
-            "ROOM_WISE"
-        ) &&
-        roomTypes.length > 0
-      ) {
-        await Promise.all(
-          roomTypes.map((room) => {
-            const form =
-              roomPricingForms[room.id];
-
-            return api.put(
-              `/vendor/properties/${propertyId}/rooms/${room.id}`,
-              {
-                basePrice: Number(
-                  form.basePrice
-                ),
-                weekendPrice:
-                  form.weekendPrice
-                    ? Number(
-                        form.weekendPrice
-                      )
-                    : null,
-              }
-            );
-          })
-        );
-      }
-
       setProperty((currentProperty) =>
         currentProperty
           ? {
@@ -819,7 +695,9 @@ export default function PropertyFinalSteps({
       );
 
       setSuccessMessage(
-        "Full stay and room pricing saved successfully."
+        property?.bookingType === "ROOM_WISE"
+          ? "Stay rules saved successfully."
+          : "Pricing saved successfully."
       );
 
       onChangeStep(5);
@@ -966,6 +844,28 @@ export default function PropertyFinalSteps({
         return [];
       }
 
+      const needsFullPropertyPricing =
+        property.bookingType !== "ROOM_WISE";
+
+      const needsRoomPricing =
+        property.bookingType === "ROOM_WISE" ||
+        property.bookingType === "BOTH";
+
+      const hasFullPropertyPricing =
+        !needsFullPropertyPricing ||
+        Boolean(
+          property.basePrice &&
+            Number(property.basePrice) > 0
+        );
+
+      const hasRoomPricing =
+        !needsRoomPricing ||
+        roomTypes.some(
+          (room) =>
+            room.isActive &&
+            Number(room.basePrice) > 0
+        );
+
       return [
         {
           step: 1,
@@ -1002,10 +902,8 @@ export default function PropertyFinalSteps({
           step: 4,
           title: "Pricing",
           complete: Boolean(
-            property.basePrice &&
-              Number(
-                property.basePrice
-              ) > 0 &&
+            hasFullPropertyPricing &&
+              hasRoomPricing &&
               property.checkInTime &&
               property.checkOutTime
           ),
@@ -1019,6 +917,7 @@ export default function PropertyFinalSteps({
       ];
     }, [
       property,
+      roomTypes,
       selectedAmenityIds,
     ]);
 
@@ -1059,17 +958,21 @@ export default function PropertyFinalSteps({
         return;
       }
 
-      const confirmed =
-        window.confirm(
-          "Submit this property for admin approval? Editing will be locked while the property is under review."
-        );
+      setSubmitConfirmOpen(true);
+    };
 
-      if (!confirmed) {
+  const confirmSubmitForApproval =
+    async () => {
+      if (
+        submitting ||
+        editingBlocked
+      ) {
         return;
       }
 
       try {
         setSubmitting(true);
+        setSubmitConfirmOpen(false);
         setPageError("");
         setSuccessMessage("");
         setMissingSections([]);
@@ -1126,8 +1029,67 @@ export default function PropertyFinalSteps({
     );
   }
 
+  const roomInventoryIsReady =
+    roomTypes.some(
+      (room) =>
+        room.isActive &&
+        Number(room.basePrice) > 0
+    );
+
+  const totalRoomUnits =
+    roomTypes.reduce(
+      (sum, room) =>
+        sum + room.totalRooms,
+      0
+    );
+
   return (
     <div className="space-y-5">
+      {submitConfirmOpen && (
+        <div className="fixed inset-0 z-[120] grid place-items-center bg-black/40 px-4 backdrop-blur-sm">
+          <section className="w-full max-w-md rounded-dashboard-large border border-border bg-surface p-6 text-center shadow-dashboard-lg">
+            <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-primary-50 text-2xl font-extrabold text-primary-700">
+              ?
+            </span>
+
+            <h2 className="mt-4 text-xl font-extrabold text-text-main">
+              Submit for Admin Approval?
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-text-muted">
+              Your property will go to admin review. You can still edit it
+              while it is pending approval.
+            </p>
+
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  setSubmitConfirmOpen(false)
+                }
+                disabled={submitting}
+                className="h-11 rounded-control border border-border bg-surface px-4 text-sm font-bold text-text-secondary hover:bg-surface-soft disabled:opacity-60"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  void confirmSubmitForApproval()
+                }
+                disabled={submitting}
+                className="h-11 rounded-control bg-primary-700 px-4 text-sm font-bold text-white hover:bg-primary-800 disabled:opacity-60"
+              >
+                {submitting
+                  ? "Submitting..."
+                  : "Submit"}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
       {pageError && (
         <section className="rounded-dashboard-card border border-red-200 bg-red-50 p-4">
           <p className="font-bold text-red-700">
@@ -1167,7 +1129,7 @@ export default function PropertyFinalSteps({
             {property?.bookingType === "ROOM_WISE" ? (
               <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-blue-900">
                 <p className="text-xs font-bold uppercase tracking-wider text-blue-800">
-                  💡 Room-Wise Booking Model
+                  Room-Wise Booking Model
                 </p>
                 <p className="mt-1 text-sm leading-6">
                   Guests book <strong>individual rooms</strong> for this property. Full-stay property pricing is <strong>not required</strong>. Room rates, weekend rates, and deposit amounts are set per room in{" "}
@@ -1177,7 +1139,7 @@ export default function PropertyFinalSteps({
             ) : property?.bookingType === "BOTH" ? (
               <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
                 <p className="text-xs font-bold uppercase tracking-wider text-amber-800">
-                  ℹ️ Both — Full Property &amp; Room-Wise
+                  Both: Full Property and Room-Wise
                 </p>
                 <p className="mt-1 text-sm leading-6">
                   Guests can book the <strong>entire property</strong> or <strong>individual rooms</strong>. Set full-property rates below, and set room-level rates under <strong>Room Inventory</strong>.
@@ -1186,7 +1148,7 @@ export default function PropertyFinalSteps({
             ) : (
               <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
                 <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">
-                  🏡 Entire Property Booking
+                  Entire Property Booking
                 </p>
                 <p className="mt-1 text-sm leading-6">
                   Guests book the <strong>complete property</strong> privately. Set full-stay night rates, cleaning fee, security deposit, and the online advance booking deposit below.
@@ -1194,7 +1156,6 @@ export default function PropertyFinalSteps({
               </div>
             )}
 
-            {/* Full-stay price fields — shown for ENTIRE_PROPERTY and BOTH, hidden for pure ROOM_WISE */}
             {property?.bookingType !== "ROOM_WISE" && (
               <div className="mt-6 grid gap-5 sm:grid-cols-2">
                 {[
@@ -1286,17 +1247,16 @@ export default function PropertyFinalSteps({
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="text-sm font-bold uppercase tracking-[0.12em] text-primary-700">
-                      Room-wise Pricing
+                      Room Inventory
                     </p>
 
                     <h2 className="mt-1 text-xl font-extrabold text-text-main">
-                      Per Room Charges
+                      Room Types and Room Prices
                     </h2>
 
                     <p className="mt-1 text-sm leading-6 text-text-muted">
-                      These prices are used when guests book individual
-                      rooms. Full Stay price above is used when guests book
-                      the complete property.
+                      Room type, room quantity, and per-room price are managed
+                      only in Manage Rooms.
                     </p>
                   </div>
 
@@ -1311,11 +1271,11 @@ export default function PropertyFinalSteps({
                 {roomTypes.length === 0 ? (
                   <div className="mt-5 rounded-dashboard-card border border-dashed border-primary-300 bg-primary-50 p-5">
                     <h3 className="text-base font-extrabold text-primary-800">
-                      Add room types to set room price
+                      No room types added yet
                     </h3>
                     <p className="mt-1 text-sm leading-6 text-primary-700">
-                      Create at least one room type, then add its per-room
-                      base and weekend charges here.
+                      Add room types like Deluxe, Single, or Suite with their
+                      quantity and price before submitting a room-wise property.
                     </p>
                     <Link
                       to={`/vendor/properties/${propertyId}/rooms/new`}
@@ -1326,105 +1286,96 @@ export default function PropertyFinalSteps({
                   </div>
                 ) : (
                   <div className="mt-5 space-y-4">
-                    {roomTypes.map((room) => (
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <div className="rounded-control bg-surface-soft p-3">
+                        <strong className="block text-lg text-text-main">
+                          {roomTypes.length}
+                        </strong>
+                        <span className="text-xs font-bold text-text-muted">
+                          Room Types
+                        </span>
+                      </div>
+
+                      <div className="rounded-control bg-primary-50 p-3">
+                        <strong className="block text-lg text-primary-800">
+                          {totalRoomUnits}
+                        </strong>
+                        <span className="text-xs font-bold text-primary-700">
+                          Total Rooms
+                        </span>
+                      </div>
+
                       <div
-                        key={room.id}
-                        className="rounded-dashboard-card border border-border bg-surface-soft p-4"
+                        className={`rounded-control p-3 ${
+                          roomInventoryIsReady
+                            ? "bg-success-soft"
+                            : "bg-danger-soft"
+                        }`}
                       >
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <div>
-                            <h3 className="text-base font-extrabold text-text-main">
-                              {room.name}
-                            </h3>
-                            <p className="mt-1 text-sm text-text-muted">
-                              {room.totalRooms} total rooms
-                              {!room.isActive
-                                ? " | inactive"
-                                : ""}
-                            </p>
+                        <strong
+                          className={`block text-lg ${
+                            roomInventoryIsReady
+                              ? "text-success"
+                              : "text-danger"
+                          }`}
+                        >
+                          {roomInventoryIsReady
+                            ? "Ready"
+                            : "Need Price"}
+                        </strong>
+                        <span
+                          className={`text-xs font-bold ${
+                            roomInventoryIsReady
+                              ? "text-success"
+                              : "text-danger"
+                          }`}
+                        >
+                          Inventory Status
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3 lg:grid-cols-2">
+                      {roomTypes.map((room) => (
+                        <div
+                          key={room.id}
+                          className="rounded-dashboard-card border border-border bg-surface-soft p-4"
+                        >
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                              <h3 className="text-base font-extrabold text-text-main">
+                                {room.name}
+                              </h3>
+                              <p className="mt-1 text-sm text-text-muted">
+                                {room.totalRooms} total rooms
+                                {!room.isActive
+                                  ? " | inactive"
+                                  : ""}
+                              </p>
+                            </div>
+
+                            <Link
+                              to={`/vendor/properties/${propertyId}/rooms/${room.id}/edit`}
+                              className="inline-flex h-9 items-center justify-center rounded-control border border-border bg-surface px-3 text-xs font-bold text-text-secondary hover:bg-surface-soft"
+                            >
+                              Edit Room
+                            </Link>
+                          </div>
+
+                          <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold">
+                            <span className="rounded-full bg-white px-3 py-1 text-text-secondary">
+                              Base Rs. {room.basePrice || 0}
+                            </span>
+                            <span className="rounded-full bg-white px-3 py-1 text-text-secondary">
+                              Weekend Rs. {room.weekendPrice || room.basePrice || 0}
+                            </span>
+                            <span className="rounded-full bg-white px-3 py-1 text-text-secondary">
+                              Deposit Rs. {room.reservationAmount || 0}
+                            </span>
                           </div>
                         </div>
-
-                        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                          <label>
-                            <span className="mb-2 block text-sm font-bold text-text-secondary">
-                              Room Base Price Per Night *
-                            </span>
-                            <div className="relative">
-                              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-bold text-text-muted">
-                                Rs.
-                              </span>
-                              <input
-                                type="number"
-                                min="1"
-                                step="0.01"
-                                value={
-                                  roomPricingForms[
-                                    room.id
-                                  ]?.basePrice || ""
-                                }
-                                disabled={
-                                  editingBlocked
-                                }
-                                onChange={(event) =>
-                                  updateRoomPricingForm(
-                                    room.id,
-                                    "basePrice",
-                                    event.target.value
-                                  )
-                                }
-                                className="h-12 w-full rounded-control border border-border bg-surface pl-12 pr-4 text-base text-text-main outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-                              />
-                            </div>
-                          </label>
-
-                          <label>
-                            <span className="mb-2 block text-sm font-bold text-text-secondary">
-                              Room Weekend Price Per Night
-                            </span>
-                            <div className="relative">
-                              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-bold text-text-muted">
-                                Rs.
-                              </span>
-                              <input
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={
-                                  roomPricingForms[
-                                    room.id
-                                  ]?.weekendPrice || ""
-                                }
-                                disabled={
-                                  editingBlocked
-                                }
-                                onChange={(event) =>
-                                  updateRoomPricingForm(
-                                    room.id,
-                                    "weekendPrice",
-                                    event.target.value
-                                  )
-                                }
-                                placeholder="Uses room base price if empty"
-                                className="h-12 w-full rounded-control border border-border bg-surface pl-12 pr-4 text-base text-text-main outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-                              />
-                            </div>
-                          </label>
-                        </div>
-
-                        {roomPricingErrors[
-                          room.id
-                        ] && (
-                          <p className="mt-2 text-sm font-semibold text-red-600">
-                            {
-                              roomPricingErrors[
-                                room.id
-                              ]
-                            }
-                          </p>
-                        )}
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
               </section>
@@ -2000,8 +1951,8 @@ export default function PropertyFinalSteps({
           <section className="sticky bottom-4 z-10 rounded-dashboard-card border border-border bg-surface/95 p-4 shadow-dashboard-lg backdrop-blur">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-text-muted">
-                After submission, editing will
-                be locked until admin review.
+                After submission, this property will be marked pending
+                for admin review. You can still edit it until it is approved.
               </p>
 
               <div className="flex gap-3">

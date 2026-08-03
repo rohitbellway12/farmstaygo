@@ -388,6 +388,8 @@ export const ModelName = {
   Vendor: 'Vendor',
   VendorCommission: 'VendorCommission',
   PropertyCategory: 'PropertyCategory',
+  ServiceCity: 'ServiceCity',
+  CmsPage: 'CmsPage',
   Amenity: 'Amenity',
   Property: 'Property',
   PropertyAmenity: 'PropertyAmenity',
@@ -415,7 +417,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "vendor" | "vendorCommission" | "propertyCategory" | "amenity" | "property" | "propertyAmenity" | "propertyImage" | "roomType" | "roomAmenity" | "roomImage" | "propertyAvailabilityBlock" | "roomAvailabilityBlock" | "wishlist" | "booking" | "payment"
+    modelProps: "user" | "vendor" | "vendorCommission" | "propertyCategory" | "serviceCity" | "cmsPage" | "amenity" | "property" | "propertyAmenity" | "propertyImage" | "roomType" | "roomAmenity" | "roomImage" | "propertyAvailabilityBlock" | "roomAvailabilityBlock" | "wishlist" | "booking" | "payment"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -712,6 +714,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.PropertyCategoryCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.PropertyCategoryCountAggregateOutputType> | number
+        }
+      }
+    }
+    ServiceCity: {
+      payload: Prisma.$ServiceCityPayload<ExtArgs>
+      fields: Prisma.ServiceCityFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ServiceCityFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServiceCityPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ServiceCityFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServiceCityPayload>
+        }
+        findFirst: {
+          args: Prisma.ServiceCityFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServiceCityPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ServiceCityFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServiceCityPayload>
+        }
+        findMany: {
+          args: Prisma.ServiceCityFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServiceCityPayload>[]
+        }
+        create: {
+          args: Prisma.ServiceCityCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServiceCityPayload>
+        }
+        createMany: {
+          args: Prisma.ServiceCityCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ServiceCityCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServiceCityPayload>[]
+        }
+        delete: {
+          args: Prisma.ServiceCityDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServiceCityPayload>
+        }
+        update: {
+          args: Prisma.ServiceCityUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServiceCityPayload>
+        }
+        deleteMany: {
+          args: Prisma.ServiceCityDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ServiceCityUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ServiceCityUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServiceCityPayload>[]
+        }
+        upsert: {
+          args: Prisma.ServiceCityUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServiceCityPayload>
+        }
+        aggregate: {
+          args: Prisma.ServiceCityAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateServiceCity>
+        }
+        groupBy: {
+          args: Prisma.ServiceCityGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ServiceCityGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ServiceCityCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ServiceCityCountAggregateOutputType> | number
+        }
+      }
+    }
+    CmsPage: {
+      payload: Prisma.$CmsPagePayload<ExtArgs>
+      fields: Prisma.CmsPageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CmsPageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsPagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CmsPageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsPagePayload>
+        }
+        findFirst: {
+          args: Prisma.CmsPageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsPagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CmsPageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsPagePayload>
+        }
+        findMany: {
+          args: Prisma.CmsPageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsPagePayload>[]
+        }
+        create: {
+          args: Prisma.CmsPageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsPagePayload>
+        }
+        createMany: {
+          args: Prisma.CmsPageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CmsPageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsPagePayload>[]
+        }
+        delete: {
+          args: Prisma.CmsPageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsPagePayload>
+        }
+        update: {
+          args: Prisma.CmsPageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsPagePayload>
+        }
+        deleteMany: {
+          args: Prisma.CmsPageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CmsPageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CmsPageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsPagePayload>[]
+        }
+        upsert: {
+          args: Prisma.CmsPageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsPagePayload>
+        }
+        aggregate: {
+          args: Prisma.CmsPageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCmsPage>
+        }
+        groupBy: {
+          args: Prisma.CmsPageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CmsPageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CmsPageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CmsPageCountAggregateOutputType> | number
         }
       }
     }
@@ -1721,6 +1871,40 @@ export const PropertyCategoryScalarFieldEnum = {
 export type PropertyCategoryScalarFieldEnum = (typeof PropertyCategoryScalarFieldEnum)[keyof typeof PropertyCategoryScalarFieldEnum]
 
 
+export const ServiceCityScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  state: 'state',
+  country: 'country',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ServiceCityScalarFieldEnum = (typeof ServiceCityScalarFieldEnum)[keyof typeof ServiceCityScalarFieldEnum]
+
+
+export const CmsPageScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  slug: 'slug',
+  pageType: 'pageType',
+  excerpt: 'excerpt',
+  content: 'content',
+  metaTitle: 'metaTitle',
+  metaDescription: 'metaDescription',
+  isPublished: 'isPublished',
+  showInFooter: 'showInFooter',
+  footerGroup: 'footerGroup',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CmsPageScalarFieldEnum = (typeof CmsPageScalarFieldEnum)[keyof typeof CmsPageScalarFieldEnum]
+
+
 export const AmenityScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -2323,6 +2507,8 @@ export type GlobalOmitConfig = {
   vendor?: Prisma.VendorOmit
   vendorCommission?: Prisma.VendorCommissionOmit
   propertyCategory?: Prisma.PropertyCategoryOmit
+  serviceCity?: Prisma.ServiceCityOmit
+  cmsPage?: Prisma.CmsPageOmit
   amenity?: Prisma.AmenityOmit
   property?: Prisma.PropertyOmit
   propertyAmenity?: Prisma.PropertyAmenityOmit

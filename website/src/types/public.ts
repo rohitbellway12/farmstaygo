@@ -22,6 +22,50 @@ export interface PublicCategory {
   propertyCount: number;
 }
 
+export interface PublicServiceCity {
+  id: string;
+  name: string;
+  state: string;
+  country: string;
+  isActive: boolean;
+  sortOrder: number;
+}
+
+export interface PublicServiceCitiesResponse {
+  success: boolean;
+  message: string;
+  data: PublicServiceCity[];
+  total: number;
+}
+
+export interface PublicCmsPage {
+  id: string;
+  title: string;
+  slug: string;
+  pageType: string;
+  excerpt: string | null;
+  content: string;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  isPublished: boolean;
+  showInFooter: boolean;
+  footerGroup: string;
+  sortOrder: number;
+}
+
+export interface PublicCmsPagesResponse {
+  success: boolean;
+  message: string;
+  data: PublicCmsPage[];
+  total: number;
+}
+
+export interface PublicCmsPageResponse {
+  success: boolean;
+  message: string;
+  data: PublicCmsPage;
+}
+
 export interface PublicPropertyCard {
   publicId: string;
   displayTitle: string;

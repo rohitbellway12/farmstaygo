@@ -100,7 +100,6 @@ const propertySupportsRooms = (
 |
 | Blocked:
 |
-| PENDING_APPROVAL
 | SUSPENDED
 |
 */
@@ -109,8 +108,6 @@ const roomManagementIsBlocked = (
   status: PropertyStatus
 ): boolean => {
   return (
-    status ===
-      PropertyStatus.PENDING_APPROVAL ||
     status ===
       PropertyStatus.SUSPENDED
   );

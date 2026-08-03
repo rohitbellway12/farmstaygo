@@ -124,6 +124,42 @@ model PropertyCategory {
   @@index([isActive, sortOrder])
 }
 
+model ServiceCity {
+  id        String   @id @default(cuid())
+  name      String
+  state     String
+  country   String   @default("India")
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, state, country])
+  @@index([isActive, sortOrder])
+  @@map("service_cities")
+}
+
+model CmsPage {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  pageType        String   @map("page_type")
+  excerpt         String?
+  content         String
+  metaTitle       String?  @map("meta_title")
+  metaDescription String?  @map("meta_description")
+  isPublished     Boolean  @default(false) @map("is_published")
+  showInFooter    Boolean  @default(true) @map("show_in_footer")
+  footerGroup     String   @default("company") @map("footer_group")
+  sortOrder       Int      @default(0) @map("sort_order")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([isPublished, showInFooter, footerGroup, sortOrder])
+  @@index([pageType])
+  @@map("cms_pages")
+}
+
 /**
  * |--------------------------------------------------------------------------
  * | Amenity Groups

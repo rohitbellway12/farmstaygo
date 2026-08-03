@@ -7,6 +7,8 @@ import {
   type FormEvent,
 } from "react";
 
+import type { PublicServiceCity } from "@/types/public";
+
 function localDateKey(date: Date): string {
   const year = date.getFullYear();
   const month = String(
@@ -72,11 +74,17 @@ function FieldIcon({
   );
 }
 
-export default function HomeSearchForm() {
+export default function HomeSearchForm({
+  cities,
+}: {
+  cities: PublicServiceCity[];
+}) {
   const router = useRouter();
 
-  const [location, setLocation] =
+  const [city, setCity] =
     useState("");
+  const [cityOpen, setCityOpen] =
+    useState(false);
   const [checkIn, setCheckIn] =
     useState("");
   const [checkOut, setCheckOut] =
@@ -91,6 +99,20 @@ export default function HomeSearchForm() {
     []
   );
 
+  const selectedCityLabel =
+    cities.find(
+      (serviceCity) =>
+        serviceCity.name === city
+    )
+      ? `${cities.find(
+          (serviceCity) =>
+            serviceCity.name === city
+        )?.name}, ${cities.find(
+          (serviceCity) =>
+            serviceCity.name === city
+        )?.state}`
+      : "All available cities";
+
   const submitSearch = (
     event: FormEvent<HTMLFormElement>
   ) => {
@@ -98,11 +120,8 @@ export default function HomeSearchForm() {
 
     const params = new URLSearchParams();
 
-    if (location.trim()) {
-      params.set(
-        "search",
-        location.trim()
-      );
+    if (city) {
+      params.set("city", city);
     }
 
     if (checkIn) {
@@ -133,18 +152,68 @@ export default function HomeSearchForm() {
 
         <span className="min-w-0 flex-1">
           <span className="block text-[11px] font-extrabold text-ink-800">
-            Where are you going?
+            Select City
           </span>
 
-          <input
-            type="text"
-            value={location}
-            onChange={(event) =>
-              setLocation(event.target.value)
-            }
-            placeholder="City, area or property"
-            className="mt-1 w-full bg-transparent text-[13px] text-ink-900 outline-none placeholder:text-ink-400"
-          />
+          <span className="relative mt-1 block">
+            <button
+              type="button"
+              onClick={() =>
+                setCityOpen((open) => !open)
+              }
+              className="flex h-8 w-full items-center justify-between rounded-lg border border-transparent bg-brand-50/80 py-1 pl-3 pr-2 text-left text-[13px] font-extrabold text-ink-900 outline-none transition hover:border-brand-200 hover:bg-brand-50 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15"
+            >
+              <span className="truncate">
+                {selectedCityLabel}
+              </span>
+
+              <svg
+                viewBox="0 0 24 24"
+                className="ml-2 h-4 w-4 shrink-0 text-brand-700"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+
+            {cityOpen && (
+              <div className="absolute left-0 top-[38px] z-50 w-full overflow-hidden rounded-xl border border-brand-200 bg-white shadow-[0_18px_40px_rgba(23,35,27,0.18)]">
+                {[
+                  {
+                    id: "all",
+                    name: "",
+                    label:
+                      "All available cities",
+                  },
+                  ...cities.map(
+                    (serviceCity) => ({
+                      id: serviceCity.id,
+                      name: serviceCity.name,
+                      label: `${serviceCity.name}, ${serviceCity.state}`,
+                    })
+                  ),
+                ].map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => {
+                      setCity(option.name);
+                      setCityOpen(false);
+                    }}
+                    className={`block w-full px-3 py-2 text-left text-[13px] font-bold transition ${
+                      city === option.name
+                        ? "bg-brand-700 text-white"
+                        : "bg-white text-ink-800 hover:bg-brand-50 hover:text-brand-800"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </span>
         </span>
       </label>
 

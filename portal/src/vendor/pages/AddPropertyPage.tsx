@@ -3,6 +3,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
    type ChangeEvent,
   type DragEvent,
@@ -46,6 +47,15 @@ interface PropertyCategory {
   slug: string;
   description: string | null;
   image: string | null;
+}
+
+interface ServiceCity {
+  id: string;
+  name: string;
+  state: string;
+  country: string;
+  isActive: boolean;
+  sortOrder: number;
 }
 
 interface PropertyImage {
@@ -103,6 +113,12 @@ interface CategoryApiResponse {
   success: boolean;
   message: string;
   data: PropertyCategory[];
+}
+
+interface ServiceCityApiResponse {
+  success: boolean;
+  message: string;
+  data: ServiceCity[];
 }
 
 interface PropertyApiResponse {
@@ -182,6 +198,101 @@ const emptyLocationForm: PropertyLocationFormState = {
   postalCode: "",
   latitude: "",
   longitude: "",
+};
+
+interface MapCenter {
+  latitude: number;
+  longitude: number;
+}
+
+interface MapSearchResult {
+  place_id: number;
+  display_name: string;
+  lat: string;
+  lon: string;
+}
+
+interface LeafletMap {
+  setView: (
+    coordinates: [number, number],
+    zoom?: number
+  ) => LeafletMap;
+  on: (
+    eventName: "click",
+    callback: (event: {
+      latlng: {
+        lat: number;
+        lng: number;
+      };
+    }) => void
+  ) => LeafletMap;
+  remove: () => void;
+  invalidateSize: () => void;
+}
+
+interface LeafletMarker {
+  addTo: (map: LeafletMap) => LeafletMarker;
+  setLatLng: (
+    coordinates: [number, number]
+  ) => LeafletMarker;
+}
+
+interface LeafletApi {
+  map: (
+    element: HTMLElement,
+    options: {
+      center: [number, number];
+      zoom: number;
+      scrollWheelZoom: boolean;
+    }
+  ) => LeafletMap;
+  tileLayer: (
+    url: string,
+    options: {
+      attribution: string;
+      maxZoom: number;
+    }
+  ) => {
+    addTo: (map: LeafletMap) => void;
+  };
+  marker: (
+    coordinates: [number, number]
+  ) => LeafletMarker;
+}
+
+const defaultMapCenter: MapCenter = {
+  latitude: 22.9734,
+  longitude: 78.6569,
+};
+
+const clamp = (
+  value: number,
+  min: number,
+  max: number
+): number => Math.min(Math.max(value, min), max);
+
+const isValidLatitude = (
+  value: string
+): boolean => {
+  const parsed = Number(value);
+
+  return (
+    Number.isFinite(parsed) &&
+    parsed >= -90 &&
+    parsed <= 90
+  );
+};
+
+const isValidLongitude = (
+  value: string
+): boolean => {
+  const parsed = Number(value);
+
+  return (
+    Number.isFinite(parsed) &&
+    parsed >= -180 &&
+    parsed <= 180
+  );
 };
 
 /*
@@ -469,6 +580,9 @@ const activeStep:
   const [categories, setCategories] =
     useState<PropertyCategory[]>([]);
 
+  const [serviceCities, setServiceCities] =
+    useState<ServiceCity[]>([]);
+
   const [form, setForm] =
     useState<PropertyFormState>(emptyForm);
 
@@ -476,6 +590,34 @@ const activeStep:
   useState<PropertyLocationFormState>(
     emptyLocationForm
   );
+
+  const [mapCenter, setMapCenter] =
+    useState<MapCenter>(defaultMapCenter);
+
+  const mapContainerRef =
+    useRef<HTMLDivElement | null>(null);
+
+  const leafletMapRef =
+    useRef<LeafletMap | null>(null);
+
+  const leafletMarkerRef =
+    useRef<LeafletMarker | null>(null);
+
+  const [leafletLoaded, setLeafletLoaded] =
+    useState(false);
+
+  const [mapSearch, setMapSearch] =
+    useState("");
+
+  const [mapSearchResults, setMapSearchResults] =
+    useState<MapSearchResult[]>([]);
+
+  const [mapSearching, setMapSearching] =
+    useState(false);
+
+  const [mapSearchError, setMapSearchError] =
+    useState("");
+
   const [locationSaved, setLocationSaved] =
   useState(false);
 
@@ -513,7 +655,6 @@ const [
 
 const editingBlocked = useMemo(() => {
   return (
-    propertyStatus === "PENDING_APPROVAL" ||
     propertyStatus === "APPROVED" ||
     propertyStatus === "SUSPENDED"
   );
@@ -581,13 +722,24 @@ const editingBlocked = useMemo(() => {
         setPageLoading(true);
         setPageError("");
 
-        const categoryResponse =
-          await api.get<CategoryApiResponse>(
+        const [
+          categoryResponse,
+          cityResponse,
+        ] = await Promise.all([
+          api.get<CategoryApiResponse>(
             "/vendor/property-categories"
-          );
+          ),
+          api.get<ServiceCityApiResponse>(
+            "/vendor/service-cities"
+          ),
+        ]);
 
         setCategories(
           categoryResponse.data.data
+        );
+
+        setServiceCities(
+          cityResponse.data.data
         );
 
         if (propertyId) {
@@ -681,6 +833,28 @@ const editingBlocked = useMemo(() => {
 setPropertyImages(
   property.images || []
 );
+
+const propertyLatitude =
+  property.latitude !== null
+    ? Number(property.latitude)
+    : null;
+
+const propertyLongitude =
+  property.longitude !== null
+    ? Number(property.longitude)
+    : null;
+
+if (
+  propertyLatitude !== null &&
+  propertyLongitude !== null &&
+  Number.isFinite(propertyLatitude) &&
+  Number.isFinite(propertyLongitude)
+) {
+  setMapCenter({
+    latitude: propertyLatitude,
+    longitude: propertyLongitude,
+  });
+}
 
 setLocationSaved(
   Boolean(
@@ -815,21 +989,357 @@ const updateLocationForm = <
   field: Field,
   value: PropertyLocationFormState[Field]
 ) => {
-  setLocationForm((currentForm) => ({
-    ...currentForm,
-    [field]: value,
-  }));
+  setLocationForm((currentForm) => {
+    if (field !== "city") {
+      return {
+        ...currentForm,
+        [field]: value,
+      };
+    }
+
+    const selectedCity =
+      serviceCities.find(
+        (city) => city.name === value
+      );
+
+    return {
+      ...currentForm,
+      city: value,
+      state:
+        selectedCity?.state ||
+        currentForm.state,
+      country:
+        selectedCity?.country ||
+        currentForm.country,
+    };
+  });
 
   setLocationFormErrors(
     (currentErrors) => ({
       ...currentErrors,
       [field]: undefined,
+      ...(field === "city"
+        ? {
+            state: undefined,
+            country: undefined,
+          }
+        : {}),
     })
   );
 
   setSuccessMessage("");
  setLocationSaved(false);
 };
+
+const setMapCoordinates = (
+  latitude: number,
+  longitude: number
+) => {
+  const nextLatitude = clamp(
+    latitude,
+    -90,
+    90
+  );
+  const nextLongitude = clamp(
+    longitude,
+    -180,
+    180
+  );
+
+  setLocationForm((currentForm) => ({
+    ...currentForm,
+    latitude: nextLatitude.toFixed(7),
+    longitude: nextLongitude.toFixed(7),
+  }));
+
+  setLocationFormErrors(
+    (currentErrors) => ({
+      ...currentErrors,
+      latitude: undefined,
+      longitude: undefined,
+    })
+  );
+
+  setMapCenter({
+    latitude: nextLatitude,
+    longitude: nextLongitude,
+  });
+
+  const coordinates: [number, number] = [
+    nextLatitude,
+    nextLongitude,
+  ];
+
+  if (leafletMapRef.current) {
+    leafletMapRef.current.setView(
+      coordinates,
+      16
+    );
+
+    if (leafletMarkerRef.current) {
+      leafletMarkerRef.current.setLatLng(
+        coordinates
+      );
+    } else {
+      const leaflet =
+        (window as unknown as {
+          L?: LeafletApi;
+        }).L;
+
+      if (leaflet) {
+        leafletMarkerRef.current =
+          leaflet
+            .marker(coordinates)
+            .addTo(leafletMapRef.current);
+      }
+    }
+  }
+
+  setSuccessMessage("");
+  setLocationSaved(false);
+};
+
+const syncMapFromTypedCoordinates = () => {
+  if (
+    !isValidLatitude(locationForm.latitude) ||
+    !isValidLongitude(locationForm.longitude)
+  ) {
+    return;
+  }
+
+  setMapCoordinates(
+    Number(locationForm.latitude),
+    Number(locationForm.longitude)
+  );
+};
+
+const handleMapSearch = async () => {
+  if (editingBlocked) {
+    return;
+  }
+
+  const queryParts = [
+    mapSearch.trim(),
+    locationForm.city,
+    locationForm.state,
+    locationForm.country,
+  ].filter(Boolean);
+
+  if (!mapSearch.trim()) {
+    setMapSearchError(
+      "Please enter a place, road, landmark or area."
+    );
+    setMapSearchResults([]);
+    return;
+  }
+
+  try {
+    setMapSearching(true);
+    setMapSearchError("");
+    setMapSearchResults([]);
+
+    const params = new URLSearchParams({
+      q: queryParts.join(", "),
+      format: "jsonv2",
+      limit: "5",
+      addressdetails: "1",
+    });
+
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?${params.toString()}`,
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        "Location search failed."
+      );
+    }
+
+    const results =
+      (await response.json()) as MapSearchResult[];
+
+    if (results.length === 0) {
+      setMapSearchError(
+        "No matching location found. Try a nearby landmark or area name."
+      );
+      return;
+    }
+
+    setMapSearchResults(results);
+  } catch {
+    setMapSearchError(
+      "Unable to search the map right now."
+    );
+  } finally {
+    setMapSearching(false);
+  }
+};
+
+const selectMapSearchResult = (
+  result: MapSearchResult
+) => {
+  const latitude = Number(result.lat);
+  const longitude = Number(result.lon);
+
+  if (
+    !Number.isFinite(latitude) ||
+    !Number.isFinite(longitude)
+  ) {
+    return;
+  }
+
+  setMapSearch(result.display_name);
+  setMapSearchResults([]);
+  setMapSearchError("");
+  setMapCoordinates(latitude, longitude);
+};
+
+useEffect(() => {
+  const existingLeaflet =
+    (window as unknown as {
+      L?: LeafletApi;
+    }).L;
+
+  if (existingLeaflet) {
+    setLeafletLoaded(true);
+    return;
+  }
+
+  const stylesheetId =
+    "leaflet-map-styles";
+  const scriptId = "leaflet-map-script";
+
+  if (
+    !document.getElementById(stylesheetId)
+  ) {
+    const link =
+      document.createElement("link");
+    link.id = stylesheetId;
+    link.rel = "stylesheet";
+    link.href =
+      "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    document.head.appendChild(link);
+  }
+
+  const existingScript =
+    document.getElementById(
+      scriptId
+    ) as HTMLScriptElement | null;
+
+  if (existingScript) {
+    existingScript.addEventListener(
+      "load",
+      () => setLeafletLoaded(true),
+      {
+        once: true,
+      }
+    );
+    return;
+  }
+
+  const script =
+    document.createElement("script");
+  script.id = scriptId;
+  script.src =
+    "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+  script.async = true;
+  script.addEventListener(
+    "load",
+    () => setLeafletLoaded(true),
+    {
+      once: true,
+    }
+  );
+  document.body.appendChild(script);
+}, []);
+
+useEffect(() => {
+  if (
+    activeStep !== 2 ||
+    !leafletLoaded ||
+    !mapContainerRef.current ||
+    leafletMapRef.current
+  ) {
+    return;
+  }
+
+  const leaflet =
+    (window as unknown as {
+      L?: LeafletApi;
+    }).L;
+
+  if (!leaflet) {
+    return;
+  }
+
+  const initialCenter: [number, number] = [
+    isValidLatitude(locationForm.latitude)
+      ? Number(locationForm.latitude)
+      : mapCenter.latitude,
+    isValidLongitude(locationForm.longitude)
+      ? Number(locationForm.longitude)
+      : mapCenter.longitude,
+  ];
+
+  const map = leaflet.map(
+    mapContainerRef.current,
+    {
+      center: initialCenter,
+      zoom: 13,
+      scrollWheelZoom: true,
+    }
+  );
+
+  leaflet
+    .tileLayer(
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19,
+      }
+    )
+    .addTo(map);
+
+  leafletMapRef.current = map;
+
+  if (
+    isValidLatitude(locationForm.latitude) &&
+    isValidLongitude(locationForm.longitude)
+  ) {
+    leafletMarkerRef.current = leaflet
+      .marker(initialCenter)
+      .addTo(map);
+  }
+
+  map.on("click", (event) => {
+    if (editingBlocked) {
+      return;
+    }
+
+    setMapCoordinates(
+      event.latlng.lat,
+      event.latlng.lng
+    );
+  });
+
+  window.setTimeout(() => {
+    map.invalidateSize();
+  }, 100);
+}, [
+  activeStep,
+  editingBlocked,
+  leafletLoaded,
+  locationForm.latitude,
+  locationForm.longitude,
+  mapCenter.latitude,
+  mapCenter.longitude,
+]);
 
   /*
   |--------------------------------------------------------------------------
@@ -947,9 +1457,17 @@ const validateLocationForm = (): boolean => {
       "Please enter the complete property address.";
   }
 
-  if (locationForm.city.trim().length < 2) {
+  const selectedServiceCity =
+    serviceCities.find(
+      (city) =>
+        city.name === locationForm.city &&
+        city.state === locationForm.state &&
+        city.country === locationForm.country
+    );
+
+  if (!selectedServiceCity) {
     errors.city =
-      "Please enter a valid city.";
+      "Please select a city enabled by admin.";
   }
 
   if (locationForm.state.trim().length < 2) {
@@ -2336,6 +2854,171 @@ const handleMovePropertyImage =
     onSubmit={handleLocationSubmit}
     className="space-y-5"
   >
+    {/* City and Region */}
+
+    <section className="rounded-dashboard-large border border-border bg-surface p-5 shadow-dashboard sm:p-6">
+      <div>
+        <p className="text-sm font-bold uppercase tracking-[0.12em] text-primary-700">
+          Region Details
+        </p>
+
+        <h2 className="mt-1 text-xl font-extrabold text-text-main">
+          City, State and Postal Code
+        </h2>
+      </div>
+
+      <div className="mt-5 grid gap-5 sm:grid-cols-2">
+        <label className="block">
+          <span className="mb-2 block text-sm font-bold text-text-secondary">
+            City
+            <span className="text-red-500">
+              {" "}
+              *
+            </span>
+          </span>
+
+          <select
+            value={locationForm.city}
+            disabled={
+              editingBlocked ||
+              serviceCities.length === 0
+            }
+            onChange={(event) =>
+              updateLocationForm(
+                "city",
+                event.target.value
+              )
+            }
+            className={`h-12 w-full rounded-control border bg-surface px-4 text-base text-text-main outline-none transition placeholder:text-text-soft focus:ring-2 ${
+              locationFormErrors.city
+                ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                : "border-border focus:border-primary-500 focus:ring-primary-100"
+            }`}
+          >
+            <option value="">
+              {serviceCities.length === 0
+                ? "No active cities available"
+                : "Select city"}
+            </option>
+
+            {serviceCities.map((city) => (
+              <option
+                key={city.id}
+                value={city.name}
+              >
+                {city.name}, {city.state}
+              </option>
+            ))}
+          </select>
+
+          <FieldError
+            message={locationFormErrors.city}
+          />
+        </label>
+
+        <label className="block">
+          <span className="mb-2 block text-sm font-bold text-text-secondary">
+            State
+            <span className="text-red-500">
+              {" "}
+              *
+            </span>
+          </span>
+
+          <input
+            type="text"
+            value={locationForm.state}
+            disabled
+            onChange={(event) =>
+              updateLocationForm(
+                "state",
+                event.target.value
+              )
+            }
+            placeholder="Example: Madhya Pradesh"
+            className={`h-12 w-full rounded-control border bg-surface px-4 text-base text-text-main outline-none transition placeholder:text-text-soft focus:ring-2 ${
+              locationFormErrors.state
+                ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                : "border-border focus:border-primary-500 focus:ring-primary-100"
+            }`}
+          />
+
+          <FieldError
+            message={locationFormErrors.state}
+          />
+        </label>
+
+        <label className="block">
+          <span className="mb-2 block text-sm font-bold text-text-secondary">
+            Country
+            <span className="text-red-500">
+              {" "}
+              *
+            </span>
+          </span>
+
+          <input
+            type="text"
+            value={locationForm.country}
+            disabled
+            onChange={(event) =>
+              updateLocationForm(
+                "country",
+                event.target.value
+              )
+            }
+            placeholder="India"
+            className={`h-12 w-full rounded-control border bg-surface px-4 text-base text-text-main outline-none transition placeholder:text-text-soft focus:ring-2 ${
+              locationFormErrors.country
+                ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                : "border-border focus:border-primary-500 focus:ring-primary-100"
+            }`}
+          />
+
+          <FieldError
+            message={
+              locationFormErrors.country
+            }
+          />
+        </label>
+
+        <label className="block">
+          <span className="mb-2 block text-sm font-bold text-text-secondary">
+            Postal Code
+            <span className="text-red-500">
+              {" "}
+              *
+            </span>
+          </span>
+
+          <input
+            type="text"
+            inputMode="numeric"
+            value={locationForm.postalCode}
+            disabled={editingBlocked}
+            onChange={(event) =>
+              updateLocationForm(
+                "postalCode",
+                event.target.value
+              )
+            }
+            placeholder="Example: 487001"
+            className={`h-12 w-full rounded-control border bg-surface px-4 text-base text-text-main outline-none transition placeholder:text-text-soft focus:ring-2 ${
+              locationFormErrors.postalCode
+                ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                : "border-border focus:border-primary-500 focus:ring-primary-100"
+            }`}
+          />
+
+          <FieldError
+            message={
+              locationFormErrors.postalCode
+            }
+          />
+        </label>
+      </div>
+    </section>
+
     {/* Address Details */}
 
     <section className="rounded-dashboard-large border border-border bg-surface p-5 shadow-dashboard sm:p-6">
@@ -2453,155 +3136,6 @@ const handleMovePropertyImage =
       </div>
     </section>
 
-    {/* City and Region */}
-
-    <section className="rounded-dashboard-large border border-border bg-surface p-5 shadow-dashboard sm:p-6">
-      <div>
-        <p className="text-sm font-bold uppercase tracking-[0.12em] text-primary-700">
-          Region Details
-        </p>
-
-        <h2 className="mt-1 text-xl font-extrabold text-text-main">
-          City, State and Postal Code
-        </h2>
-      </div>
-
-      <div className="mt-5 grid gap-5 sm:grid-cols-2">
-        <label className="block">
-          <span className="mb-2 block text-sm font-bold text-text-secondary">
-            City
-            <span className="text-red-500">
-              {" "}
-              *
-            </span>
-          </span>
-
-          <input
-            type="text"
-            value={locationForm.city}
-            disabled={editingBlocked}
-            onChange={(event) =>
-              updateLocationForm(
-                "city",
-                event.target.value
-              )
-            }
-            placeholder="Example: Narsinghpur"
-            className={`h-12 w-full rounded-control border bg-surface px-4 text-base text-text-main outline-none transition placeholder:text-text-soft focus:ring-2 ${
-              locationFormErrors.city
-                ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                : "border-border focus:border-primary-500 focus:ring-primary-100"
-            }`}
-          />
-
-          <FieldError
-            message={locationFormErrors.city}
-          />
-        </label>
-
-        <label className="block">
-          <span className="mb-2 block text-sm font-bold text-text-secondary">
-            State
-            <span className="text-red-500">
-              {" "}
-              *
-            </span>
-          </span>
-
-          <input
-            type="text"
-            value={locationForm.state}
-            disabled={editingBlocked}
-            onChange={(event) =>
-              updateLocationForm(
-                "state",
-                event.target.value
-              )
-            }
-            placeholder="Example: Madhya Pradesh"
-            className={`h-12 w-full rounded-control border bg-surface px-4 text-base text-text-main outline-none transition placeholder:text-text-soft focus:ring-2 ${
-              locationFormErrors.state
-                ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                : "border-border focus:border-primary-500 focus:ring-primary-100"
-            }`}
-          />
-
-          <FieldError
-            message={locationFormErrors.state}
-          />
-        </label>
-
-        <label className="block">
-          <span className="mb-2 block text-sm font-bold text-text-secondary">
-            Country
-            <span className="text-red-500">
-              {" "}
-              *
-            </span>
-          </span>
-
-          <input
-            type="text"
-            value={locationForm.country}
-            disabled={editingBlocked}
-            onChange={(event) =>
-              updateLocationForm(
-                "country",
-                event.target.value
-              )
-            }
-            placeholder="India"
-            className={`h-12 w-full rounded-control border bg-surface px-4 text-base text-text-main outline-none transition placeholder:text-text-soft focus:ring-2 ${
-              locationFormErrors.country
-                ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                : "border-border focus:border-primary-500 focus:ring-primary-100"
-            }`}
-          />
-
-          <FieldError
-            message={
-              locationFormErrors.country
-            }
-          />
-        </label>
-
-        <label className="block">
-          <span className="mb-2 block text-sm font-bold text-text-secondary">
-            Postal Code
-            <span className="text-red-500">
-              {" "}
-              *
-            </span>
-          </span>
-
-          <input
-            type="text"
-            inputMode="numeric"
-            value={locationForm.postalCode}
-            disabled={editingBlocked}
-            onChange={(event) =>
-              updateLocationForm(
-                "postalCode",
-                event.target.value
-              )
-            }
-            placeholder="Example: 487001"
-            className={`h-12 w-full rounded-control border bg-surface px-4 text-base text-text-main outline-none transition placeholder:text-text-soft focus:ring-2 ${
-              locationFormErrors.postalCode
-                ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                : "border-border focus:border-primary-500 focus:ring-primary-100"
-            }`}
-          />
-
-          <FieldError
-            message={
-              locationFormErrors.postalCode
-            }
-          />
-        </label>
-      </div>
-    </section>
-
     {/* Map Coordinates */}
 
     <section className="rounded-dashboard-large border border-border bg-surface p-5 shadow-dashboard sm:p-6">
@@ -2615,9 +3149,100 @@ const handleMovePropertyImage =
         </h2>
 
         <p className="mt-1 text-sm leading-6 text-text-muted">
-          Coordinates are optional for now. They will
-          later be connected to the map picker.
+          Click on the map to select the exact
+          property position. Latitude and longitude
+          will be filled automatically.
         </p>
+      </div>
+
+      <div
+        className="relative mt-5"
+      >
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <label className="block min-w-0 flex-1">
+            <span className="mb-2 block text-sm font-bold text-text-secondary">
+              Search on Map
+            </span>
+
+            <input
+              type="search"
+              value={mapSearch}
+              disabled={editingBlocked}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  void handleMapSearch();
+                }
+              }}
+              onChange={(event) => {
+                setMapSearch(
+                  event.target.value
+                );
+                setMapSearchError("");
+              }}
+              placeholder="Search landmark, road, farm name or area"
+              className="h-12 w-full rounded-control border border-border bg-surface px-4 text-base text-text-main outline-none transition placeholder:text-text-soft focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+            />
+          </label>
+
+          <button
+            type="button"
+            onClick={() => void handleMapSearch()}
+            disabled={
+              editingBlocked ||
+              mapSearching
+            }
+            className="mt-auto inline-flex h-12 items-center justify-center rounded-control bg-primary-700 px-5 text-sm font-bold text-white transition hover:bg-primary-800 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {mapSearching
+              ? "Searching..."
+              : "Search"}
+          </button>
+        </div>
+
+        {mapSearchError && (
+          <p className="mt-2 text-sm font-semibold text-red-600">
+            {mapSearchError}
+          </p>
+        )}
+
+        {mapSearchResults.length > 0 && (
+          <div className="absolute left-0 right-0 top-[84px] z-40 overflow-hidden rounded-dashboard-card border border-border bg-white shadow-dashboard-lg">
+            {mapSearchResults.map((result) => (
+              <button
+                key={result.place_id}
+                type="button"
+                onClick={() =>
+                  selectMapSearchResult(result)
+                }
+                className="block w-full border-b border-border px-4 py-3 text-left text-sm font-semibold text-text-secondary transition last:border-b-0 hover:bg-primary-50 hover:text-primary-700"
+              >
+                {result.display_name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="relative mt-5 overflow-hidden rounded-dashboard-card border border-border bg-surface-soft">
+        {!leafletLoaded && (
+          <div className="absolute inset-0 z-10 grid place-items-center bg-surface-soft text-sm font-bold text-text-muted">
+            Loading map...
+          </div>
+        )}
+
+        <div
+          ref={mapContainerRef}
+          className={`h-[420px] w-full ${
+            editingBlocked
+              ? "pointer-events-none opacity-70"
+              : ""
+          }`}
+        />
+
+        <div className="pointer-events-none absolute left-4 top-4 z-[500] rounded-control border border-border bg-white/95 px-3 py-2 text-xs font-bold text-text-secondary shadow-dashboard">
+          Search or click on map to set marker
+        </div>
       </div>
 
       <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -2639,6 +3264,7 @@ const handleMovePropertyImage =
                 event.target.value
               )
             }
+            onBlur={syncMapFromTypedCoordinates}
             placeholder="Example: 22.9463000"
             className={`h-12 w-full rounded-control border bg-surface px-4 text-base text-text-main outline-none transition placeholder:text-text-soft focus:ring-2 ${
               locationFormErrors.latitude
@@ -2672,6 +3298,7 @@ const handleMovePropertyImage =
                 event.target.value
               )
             }
+            onBlur={syncMapFromTypedCoordinates}
             placeholder="Example: 79.1944000"
             className={`h-12 w-full rounded-control border bg-surface px-4 text-base text-text-main outline-none transition placeholder:text-text-soft focus:ring-2 ${
               locationFormErrors.longitude
