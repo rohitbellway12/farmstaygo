@@ -68,7 +68,7 @@ export default async function BlogPostPage({
     <main className="min-h-screen bg-white">
       <article>
         {post.imageUrl && (
-          <div className="h-64 overflow-hidden lg:h-80">
+          <div className="mx-auto max-w-3xl h-64 overflow-hidden lg:h-80">
             <img
               src={post.imageUrl}
               alt={post.title}
