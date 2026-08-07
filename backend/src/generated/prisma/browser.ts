@@ -117,3 +117,18 @@ export type Payment = Prisma.PaymentModel
  * 
  */
 export type Notification = Prisma.NotificationModel
+/**
+ * Model ContactMessage
+ * 
+ */
+export type ContactMessage = Prisma.ContactMessageModel
+/**
+ * Model Setting
+ * 
+ */
+export type Setting = Prisma.SettingModel
+/**
+ * Model SocialLink
+ * 
+ */
+export type SocialLink = Prisma.SocialLinkModel

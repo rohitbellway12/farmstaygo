@@ -730,6 +730,7 @@ enum NotificationType {
   PAYMENT
   REFUND
   SYSTEM
+  CONTACT
 }
 
 enum NotificationRecipientType {
@@ -758,3 +759,72 @@ model Notification {
   @@index([recipientType, recipientId, createdAt])
   @@map("notifications")
 }
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Contact Messages
+ * |--------------------------------------------------------------------------
+ *
+ * Submitted via the public contact form. Visible to admins in the
+ * portal. Each message triggers an admin notification + email.
+ *
+ */
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([isRead, createdAt])
+  @@index([email])
+  @@map("contact_messages")
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Settings
+ * |--------------------------------------------------------------------------
+ *
+ * Key-value store for site contact settings (contact email, phone, etc.).
+ *
+ */
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([key])
+  @@map("settings")
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Social Links
+ * |--------------------------------------------------------------------------
+ *
+ * Social media links configured by admins for display on the website.
+ *
+ */
+
+model SocialLink {
+  id        String   @id @default(cuid())
+  platform  String
+  url       String
+  isActive  Boolean  @default(true) @map("is_active")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive, sortOrder])
+  @@map("social_links")
+}
+

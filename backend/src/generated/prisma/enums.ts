@@ -135,7 +135,8 @@ export const NotificationType = {
   BOOKING: 'BOOKING',
   PAYMENT: 'PAYMENT',
   REFUND: 'REFUND',
-  SYSTEM: 'SYSTEM'
+  SYSTEM: 'SYSTEM',
+  CONTACT: 'CONTACT'
 } as const
 
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]

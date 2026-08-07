@@ -152,6 +152,99 @@ const buildBookingConfirmationHtml = ({
               &copy; ${new Date().getFullYear()} FarmStayGo. All rights reserved.
             </td>
           </tr>
+         </table>
+       </td>
+     </tr>
+   </table>
+</body>
+</html>`;
+};
+
+export const sendContactMessageNotificationEmail = async (
+  to: string,
+  contact: {
+    name: string;
+    email: string;
+    phone?: string | null;
+    subject: string;
+    message: string;
+  }
+): Promise<void> => {
+  const html = buildContactMessageHtml(contact);
+
+  await sendEmail(
+    to,
+    `New Contact Message — ${contact.subject}`,
+    html
+  );
+};
+
+interface ContactMessageParams {
+  name: string;
+  email: string;
+  phone?: string | null;
+  subject: string;
+  message: string;
+}
+
+const buildContactMessageHtml = ({
+  name,
+  email,
+  phone,
+  subject,
+  message,
+}: ContactMessageParams): string => {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Contact Message</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4;padding:20px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+          <tr>
+            <td style="background-color:#2d6a4f;padding:24px;text-align:center;">
+              <h1 style="color:#ffffff;margin:0;font-size:22px;">FarmStayGo</h1>
+              <p style="color:#d8f3dc;margin:4px 0 0;font-size:13px;">New Contact Message Received</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e0e0e0;border-radius:6px;margin-bottom:24px;">
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Name</td>
+                  <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:#333333;">${name}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Email</td>
+                  <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:#333333;">${email}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Phone</td>
+                  <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:#333333;">${phone || "N/A"}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Subject</td>
+                  <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:#333333;">${subject}</td>
+                </tr>
+              </table>
+              <p style="font-size:13px;color:#555555;margin:0 0 8px;">Message</p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e0e0e0;border-radius:6px;">
+                <tr>
+                  <td style="padding:16px;font-size:14px;color:#333333;line-height:1.6;">${message.replace(/\n/g, "<br/>")}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color:#f8f9fa;padding:16px;text-align:center;font-size:12px;color:#999999;">
+              &copy; ${new Date().getFullYear()} FarmStayGo. All rights reserved.
+            </td>
+          </tr>
         </table>
       </td>
     </tr>

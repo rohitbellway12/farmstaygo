@@ -24,7 +24,11 @@ interface MenuItem {
   path: string;
   icon: ReactNode;
   badge?: string;
-  badgeKey?: "vendors" | "propertyApprovals" | "properties";
+  badgeKey?:
+    | "vendors"
+    | "propertyApprovals"
+    | "properties"
+    | "contactMessages";
   badgeType?: "success" | "danger";
   end?: boolean;
 }
@@ -33,6 +37,7 @@ interface AdminSidebarCounts {
   vendors: number;
   propertyApprovals: number;
   properties: number;
+  contactMessages: number;
 }
 
 const iconClass = "h-[17px] w-[17px] shrink-0";
@@ -244,8 +249,10 @@ const menuItems: MenuItem[] = [
     ),
   },
   {
-    label: "Coupons",
-    path: "/admin/coupons",
+    label: "Contact Messages",
+    path: "/admin/contact-messages",
+    badgeKey: "contactMessages",
+    badgeType: "danger",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -391,7 +398,7 @@ const pageTitles: Record<string, string> = {
   "/admin/bookings": "Bookings",
   "/admin/payments": "Payments",
   "/admin/commissions": "Commissions",
-  "/admin/coupons": "Coupons",
+  "/admin/contact-messages": "Contact Messages",
   "/admin/cms": "CMS",
   "/admin/cms/new": "Create CMS Page",
   "/admin/blog": "Blog",
@@ -428,7 +435,7 @@ const menuGroups = [
       "/admin/bookings",
       "/admin/payments",
       "/admin/commissions",
-      "/admin/coupons",
+      "/admin/contact-messages",
     ],
   },
   {
@@ -464,6 +471,7 @@ export default function AdminLayout() {
       vendors: 0,
       propertyApprovals: 0,
       properties: 0,
+      contactMessages: 0,
     });
 
   useEffect(() => {
@@ -475,6 +483,7 @@ export default function AdminLayout() {
           vendorsResponse,
           propertyApprovalsResponse,
           propertiesResponse,
+          contactMessagesResponse,
         ] = await Promise.all([
           api.get<{
             total: number;
@@ -499,6 +508,9 @@ export default function AdminLayout() {
               status: "ALL",
             },
           }),
+          api.get<{
+            data: { count: number };
+          }>("/admin/contact-messages/unread-count"),
         ]);
 
         if (cancelled) {
@@ -516,6 +528,8 @@ export default function AdminLayout() {
             propertiesResponse.data.statistics?.total ||
             propertiesResponse.data.total ||
             0,
+          contactMessages:
+            contactMessagesResponse.data.data.count || 0,
         });
       } catch {
         if (!cancelled) {
@@ -523,6 +537,7 @@ export default function AdminLayout() {
             vendors: 0,
             propertyApprovals: 0,
             properties: 0,
+            contactMessages: 0,
           });
         }
       }

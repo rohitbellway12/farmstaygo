@@ -93,6 +93,12 @@ import {
 
 import notificationRoutes from "./notification.routes.js";
 
+import contactRoutes from "./contact.routes.js";
+
+import {
+  adminContactRoutes,
+} from "./admin-contact.routes.js";
+
 const router = Router();
 
 /*
@@ -441,6 +447,26 @@ router.use(
 router.use(
   "/notifications",
   notificationRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
+| Contact Routes
+|--------------------------------------------------------------------------
+|
+| Public: submit a contact message or fetch contact info.
+| Admin: manage contact messages and contact settings.
+|
+*/
+
+router.use(
+  "/contact",
+  contactRoutes
+);
+
+router.use(
+  "/admin",
+  adminContactRoutes
 );
 
 export default router;

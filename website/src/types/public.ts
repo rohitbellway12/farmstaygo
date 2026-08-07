@@ -316,3 +316,41 @@ export interface PublicPropertyDetailResponse {
   message: string;
   data: PublicPropertyDetail;
 }
+
+export interface SocialLink {
+  id: string;
+  platform: string;
+  url: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PublicContactInfo {
+  email: string | null;
+  phone: string | null;
+  socialLinks: SocialLink[];
+}
+
+export interface PublicContactInfoResponse {
+  success: boolean;
+  message: string;
+  data: PublicContactInfo;
+}
+
+export interface ContactMessageResponse {
+  success: boolean;
+  message: string;
+  data: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string | null;
+    subject: string;
+    message: string;
+    isRead: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+}

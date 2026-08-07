@@ -20,6 +20,8 @@ import VendorsPage from "../admin/pages/VendorsPage";
 import UsersPage from "../admin/pages/UsersPage";
 import AdminPaymentsPage from "../admin/pages/PaymentsPage";
 import AdminCommissionsPage from "../admin/pages/CommissionsPage";
+import ContactMessagesPage from "../admin/pages/ContactMessagesPage";
+import SettingsPage from "../admin/pages/SettingsPage";
 import ServiceCitiesPage from "../admin/pages/ServiceCitiesPage";
 import CmsPagesPage, {
   CmsPageFormPage,
@@ -188,13 +190,8 @@ export default function AppRoutes() {
           />
 
           <Route
-            path="coupons"
-            element={
-              <ModulePlaceholder
-                title="Coupons"
-                description="Manage promotional coupons and offers."
-              />
-            }
+            path="contact-messages"
+            element={<ContactMessagesPage />}
           />
 
           <Route
@@ -254,12 +251,7 @@ export default function AppRoutes() {
 
           <Route
             path="settings"
-            element={
-              <ModulePlaceholder
-                title="Settings"
-                description="Manage platform configuration."
-              />
-            }
+            element={<SettingsPage />}
           />
         </Route>
       </Route>

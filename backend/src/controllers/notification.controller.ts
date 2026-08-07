@@ -156,14 +156,15 @@ export const getNotifications = async (
       where.isRead = false;
     } else if (filter === "read") {
       where.isRead = true;
-    } else if (
-      filter === "booking" ||
-      filter === "payment" ||
-      filter === "refund" ||
-      filter === "system"
-    ) {
-      where.type = filter.toUpperCase() as NotificationType;
-    }
+     } else if (
+       filter === "booking" ||
+       filter === "payment" ||
+       filter === "refund" ||
+       filter === "system" ||
+       filter === "contact"
+     ) {
+       where.type = filter.toUpperCase() as NotificationType;
+     }
 
     if (search) {
       where.OR = [
