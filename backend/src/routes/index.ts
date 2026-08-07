@@ -55,9 +55,19 @@ import {
   vendorBookingRoutes,
 } from "./booking.routes.js";
 
+import invoiceRoutes from "./invoice.routes.js";
+
 import {
   adminDashboardRoutes,
 } from "./admin-dashboard.routes.js";
+
+import {
+  adminReportsRoutes,
+} from "./admin-reports.routes.js";
+
+import {
+  adminAnalyticsRoutes,
+} from "./admin-analytics.routes.js";
 
 import {
   adminPropertyApprovalRoutes,
@@ -80,6 +90,8 @@ import {
   publicServiceCityRoutes,
   vendorServiceCityRoutes,
 } from "./service-city.routes.js";
+
+import notificationRoutes from "./notification.routes.js";
 
 const router = Router();
 
@@ -268,6 +280,28 @@ router.use(
 
 /*
 |--------------------------------------------------------------------------
+| Admin Reports Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/admin",
+  adminReportsRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
+| Admin Analytics Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/admin",
+  adminAnalyticsRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
 | Admin Booking Routes
 |--------------------------------------------------------------------------
 */
@@ -385,6 +419,28 @@ router.use(
 router.use(
   "/bookings",
   bookingRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
+| Invoice Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/invoices",
+  invoiceRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
+| Notification Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/notifications",
+  notificationRoutes
 );
 
 export default router;

@@ -26,6 +26,9 @@ import CmsPagesPage, {
 } from "../admin/pages/CmsPagesPage";
 import BlogPage from "../admin/pages/BlogPage";
 import BlogEditPage from "../admin/pages/BlogEditPage";
+import NotificationListPage from "../shared/pages/NotificationListPage";
+import ReportsPage from "../admin/pages/ReportsPage";
+import AnalyticsPage from "../admin/pages/AnalyticsPage";
 
 import VendorLoginPage from "../vendor/pages/LoginPage";
 import VendorRegisterPage from "../vendor/pages/RegisterPage";
@@ -224,34 +227,19 @@ export default function AppRoutes() {
             element={<BlogEditPage />}
           />
 
-          <Route
+<Route
             path="reports"
-            element={
-              <ModulePlaceholder
-                title="Reports"
-                description="View platform reports and exports."
-              />
-            }
+            element={<ReportsPage />}
           />
 
           <Route
             path="analytics"
-            element={
-              <ModulePlaceholder
-                title="Analytics"
-                description="View business and platform analytics."
-              />
-            }
+            element={<AnalyticsPage />}
           />
 
           <Route
             path="notifications"
-            element={
-              <ModulePlaceholder
-                title="Notifications"
-                description="Manage platform notifications."
-              />
-            }
+            element={<NotificationListPage />}
           />
 
           <Route
@@ -381,6 +369,11 @@ export default function AppRoutes() {
                 description="Manage conversations with guests and support."
               />
             }
+          />
+
+          <Route
+            path="notifications"
+            element={<NotificationListPage />}
           />
 
           <Route

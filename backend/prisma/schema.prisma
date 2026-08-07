@@ -724,3 +724,37 @@ model Payment {
   @@index([bookingId])
   @@map("payments")
 }
+
+enum NotificationType {
+  BOOKING
+  PAYMENT
+  REFUND
+  SYSTEM
+}
+
+enum NotificationRecipientType {
+  USER
+  VENDOR
+  ADMIN
+}
+
+model Notification {
+  id                 String                @id @default(cuid())
+  recipientType      NotificationRecipientType @map("recipient_type")
+  recipientId        Int                   @map("recipient_id")
+  actorId            Int                   @map("actor_id")
+  type               NotificationType      @default(SYSTEM)
+  entityType         String?               @map("entity_type")
+  entityId           String?               @map("entity_id")
+  title              String
+  message            String
+  isRead             Boolean               @default(false) @map("is_read")
+  readAt             DateTime?             @map("read_at")
+  createdAt          DateTime              @default(now()) @map("created_at")
+  updatedAt          DateTime              @updatedAt @map("updated_at")
+  metadata           String?               @map("metadata")
+
+  @@index([recipientType, recipientId, isRead])
+  @@index([recipientType, recipientId, createdAt])
+  @@map("notifications")
+}

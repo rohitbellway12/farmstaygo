@@ -4,9 +4,15 @@ import type { Response } from "express";
 import {
   Prisma,
   CommissionStatus,
+  NotificationRecipientType,
+  NotificationType,
 } from "../generated/prisma/client.js";
 
 import prisma from "../config/database.js";
+
+import {
+  sendBookingConfirmationEmail,
+} from "../services/email.js";
 
 import type {
   AuthenticatedRequest,
@@ -401,10 +407,17 @@ export const verifyRazorpayPayment = async (
                 },
               },
             },
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
           },
         });
 
-      if (bookingWithProperty) {
+       if (bookingWithProperty) {
         const vendor = bookingWithProperty.property.vendor;
         const commissionRate =
           vendor?.commissionRate
@@ -454,6 +467,64 @@ export const verifyRazorpayPayment = async (
         });
       }
     });
+
+    try {
+      await prisma.notification.create({
+        data: {
+          recipientType:
+            NotificationRecipientType.ADMIN,
+          recipientId: 1,
+          actorId: req.user!.id,
+          type: NotificationType.PAYMENT,
+          entityType: "payment",
+          entityId: bookingId,
+          title: "Payment Received",
+          message: `Payment of ₹${amount} received for booking ${bookingId}.`,
+        },
+      });
+    } catch (error) {
+      console.error("Payment notification error:", error);
+    }
+
+    if (shouldConfirm) {
+      try {
+        const bookingForEmail =
+          await prisma.booking.findFirst({
+            where: { id: bookingId },
+            include: {
+              property: {
+                select: { title: true },
+              },
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                },
+              },
+            },
+          });
+
+        if (bookingForEmail) {
+          await sendBookingConfirmationEmail(
+            bookingForEmail.user.email,
+            `${bookingForEmail.user.firstName} ${bookingForEmail.user.lastName}`,
+            bookingId,
+            bookingForEmail.property.title,
+            bookingForEmail.checkIn.toISOString().slice(0, 10),
+            bookingForEmail.checkOut.toISOString().slice(0, 10),
+            bookingForEmail.totalNights,
+            bookingForEmail.guests,
+            bookingForEmail.rooms,
+            bookingForEmail.estimatedTotal?.toString() ?? "0",
+            bookingForEmail.currency
+          );
+        }
+      } catch (error) {
+        console.error("Booking confirmation email error:", error);
+      }
+    }
 
     return res.status(200).json({
       success: true,

@@ -129,3 +129,22 @@ export const PaymentStatus = {
 } as const
 
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+
+export const NotificationType = {
+  BOOKING: 'BOOKING',
+  PAYMENT: 'PAYMENT',
+  REFUND: 'REFUND',
+  SYSTEM: 'SYSTEM'
+} as const
+
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
+
+
+export const NotificationRecipientType = {
+  USER: 'USER',
+  VENDOR: 'VENDOR',
+  ADMIN: 'ADMIN'
+} as const
+
+export type NotificationRecipientType = (typeof NotificationRecipientType)[keyof typeof NotificationRecipientType]

@@ -5,6 +5,8 @@ import {
   useState,
 } from "react";
 
+import { getToken } from "../utils/auth";
+
 import api from "../api/api";
 
 type BookingStatus =
@@ -668,35 +670,69 @@ export default function BookingsView({
                                 </button>
                               )}
                             {allowCashPayment &&
-                              (booking.status ===
-                                "CONFIRMED" ||
-                                booking.status ===
-                                  "REQUESTED") &&
-                              (() => {
-                                const totalPaid = (booking.payments || [])
-                                  .filter((p) => p.status === "COMPLETED")
-                                  .reduce((sum, p) => sum + Number(p.amount), 0);
-                                const remaining = Math.max(0, Number(booking.estimatedTotal || 0) - totalPaid);
-                                return remaining > 0;
-                              })() && (
-                                <button
-                                  type="button"
-                                  disabled={actionLoading === booking.id}
-                                  onClick={() => {
-                                    setSelectedBooking(booking);
-                                    setCashAmount("");
-                                    setCashTransactionId("");
-                                    setCashNotes("");
-                                    setCashError("");
-                                    setShowCashModal(true);
-                                  }}
-                                  className="inline-flex h-8 items-center justify-center rounded-lg bg-emerald-700 px-3 text-[11px] font-extrabold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                  Record Cash
-                                </button>
-                              )}
-                          </div>
-                        </td>
+                               (booking.status ===
+                                 "CONFIRMED" ||
+                                 booking.status ===
+                                   "REQUESTED") &&
+                               (() => {
+                                 const totalPaid = (booking.payments || [])
+                                   .filter((p) => p.status === "COMPLETED")
+                                   .reduce((sum, p) => sum + Number(p.amount), 0);
+                                 const remaining = Math.max(0, Number(booking.estimatedTotal || 0) - totalPaid);
+                                 return remaining > 0;
+                               })() && (
+                                 <button
+                                   type="button"
+                                   disabled={actionLoading === booking.id}
+                                   onClick={() => {
+                                     setSelectedBooking(booking);
+                                     setCashAmount("");
+                                     setCashTransactionId("");
+                                     setCashNotes("");
+                                     setCashError("");
+                                     setShowCashModal(true);
+                                   }}
+                                   className="inline-flex h-8 items-center justify-center rounded-lg bg-emerald-700 px-3 text-[11px] font-extrabold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
+                                 >
+                                   Record Cash
+                                 </button>
+                               )}
+                              {booking.status === "CONFIRMED" &&
+                                booking.paymentStatus === "PAID" && (
+                                  <button
+                                    type="button"
+                                    disabled={actionLoading === booking.id}
+                                    onClick={async () => {
+                                      try {
+                                        const token = getToken();
+                                        const generateRes = await api.post(
+                                          `/invoices/${booking.id}/generate`
+                                        );
+                                        if (generateRes.data.success && generateRes.data.data?.downloadUrl) {
+                                          const pdfRes = await fetch(generateRes.data.data.downloadUrl, {
+                                            headers: { Authorization: `Bearer ${token}` },
+                                          });
+                                          const blob = await pdfRes.blob();
+                                          const url = URL.createObjectURL(blob);
+                                          const a = document.createElement("a");
+                                          a.href = url;
+                                          a.download = `invoice_${booking.id}.pdf`;
+                                          document.body.appendChild(a);
+                                          a.click();
+                                          document.body.removeChild(a);
+                                          URL.revokeObjectURL(url);
+                                        }
+                                      } catch {
+                                        // silently fail
+                                      }
+                                    }}
+                                    className="inline-flex h-8 items-center justify-center rounded-lg border border-border bg-surface px-3 text-[11px] font-extrabold text-text-main transition hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-50"
+                                  >
+                                    Invoice
+                                  </button>
+                                )}
+                           </div>
+                         </td>
                       )}
                     </tr>
                   );

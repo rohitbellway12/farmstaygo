@@ -17,6 +17,7 @@ import {
   getAuth,
 } from "../../shared/utils/auth";
 import api from "../../shared/api/api";
+import NotificationBell from "../../shared/components/NotificationBell";
 
 interface MenuItem {
   label: string;
@@ -329,8 +330,6 @@ const menuItems: MenuItem[] = [
   {
     label: "Notifications",
     path: "/admin/notifications",
-    badge: "12",
-    badgeType: "success",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -460,7 +459,6 @@ export default function AdminLayout() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [quickOpen, setQuickOpen] = useState(false);
   const [sidebarCounts, setSidebarCounts] =
     useState<AdminSidebarCounts>({
       vendors: 0,
@@ -536,7 +534,6 @@ export default function AdminLayout() {
   useEffect(() => {
     setSidebarOpen(false);
     setProfileOpen(false);
-    setQuickOpen(false);
   }, [location.pathname]);
 
 const currentTitle = useMemo(() => {
@@ -783,87 +780,9 @@ const currentTitle = useMemo(() => {
           </span>
 
           <div className="ml-auto flex items-center gap-2">
-            <div className="relative hidden sm:block">
-              <button
-                type="button"
-                onClick={() => setQuickOpen((value) => !value)}
-                className="flex h-9 items-center gap-2 rounded-lg bg-primary-700 px-4 text-[11px] font-bold text-white hover:bg-primary-800"
-              >
-                <span className="text-base leading-none">+</span>
-                Quick Action
-                <svg
-                  viewBox="0 0 24 24"
-                  className={`h-3.5 w-3.5 transition ${
-                    quickOpen ? "rotate-180" : ""
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </button>
+            <NotificationBell />
 
-              {quickOpen && (
-                <div className="absolute right-0 top-11 w-48 rounded-dashboard-card border border-border bg-surface p-2 shadow-dashboard-dropdown">
-                  {[
-                    "Add Vendor",
-                    "Approve Property",
-                    "Create Coupon",
-                    "Send Notification",
-                  ].map((action) => (
-                    <button
-                      type="button"
-                      key={action}
-                      className="block w-full rounded-lg px-3 py-2 text-left text-[11px] font-semibold text-text-secondary hover:bg-primary-50 hover:text-primary-700"
-                    >
-                      {action}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <button
-              type="button"
-              className="relative grid h-9 w-9 place-items-center rounded-lg text-text-secondary hover:bg-surface-muted"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="h-[19px] w-[19px]"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              >
-                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-                <path d="M10 21h4" />
-              </svg>
-
-              <span className="absolute right-1 top-0 grid h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[8px] font-bold text-white">
-                8
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className="relative grid h-9 w-9 place-items-center rounded-lg text-text-secondary hover:bg-surface-muted"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="h-[19px] w-[19px]"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              >
-                <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
-              </svg>
-
-              <span className="absolute right-1 top-0 grid h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[8px] font-bold text-white">
-                5
-              </span>
-            </button>
-
-            <div className="relative ml-1">
+             <div className="relative ml-1">
               <button
                 type="button"
                 onClick={() => setProfileOpen((value) => !value)}

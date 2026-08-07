@@ -16,6 +16,7 @@ import {
   clearAuth,
   getAuth,
 } from "../../shared/utils/auth";
+import NotificationBell from "../../shared/components/NotificationBell";
 
 interface MenuItem {
   group: "overview" | "listings" | "operations" | "money" | "account";
@@ -41,18 +42,6 @@ const menuItems: MenuItem[] = [
         <path d="M3 11 12 4l9 7" />
         <path d="M5 10v10h14V10" />
         <path d="M9 20v-6h6v6" />
-      </svg>
-    ),
-  },
-  {
-    group: "listings",
-    label: "Add Property",
-    path: "/vendor/properties/new",
-    icon: (
-      <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.8">
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 8v8" />
-        <path d="M8 12h8" />
       </svg>
     ),
   },
@@ -152,6 +141,17 @@ const menuItems: MenuItem[] = [
   },
   {
     group: "account",
+    label: "Notifications",
+    path: "/vendor/notifications",
+    icon: (
+      <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+        <path d="M10 21h4" />
+      </svg>
+    ),
+  },
+  {
+    group: "account",
     label: "Settings",
     path: "/vendor/settings",
     icon: (
@@ -175,6 +175,7 @@ const pageTitles: Record<string, string> = {
   "/vendor/earnings": "Earnings",
   "/vendor/payouts": "Payouts",
   "/vendor/messages": "Messages",
+  "/vendor/notifications": "Notifications",
   "/vendor/reviews": "Reviews",
   "/vendor/offers": "Coupons & Offers",
   "/vendor/kyc-bank": "KYC & Bank Details",
@@ -214,12 +215,10 @@ export default function VendorLayout() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [addPropertyOpen, setAddPropertyOpen] = useState(false);
 
   useEffect(() => {
     setSidebarOpen(false);
     setProfileOpen(false);
-    setAddPropertyOpen(false);
   }, [location.pathname]);
 
  const currentTitle = useMemo(() => {
@@ -305,10 +304,6 @@ export default function VendorLayout() {
       : kycStatus === "REJECTED"
       ? "KYC Rejected"
       : "KYC Required";
-
-  const goToAddProperty = () => {
-    navigate("/vendor/properties/new");
-  };
 
   const logout = () => {
     clearAuth();
@@ -533,75 +528,7 @@ export default function VendorLayout() {
           <span className="truncate text-base font-bold text-text-main md:hidden">{currentTitle}</span>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-2.5">
-            <div className="relative hidden sm:block">
-              <button
-                type="button"
-                onClick={() => setAddPropertyOpen((value) => !value)}
-                className="flex h-9 items-center gap-2 rounded-lg bg-primary-700 px-4 text-xs font-bold text-white hover:bg-primary-800"
-              >
-                <span className="text-base leading-none">+</span>
-                Add Property
-                <svg
-                  viewBox="0 0 24 24"
-                  className={`h-4 w-4 transition ${addPropertyOpen ? "rotate-180" : ""}`}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </button>
-
-              {addPropertyOpen && (
-                <div className="absolute right-0 top-11 w-56 rounded-dashboard-card border border-border bg-surface p-2 shadow-dashboard-dropdown">
-                  <button
-                    type="button"
-                    onClick={goToAddProperty}
-                    className="block w-full rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-text-secondary hover:bg-primary-50 hover:text-primary-700"
-                  >
-                    Add New Property
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/vendor/properties")}
-                    className="block w-full rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-text-secondary hover:bg-primary-50 hover:text-primary-700"
-                  >
-                    Manage Properties
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/vendor/rooms")}
-                    className="block w-full rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-text-secondary hover:bg-primary-50 hover:text-primary-700"
-                  >
-                    Manage Rooms
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <button
-              type="button"
-              className="relative grid h-10 w-10 place-items-center rounded-lg text-text-secondary hover:bg-surface-muted"
-              aria-label="Notifications"
-            >
-              <svg viewBox="0 0 24 24" className="h-[20px] w-[20px]" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-                <path d="M10 21h4" />
-              </svg>
-              <span className="absolute right-1.5 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[9px] font-bold text-white">5</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigate("/vendor/messages")}
-              className="relative grid h-10 w-10 place-items-center rounded-lg text-text-secondary hover:bg-surface-muted"
-              aria-label="Messages"
-            >
-              <svg viewBox="0 0 24 24" className="h-[20px] w-[20px]" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
-              </svg>
-              <span className="absolute right-1.5 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[9px] font-bold text-white">8</span>
-            </button>
+            <NotificationBell />
 
             <div className="relative ml-1">
               <button

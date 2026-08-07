@@ -381,32 +381,75 @@ export default function CustomerBookingsPage() {
                      </div>
                    </div>
 
-                   <div className="mt-5 flex items-center gap-3 border-t border-ink-100 pt-4">
-                     {(booking.status ===
-                         "CONFIRMED" ||
-                       booking.status ===
-                         "REQUESTED") &&
-                       (!booking.paymentStatus ||
-                         booking.paymentStatus ===
-                           "PENDING" ||
-                         booking.paymentStatus ===
-                           "PARTIAL") && (
-                         <button
-                           type="button"
-                           onClick={() => {
-                             window.location.href = `/bookings/${booking.id}/pay`;
-                           }}
-                           className="inline-flex h-10 items-center justify-center rounded-lg bg-brand-700 px-5 text-sm font-extrabold text-white transition hover:bg-brand-800"
-                         >
-                           Pay Now
-                         </button>
-                       )}
+                    <div className="mt-5 flex items-center gap-3 border-t border-ink-100 pt-4">
+                      {(booking.status ===
+                          "CONFIRMED" ||
+                        booking.status ===
+                          "REQUESTED") &&
+                        (!booking.paymentStatus ||
+                          booking.paymentStatus ===
+                            "PENDING" ||
+                          booking.paymentStatus ===
+                            "PARTIAL") && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              window.location.href = `/bookings/${booking.id}/pay`;
+                            }}
+                            className="inline-flex h-10 items-center justify-center rounded-lg bg-brand-700 px-5 text-sm font-extrabold text-white transition hover:bg-brand-800"
+                          >
+                            Pay Now
+                          </button>
+                        )}
 
-                     <span className="text-xs text-ink-500">
-                       Requested{" "}
-                       {formatDate(booking.createdAt)}
-                     </span>
-                   </div>
+                      {booking.status === "CONFIRMED" &&
+                        booking.paymentStatus === "PAID" && (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                const response =
+                                  await apiFetch<{
+                                    success: boolean;
+                                    data: { downloadUrl: string };
+                                  }>(
+                                    `/invoices/${booking.id}/generate`,
+                                    { method: "POST" }
+                                  );
+                                if (
+                                  response.success &&
+                                  response.data?.downloadUrl
+                                ) {
+                                  const authData = localStorage.getItem("farmstaygo_customer_auth");
+                                  const token = authData ? JSON.parse(authData).data?.token : "";
+                                  const pdfRes = await fetch(response.data.downloadUrl, {
+                                    headers: { Authorization: `Bearer ${token}` },
+                                  });
+                                  const blob = await pdfRes.blob();
+                                  const url = URL.createObjectURL(blob);
+                                  const a = document.createElement("a");
+                                  a.href = url;
+                                  a.download = `invoice_${booking.id}.pdf`;
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  document.body.removeChild(a);
+                                  URL.revokeObjectURL(url);
+                                }
+                              } catch {
+                                // silently fail
+                              }
+                            }}
+                            className="inline-flex h-10 items-center justify-center rounded-lg border border-ink-200 bg-white px-5 text-sm font-extrabold text-ink-700 transition hover:bg-ink-50"
+                          >
+                            Download Invoice
+                          </button>
+                        )}
+
+                      <span className="text-xs text-ink-500">
+                        Requested{" "}
+                        {formatDate(booking.createdAt)}
+                      </span>
+                    </div>
 
                   <div className="mt-5 grid gap-3 border-t border-ink-100 pt-4 sm:grid-cols-4">
                     <div>

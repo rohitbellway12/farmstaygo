@@ -4,6 +4,8 @@ import {
   BookingMode,
   BookingStatus,
   CommissionStatus,
+  NotificationRecipientType,
+  NotificationType,
   PaymentMethod,
   PaymentStatus,
   PaymentType,
@@ -13,6 +15,10 @@ import {
 } from "../generated/prisma/client.js";
 
 import prisma from "../config/database.js";
+
+import {
+  sendBookingConfirmationEmail,
+} from "../services/email.js";
 
 import type {
   AuthenticatedRequest,
@@ -1005,12 +1011,37 @@ export const createBookingRequest =
         });
       }
 
-      return res.status(201).json({
-        success: true,
-        message:
-          "Booking request submitted successfully",
-        data: booking,
-      });
+        try {
+          const property = await prisma.property.findUnique({
+            where: { id: propertyId },
+            select: { title: true, vendor: { select: { userId: true } } },
+          });
+
+          if (property) {
+            await prisma.notification.create({
+              data: {
+                recipientType:
+                  NotificationRecipientType.VENDOR,
+                recipientId: property.vendor.userId,
+                actorId: customer.id,
+                type: NotificationType.BOOKING,
+                entityType: "booking",
+                entityId: booking.id,
+                title: "New Booking Request",
+                message: `New booking request for "${property.title}" from ${booking.guestName}. Check-in: ${booking.checkIn.toISOString().slice(0, 10)}, Check-out: ${booking.checkOut.toISOString().slice(0, 10)}.`,
+              },
+            });
+          }
+        } catch (error) {
+          console.error("Booking notification error:", error);
+        }
+
+       return res.status(201).json({
+         success: true,
+         message:
+           "Booking request submitted successfully",
+         data: booking,
+       });
     } catch (error) {
       const message =
         error instanceof Error
@@ -1300,12 +1331,54 @@ export const acceptBooking = async (
         include: bookingListInclude,
       });
 
-    return res.json({
-      success: true,
-      message:
-        "Booking accepted successfully",
-      data: updated,
-    });
+      try {
+        const updatedProperty =
+          await prisma.property.findUnique({
+            where: { id: booking.propertyId },
+            select: { title: true },
+          });
+
+        await prisma.notification.create({
+          data: {
+            recipientType:
+              NotificationRecipientType.USER,
+            recipientId: updated.userId,
+            actorId: req.user.id,
+            type: NotificationType.BOOKING,
+            entityType: "booking",
+            entityId: bookingId,
+            title: "Booking Confirmed",
+            message: `Your booking for "${updatedProperty?.title ?? "your booking"}" has been confirmed by the vendor.`,
+          },
+        });
+      } catch (error) {
+        console.error("Accept booking notification error:", error);
+      }
+
+      try {
+        await sendBookingConfirmationEmail(
+          updated.user.email,
+          `${updated.user.firstName} ${updated.user.lastName}`,
+          bookingId,
+          updated.property.title,
+          updated.checkIn.toISOString().slice(0, 10),
+          updated.checkOut.toISOString().slice(0, 10),
+          updated.totalNights,
+          updated.guests,
+          updated.rooms,
+          updated.estimatedTotal?.toString() ?? "0",
+          updated.currency
+        );
+      } catch (error) {
+        console.error("Accept booking email error:", error);
+      }
+
+      return res.json({
+       success: true,
+       message:
+         "Booking accepted successfully",
+       data: updated,
+     });
   } catch (error) {
     console.error(
       "Accept booking error:",
@@ -1398,12 +1471,36 @@ export const rejectBooking = async (
         include: bookingListInclude,
       });
 
-    return res.json({
-      success: true,
-      message:
-        "Booking rejected successfully",
-      data: updated,
-    });
+     try {
+       const updatedProperty =
+         await prisma.property.findUnique({
+           where: { id: booking.propertyId },
+           select: { title: true },
+         });
+
+       await prisma.notification.create({
+         data: {
+           recipientType:
+             NotificationRecipientType.USER,
+           recipientId: updated.userId,
+           actorId: req.user.id,
+           type: NotificationType.BOOKING,
+           entityType: "booking",
+           entityId: bookingId,
+           title: "Booking Rejected",
+           message: `Your booking for "${updatedProperty?.title ?? "your booking"}" has been rejected by the vendor.`,
+         },
+       });
+     } catch (error) {
+       console.error("Reject booking notification error:", error);
+     }
+
+     return res.json({
+       success: true,
+       message:
+         "Booking rejected successfully",
+       data: updated,
+     });
   } catch (error) {
     console.error(
       "Reject booking error:",
