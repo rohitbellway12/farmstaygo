@@ -147,6 +147,16 @@ export type Notification = Prisma.NotificationModel
  */
 export type ContactMessage = Prisma.ContactMessageModel
 /**
+ * Model SupportTicket
+ * 
+ */
+export type SupportTicket = Prisma.SupportTicketModel
+/**
+ * Model SupportTicketReply
+ * 
+ */
+export type SupportTicketReply = Prisma.SupportTicketReplyModel
+/**
  * Model Setting
  * 
  */

@@ -99,6 +99,12 @@ import {
   adminContactRoutes,
 } from "./admin-contact.routes.js";
 
+import {
+  adminSupportTicketRoutes,
+  publicSupportTicketRoutes,
+  supportTicketRoutes,
+} from "./support-ticket.routes.js";
+
 const router = Router();
 
 /*
@@ -467,6 +473,21 @@ router.use(
 router.use(
   "/admin",
   adminContactRoutes
+);
+
+router.use(
+  "/admin/support-tickets",
+  adminSupportTicketRoutes
+);
+
+router.use(
+  "/support-tickets",
+  supportTicketRoutes
+);
+
+router.use(
+  "/support",
+  publicSupportTicketRoutes
 );
 
 export default router;

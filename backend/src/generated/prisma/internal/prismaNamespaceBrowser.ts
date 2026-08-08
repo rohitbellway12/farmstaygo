@@ -72,6 +72,8 @@ export const ModelName = {
   Payment: 'Payment',
   Notification: 'Notification',
   ContactMessage: 'ContactMessage',
+  SupportTicket: 'SupportTicket',
+  SupportTicketReply: 'SupportTicketReply',
   Setting: 'Setting',
   SocialLink: 'SocialLink'
 } as const
@@ -473,6 +475,44 @@ export const ContactMessageScalarFieldEnum = {
 } as const
 
 export type ContactMessageScalarFieldEnum = (typeof ContactMessageScalarFieldEnum)[keyof typeof ContactMessageScalarFieldEnum]
+
+
+export const SupportTicketScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  userEmail: 'userEmail',
+  userName: 'userName',
+  userRole: 'userRole',
+  subject: 'subject',
+  description: 'description',
+  status: 'status',
+  priority: 'priority',
+  category: 'category',
+  relatedEntityType: 'relatedEntityType',
+  relatedEntityId: 'relatedEntityId',
+  assignedToId: 'assignedToId',
+  resolvedAt: 'resolvedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SupportTicketScalarFieldEnum = (typeof SupportTicketScalarFieldEnum)[keyof typeof SupportTicketScalarFieldEnum]
+
+
+export const SupportTicketReplyScalarFieldEnum = {
+  id: 'id',
+  ticketId: 'ticketId',
+  userId: 'userId',
+  userEmail: 'userEmail',
+  userName: 'userName',
+  userRole: 'userRole',
+  message: 'message',
+  isStaffReply: 'isStaffReply',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SupportTicketReplyScalarFieldEnum = (typeof SupportTicketReplyScalarFieldEnum)[keyof typeof SupportTicketReplyScalarFieldEnum]
 
 
 export const SettingScalarFieldEnum = {

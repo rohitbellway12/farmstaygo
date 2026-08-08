@@ -28,7 +28,8 @@ interface MenuItem {
     | "vendors"
     | "propertyApprovals"
     | "properties"
-    | "contactMessages";
+    | "contactMessages"
+    | "supportTickets";
   badgeType?: "success" | "danger";
   end?: boolean;
 }
@@ -38,6 +39,7 @@ interface AdminSidebarCounts {
   propertyApprovals: number;
   properties: number;
   contactMessages: number;
+  supportTickets: number;
 }
 
 const iconClass = "h-[17px] w-[17px] shrink-0";
@@ -353,7 +355,7 @@ const menuItems: MenuItem[] = [
   {
     label: "Support Tickets",
     path: "/admin/support",
-    badge: "35",
+    badgeKey: "supportTickets",
     badgeType: "danger",
     icon: (
       <svg
@@ -472,6 +474,7 @@ export default function AdminLayout() {
       propertyApprovals: 0,
       properties: 0,
       contactMessages: 0,
+      supportTickets: 0,
     });
 
   useEffect(() => {
@@ -484,6 +487,7 @@ export default function AdminLayout() {
           propertyApprovalsResponse,
           propertiesResponse,
           contactMessagesResponse,
+          supportTicketsResponse,
         ] = await Promise.all([
           api.get<{
             total: number;
@@ -511,6 +515,9 @@ export default function AdminLayout() {
           api.get<{
             data: { count: number };
           }>("/admin/contact-messages/unread-count"),
+          api.get<{
+            data: { total: number };
+          }>("/admin/support-tickets/stats"),
         ]);
 
         if (cancelled) {
@@ -530,6 +537,8 @@ export default function AdminLayout() {
             0,
           contactMessages:
             contactMessagesResponse.data.data.count || 0,
+          supportTickets:
+            supportTicketsResponse.data.data.total || 0,
         });
       } catch {
         if (!cancelled) {
@@ -538,6 +547,7 @@ export default function AdminLayout() {
             propertyApprovals: 0,
             properties: 0,
             contactMessages: 0,
+            supportTickets: 0,
           });
         }
       }

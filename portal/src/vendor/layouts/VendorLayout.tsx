@@ -152,6 +152,16 @@ const menuItems: MenuItem[] = [
   },
   {
     group: "account",
+    label: "Support",
+    path: "/vendor/support",
+    icon: (
+      <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
+      </svg>
+    ),
+  },
+  {
+    group: "account",
     label: "Settings",
     path: "/vendor/settings",
     icon: (
@@ -179,6 +189,7 @@ const pageTitles: Record<string, string> = {
   "/vendor/reviews": "Reviews",
   "/vendor/offers": "Coupons & Offers",
   "/vendor/kyc-bank": "KYC & Bank Details",
+  "/vendor/support": "Support",
   "/vendor/settings": "Settings",
 };
 

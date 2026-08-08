@@ -390,3 +390,79 @@ export const getProfile = async (
     });
   }
 };
+
+export const updateProfile = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const schema = z.object({
+      firstName: z.string().trim().min(2, "First name is required"),
+      lastName: z.string().trim().optional(),
+      mobile: z.string().trim().min(10).max(15).optional(),
+    });
+
+    const validation = schema.safeParse(req.body);
+
+    if (!validation.success) {
+      return res.status(422).json({
+        success: false,
+        message: "Validation failed",
+        errors: validation.error.flatten().fieldErrors,
+      });
+    }
+
+    const { firstName, lastName, mobile } = validation.data;
+
+    const user = await prisma.user.update({
+      where: {
+        id: req.user.id,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        mobile: true,
+        role: true,
+        status: true,
+        emailVerified: true,
+        mobileVerified: true,
+        createdAt: true,
+        vendor: {
+          select: {
+            id: true,
+            businessName: true,
+            kycStatus: true,
+            commissionRate: true,
+          },
+        },
+      },
+      data: {
+        firstName,
+        lastName,
+        mobile,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: user,
+    });
+  } catch (error) {
+    console.error("Update profile error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to update profile",
+    });
+  }
+};

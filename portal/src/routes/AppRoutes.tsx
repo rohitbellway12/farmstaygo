@@ -21,6 +21,7 @@ import UsersPage from "../admin/pages/UsersPage";
 import AdminPaymentsPage from "../admin/pages/PaymentsPage";
 import AdminCommissionsPage from "../admin/pages/CommissionsPage";
 import ContactMessagesPage from "../admin/pages/ContactMessagesPage";
+import SupportTicketsPage from "../admin/pages/SupportTicketsPage";
 import SettingsPage from "../admin/pages/SettingsPage";
 import ServiceCitiesPage from "../admin/pages/ServiceCitiesPage";
 import CmsPagesPage, {
@@ -47,6 +48,7 @@ import RoomInventoryPage from "../vendor/pages/RoomInventoryPage";
 import RoomFormPage from "../vendor/pages/RoomFormPage";
 import AvailabilityCalendarPage from "../vendor/pages/AvailabilityCalendarPage";
 import KycBankPage from "../vendor/pages/KycBankPage";
+import VendorSupportPage from "../vendor/pages/VendorSupportPage";
 
 
 function ModulePlaceholder({
@@ -241,12 +243,7 @@ export default function AppRoutes() {
 
           <Route
             path="support"
-            element={
-              <ModulePlaceholder
-                title="Support Tickets"
-                description="Manage customer and vendor support requests."
-              />
-            }
+            element={<SupportTicketsPage />}
           />
 
           <Route
@@ -391,6 +388,11 @@ export default function AppRoutes() {
           <Route
             path="kyc-bank"
             element={<KycBankPage />}
+          />
+
+          <Route
+            path="support"
+            element={<VendorSupportPage />}
           />
 
           <Route
