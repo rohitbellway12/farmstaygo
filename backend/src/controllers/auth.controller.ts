@@ -364,6 +364,8 @@ export const getProfile = async (
             businessName: true,
             kycStatus: true,
             commissionRate: true,
+            totalEarnings: true,
+            totalCommission: true,
           },
         },
       },
@@ -391,6 +393,77 @@ export const getProfile = async (
   }
 };
 
+export const changePassword = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const schema = z.object({
+      currentPassword: z.string().min(1, "Current password is required"),
+      newPassword: z.string().min(8, "New password must be at least 8 characters"),
+    });
+
+    const validation = schema.safeParse(req.body);
+
+    if (!validation.success) {
+      return res.status(422).json({
+        success: false,
+        message: "Validation failed",
+        errors: validation.error.flatten().fieldErrors,
+      });
+    }
+
+    const { currentPassword, newPassword } = validation.data;
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { id: true, password: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const passwordMatched = await bcrypt.compare(currentPassword, user.password);
+
+    if (!passwordMatched) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { password: hashedPassword },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    console.error("Change password error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to change password",
+    });
+  }
+};
+
 export const updateProfile = async (
   req: AuthenticatedRequest,
   res: Response
@@ -407,6 +480,7 @@ export const updateProfile = async (
       firstName: z.string().trim().min(2, "First name is required"),
       lastName: z.string().trim().optional(),
       mobile: z.string().trim().min(10).max(15).optional(),
+      businessName: z.string().trim().min(2, "Business name is required").optional(),
     });
 
     const validation = schema.safeParse(req.body);
@@ -419,7 +493,7 @@ export const updateProfile = async (
       });
     }
 
-    const { firstName, lastName, mobile } = validation.data;
+    const { firstName, lastName, mobile, businessName } = validation.data;
 
     const user = await prisma.user.update({
       where: {
@@ -442,6 +516,8 @@ export const updateProfile = async (
             businessName: true,
             kycStatus: true,
             commissionRate: true,
+            totalEarnings: true,
+            totalCommission: true,
           },
         },
       },
@@ -449,6 +525,13 @@ export const updateProfile = async (
         firstName,
         lastName,
         mobile,
+        vendor: businessName
+          ? {
+              update: {
+                businessName,
+              },
+            }
+          : undefined,
       },
     });
 

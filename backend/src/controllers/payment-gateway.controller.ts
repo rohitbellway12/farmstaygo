@@ -20,38 +20,70 @@ import type {
 
 /*
 |--------------------------------------------------------------------------
-| Razorpay SDK — optional (sandbox fallback when env keys are missing)
+| Razorpay SDK — optional (sandbox fallback when settings are missing)
 |--------------------------------------------------------------------------
 */
 
-const RAZORPAY_KEY_ID =
-  process.env.RAZORPAY_KEY_ID || "";
-
-const RAZORPAY_KEY_SECRET =
-  process.env.RAZORPAY_KEY_SECRET || "";
-
-const razorpayEnabled =
-  Boolean(RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET);
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let razorpayInstance: any = null;
+let cachedRazorpayInstance: any = null;
+let cachedKeyId = "";
 
-if (razorpayEnabled) {
+const getRazorpaySettings = async (): Promise<{
+  keyId: string;
+  keySecret: string;
+}> => {
+  const [keyIdSetting, keySecretSetting] =
+    await Promise.all([
+      prisma.setting.findUnique({
+        where: { key: "razorpay_key_id" },
+        select: { value: true },
+      }),
+      prisma.setting.findUnique({
+        where: { key: "razorpay_key_secret" },
+        select: { value: true },
+      }),
+    ]);
+
+  return {
+    keyId: keyIdSetting?.value || "",
+    keySecret: keySecretSetting?.value || "",
+  };
+};
+
+const getRazorpayInstance = async (): Promise<any> => {
+  const { keyId, keySecret } =
+    await getRazorpaySettings();
+
+  if (!keyId || !keySecret) {
+    return null;
+  }
+
+  if (
+    cachedRazorpayInstance &&
+    cachedKeyId === keyId
+  ) {
+    return cachedRazorpayInstance;
+  }
+
   try {
-    // Dynamic import so the server doesn't crash if the package is missing
     const { default: Razorpay } =
       await import("razorpay");
 
-    razorpayInstance = new Razorpay({
-      key_id: RAZORPAY_KEY_ID,
-      key_secret: RAZORPAY_KEY_SECRET,
+    cachedRazorpayInstance = new Razorpay({
+      key_id: keyId,
+      key_secret: keySecret,
     });
+    cachedKeyId = keyId;
+
+    return cachedRazorpayInstance;
   } catch {
     console.warn(
       "[payment-gateway] Failed to initialise Razorpay SDK — running in sandbox mode."
     );
+
+    return null;
   }
-}
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -136,7 +168,12 @@ export const createRazorpayOrder = async (
     const amountInPaise = Math.round(amount * 100);
     const currency = booking.currency || "INR";
 
-    if (!razorpayEnabled || !razorpayInstance) {
+    const razorpayInstance =
+      await getRazorpayInstance();
+    const razorpayEnabled =
+      !!razorpayInstance;
+
+    if (!razorpayEnabled) {
       // ── SANDBOX MODE ─────────────────────────────────────────────────
       // Return a simulated order object so the frontend can render a
       // mock payment modal without real Razorpay credentials.
@@ -155,15 +192,19 @@ export const createRazorpayOrder = async (
     }
 
     // ── LIVE / TEST MODE ─────────────────────────────────────────────
-    const order = await razorpayInstance.orders.create({
-      amount: amountInPaise,
-      currency,
-      receipt: `booking_${bookingId}`,
-      notes: {
-        bookingId,
-        userId: String(req.user.id),
-      },
-    });
+    const order =
+      await razorpayInstance.orders.create({
+        amount: amountInPaise,
+        currency,
+        receipt: `booking_${bookingId}`,
+        notes: {
+          bookingId,
+          userId: String(req.user.id),
+        },
+      });
+
+    const { keyId } =
+      await getRazorpaySettings();
 
     return res.status(200).json({
       success: true,
@@ -172,7 +213,7 @@ export const createRazorpayOrder = async (
         orderId: order.id,
         amount: Number(order.amount),
         currency: order.currency,
-        keyId: RAZORPAY_KEY_ID,
+        keyId,
       },
     });
   } catch (error) {
@@ -260,6 +301,13 @@ export const verifyRazorpayPayment = async (
       });
     }
 
+    const razorpayInstance =
+      await getRazorpayInstance();
+    const razorpayEnabled =
+      !!razorpayInstance;
+    const { keySecret } =
+      await getRazorpaySettings();
+
     if (!isSandbox) {
       // ── SIGNATURE VERIFICATION ─────────────────────────────────────
       if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
@@ -270,9 +318,18 @@ export const verifyRazorpayPayment = async (
         });
       }
 
+      if (!razorpayEnabled || !keySecret) {
+        return res.status(400).json({
+          success: false,
+          message: "Payment verification failed — Razorpay is not configured",
+        });
+      }
+
       const expectedSignature = crypto
-        .createHmac("sha256", RAZORPAY_KEY_SECRET)
-        .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+        .createHmac("sha256", keySecret)
+        .update(
+          `${razorpayOrderId}|${razorpayPaymentId}`
+        )
         .digest("hex");
 
       if (expectedSignature !== razorpaySignature) {
@@ -560,11 +617,14 @@ export const getRazorpayStatus = async (
   _req: AuthenticatedRequest,
   res: Response
 ): Promise<Response> => {
+  const { keyId } = await getRazorpaySettings();
+  const razorpayEnabled = !!keyId;
+
   return res.status(200).json({
     success: true,
     data: {
       enabled: razorpayEnabled,
-      keyId: razorpayEnabled ? RAZORPAY_KEY_ID : "",
+      keyId: razorpayEnabled ? keyId : "",
     },
   });
 };

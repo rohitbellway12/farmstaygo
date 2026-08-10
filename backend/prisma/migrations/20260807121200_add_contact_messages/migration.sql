@@ -1,6 +1,6 @@
 -- Add CONTACT to NotificationType enum
 DO $$ BEGIN
-    ALTER TYPE "NotificationType" ADD VALUE "CONTACT";
+    ALTER TYPE "NotificationType" ADD VALUE 'CONTACT';
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;

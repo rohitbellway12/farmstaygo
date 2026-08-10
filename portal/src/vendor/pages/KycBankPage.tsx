@@ -28,9 +28,6 @@ interface VendorKyc {
   city: string | null;
   state: string | null;
   postalCode: string | null;
-  bankAccountName: string | null;
-  bankAccountNumber: string | null;
-  bankIfscCode: string | null;
   gstNumber: string | null;
   kycSubmittedAt: string | null;
   kycReviewedAt: string | null;
@@ -55,9 +52,6 @@ interface KycFormState {
   city: string;
   state: string;
   postalCode: string;
-  bankAccountName: string;
-  bankAccountNumber: string;
-  bankIfscCode: string;
   gstNumber: string;
 }
 
@@ -68,9 +62,6 @@ const emptyForm: KycFormState = {
   city: "",
   state: "",
   postalCode: "",
-  bankAccountName: "",
-  bankAccountNumber: "",
-  bankIfscCode: "",
   gstNumber: "",
 };
 
@@ -207,11 +198,6 @@ export default function KycBankPage() {
         city: data.city || "",
         state: data.state || "",
         postalCode: data.postalCode || "",
-        bankAccountName:
-          data.bankAccountName || "",
-        bankAccountNumber:
-          data.bankAccountNumber || "",
-        bankIfscCode: data.bankIfscCode || "",
         gstNumber: data.gstNumber || "",
       });
     } catch (error) {
@@ -262,13 +248,16 @@ export default function KycBankPage() {
         await api.put<VendorKycResponse>(
           "/vendor/kyc",
           {
-            ...form,
             panNumber: form.panNumber
               .trim()
               .toUpperCase(),
-            bankIfscCode: form.bankIfscCode
-              .trim()
-              .toUpperCase(),
+            aadhaarNumber: form.aadhaarNumber
+              .trim(),
+            addressLine: form.addressLine
+              .trim(),
+            city: form.city.trim(),
+            state: form.state.trim(),
+            postalCode: form.postalCode.trim(),
             gstNumber:
               form.gstNumber.trim().toUpperCase() ||
               undefined,
@@ -479,99 +468,6 @@ export default function KycBankPage() {
                   </label>
                 )
               )}
-            </div>
-          </section>
-
-          <section className="rounded-dashboard-large border border-border bg-surface p-5 shadow-dashboard">
-            <h2 className="text-lg font-extrabold text-text-main">
-              Bank & Tax Details
-            </h2>
-
-            <div className="mt-5 grid gap-5 md:grid-cols-2">
-              <label>
-                <span className="mb-2 block text-sm font-bold text-text-secondary">
-                  Account Holder Name *
-                </span>
-                <input
-                  value={form.bankAccountName}
-                  disabled={formLocked}
-                  onChange={(event) =>
-                    updateForm(
-                      "bankAccountName",
-                      event.target.value
-                    )
-                  }
-                  className="h-11 w-full rounded-control border border-border bg-surface px-4 text-sm outline-none focus:border-primary-400 focus:ring-4 focus:ring-primary-100 disabled:bg-surface-muted"
-                />
-                <FieldError
-                  message={
-                    formErrors.bankAccountName
-                  }
-                />
-              </label>
-
-              <label>
-                <span className="mb-2 block text-sm font-bold text-text-secondary">
-                  Bank Account Number *
-                </span>
-                <input
-                  value={form.bankAccountNumber}
-                  disabled={formLocked}
-                  onChange={(event) =>
-                    updateForm(
-                      "bankAccountNumber",
-                      event.target.value
-                    )
-                  }
-                  className="h-11 w-full rounded-control border border-border bg-surface px-4 text-sm outline-none focus:border-primary-400 focus:ring-4 focus:ring-primary-100 disabled:bg-surface-muted"
-                />
-                <FieldError
-                  message={
-                    formErrors.bankAccountNumber
-                  }
-                />
-              </label>
-
-              <label>
-                <span className="mb-2 block text-sm font-bold text-text-secondary">
-                  IFSC Code *
-                </span>
-                <input
-                  value={form.bankIfscCode}
-                  disabled={formLocked}
-                  onChange={(event) =>
-                    updateForm(
-                      "bankIfscCode",
-                      event.target.value.toUpperCase()
-                    )
-                  }
-                  placeholder="HDFC0123456"
-                  className="h-11 w-full rounded-control border border-border bg-surface px-4 text-sm font-semibold uppercase outline-none focus:border-primary-400 focus:ring-4 focus:ring-primary-100 disabled:bg-surface-muted"
-                />
-                <FieldError
-                  message={
-                    formErrors.bankIfscCode
-                  }
-                />
-              </label>
-
-              <label>
-                <span className="mb-2 block text-sm font-bold text-text-secondary">
-                  GST Number
-                </span>
-                <input
-                  value={form.gstNumber}
-                  disabled={formLocked}
-                  onChange={(event) =>
-                    updateForm(
-                      "gstNumber",
-                      event.target.value.toUpperCase()
-                    )
-                  }
-                  placeholder="Optional"
-                  className="h-11 w-full rounded-control border border-border bg-surface px-4 text-sm font-semibold uppercase outline-none focus:border-primary-400 focus:ring-4 focus:ring-primary-100 disabled:bg-surface-muted"
-                />
-              </label>
             </div>
           </section>
 

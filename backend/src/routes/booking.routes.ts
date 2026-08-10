@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   acceptBooking,
+  approvePayment,
   createBookingRequest,
   getAdminBookings,
   getBookingPayments,
@@ -9,6 +10,7 @@ import {
   getVendorBookings,
   recordPayment,
   rejectBooking,
+  rejectPayment,
 } from "../controllers/booking.controller.js";
 
 import {
@@ -97,6 +99,20 @@ vendorBookingRoutes.post(
   authenticate,
   allowRoles("VENDOR"),
   recordPayment
+);
+
+vendorBookingRoutes.post(
+  "/:id/payments/:paymentId/approve",
+  authenticate,
+  allowRoles("VENDOR"),
+  approvePayment
+);
+
+vendorBookingRoutes.post(
+  "/:id/payments/:paymentId/reject",
+  authenticate,
+  allowRoles("VENDOR"),
+  rejectPayment
 );
 
 adminBookingRoutes.get(

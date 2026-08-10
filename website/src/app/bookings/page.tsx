@@ -47,6 +47,16 @@ interface Booking {
     id: string;
     name: string;
   } | null;
+  payments: Array<{
+    id: string;
+    amount: string | number;
+    paymentMethod: string;
+    paymentType: string;
+    status: string;
+    transactionId: string | null;
+    notes: string | null;
+    createdAt: string;
+  }>;
 }
 
 interface BookingsResponse {
@@ -354,102 +364,162 @@ export default function CustomerBookingsPage() {
                        )}
                      </div>
 
-                     <div className="text-left lg:text-right">
-                       <p className="text-lg font-extrabold text-ink-900">
-                         {formatMoney(
-                           booking.estimatedTotal,
-                           booking.currency
-                         )}
-                       </p>
+                      <div className="text-left lg:text-right">
+                        <p className="text-lg font-extrabold text-ink-900">
+                          {formatMoney(
+                            booking.estimatedTotal,
+                            booking.currency
+                          )}
+                        </p>
 
-                       {booking.reservationAmount &&
-                         Number(
-                           booking.reservationAmount
-                         ) > 0 && (
-                           <p className="mt-1 text-sm font-semibold text-amber-700">
-                             Reservation:{" "}
-                             {formatMoney(
-                               booking.reservationAmount,
-                               booking.currency
-                             )}
-                           </p>
-                         )}
+                        {booking.reservationAmount &&
+                          Number(
+                            booking.reservationAmount
+                          ) > 0 && (
+                            <p className="mt-1 text-sm font-semibold text-amber-700">
+                              Reservation:{" "}
+                              {formatMoney(
+                                booking.reservationAmount,
+                                booking.currency
+                              )}
+                            </p>
+                          )}
 
-                       <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-ink-400">
-                         Request #{booking.id.slice(-8)}
-                       </p>
-                     </div>
+                        {(() => {
+                          const breakdown: Record<string, { total: number; transactionId: string | null }> = {};
+                          (booking.payments || [])
+                            .filter(
+                              (p) =>
+                                p.status === "COMPLETED" &&
+                                p.paymentType !== "REFUND"
+                            )
+                            .forEach((p) => {
+                              const method = p.paymentMethod || "OTHER";
+                              if (!breakdown[method]) {
+                                breakdown[method] = { total: 0, transactionId: null };
+                              }
+                              breakdown[method].total += Number(p.amount);
+                              if (p.transactionId && !breakdown[method].transactionId) {
+                                breakdown[method].transactionId = p.transactionId;
+                              }
+                            });
+
+                          const totalPaid = Object.values(breakdown).reduce((sum, b) => sum + b.total, 0);
+                          const estimatedTotal = Number(booking.estimatedTotal || 0);
+                          const remaining = Math.max(0, estimatedTotal - totalPaid);
+
+                          if (Object.keys(breakdown).length === 0 && remaining <= 0) {
+                            return null;
+                          }
+
+                          return (
+                            <div className="mt-2 space-y-1">
+                              {Object.entries(breakdown).map(([method, data]) => (
+                                <div key={method}>
+                                  <p className="text-xs font-semibold text-ink-600">
+                                    {method === "ONLINE" ? "Online" : method === "CASH" ? "Cash" : method === "BANK_TRANSFER" ? "Bank Transfer" : method}: {formatMoney(data.total, booking.currency)}
+                                  </p>
+                                  {method === "BANK_TRANSFER" && data.transactionId && (
+                                    <p className="text-[11px] font-mono text-ink-500">
+                                      TXN: {data.transactionId}
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                              {remaining > 0 && (
+                                <p className="text-xs font-semibold text-red-700">
+                                  Remaining: {formatMoney(remaining, booking.currency)}
+                                </p>
+                              )}
+                              {remaining <= 0 && totalPaid > 0 && (
+                                <p className="text-xs font-semibold text-emerald-700">
+                                  Fully Paid
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })()}
+
+                        <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-ink-400">
+                          Request #{booking.id.slice(-8)}
+                        </p>
+                      </div>
                    </div>
 
-                    <div className="mt-5 flex items-center gap-3 border-t border-ink-100 pt-4">
-                      {(booking.status ===
-                          "CONFIRMED" ||
-                        booking.status ===
-                          "REQUESTED") &&
-                        (!booking.paymentStatus ||
-                          booking.paymentStatus ===
-                            "PENDING" ||
-                          booking.paymentStatus ===
-                            "PARTIAL") && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              window.location.href = `/bookings/${booking.id}/pay`;
-                            }}
-                            className="inline-flex h-10 items-center justify-center rounded-lg bg-brand-700 px-5 text-sm font-extrabold text-white transition hover:bg-brand-800"
-                          >
-                            Pay Now
-                          </button>
-                        )}
+                      <div className="mt-5 flex items-center gap-3 border-t border-ink-100 pt-4">
+                        {(booking.status ===
+                            "CONFIRMED" ||
+                          booking.status ===
+                            "REQUESTED") &&
+                          (!booking.paymentStatus ||
+                            booking.paymentStatus ===
+                              "PENDING" ||
+                            booking.paymentStatus ===
+                              "PARTIAL") &&
+                          !(booking.payments || []).some(
+                            (p) =>
+                              p.paymentMethod === "BANK_TRANSFER" &&
+                              p.status === "PENDING_APPROVAL"
+                          ) && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                window.location.href = `/bookings/${booking.id}/pay`;
+                              }}
+                              className="inline-flex h-10 items-center justify-center rounded-lg bg-brand-700 px-5 text-sm font-extrabold text-white transition hover:bg-brand-800"
+                            >
+                              Pay Now
+                            </button>
+                          )}
 
-                      {booking.status === "CONFIRMED" &&
-                        booking.paymentStatus === "PAID" && (
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              try {
-                                const response =
-                                  await apiFetch<{
-                                    success: boolean;
-                                    data: { downloadUrl: string };
-                                  }>(
-                                    `/invoices/${booking.id}/generate`,
-                                    { method: "POST" }
-                                  );
-                                if (
-                                  response.success &&
-                                  response.data?.downloadUrl
-                                ) {
-                                  const authData = localStorage.getItem("farmstaygo_customer_auth");
-                                  const token = authData ? JSON.parse(authData).data?.token : "";
-                                  const pdfRes = await fetch(response.data.downloadUrl, {
-                                    headers: { Authorization: `Bearer ${token}` },
-                                  });
-                                  const blob = await pdfRes.blob();
-                                  const url = URL.createObjectURL(blob);
-                                  const a = document.createElement("a");
-                                  a.href = url;
-                                  a.download = `invoice_${booking.id}.pdf`;
-                                  document.body.appendChild(a);
-                                  a.click();
-                                  document.body.removeChild(a);
-                                  URL.revokeObjectURL(url);
-                                }
-                              } catch {
-                                // silently fail
-                              }
-                            }}
-                            className="inline-flex h-10 items-center justify-center rounded-lg border border-ink-200 bg-white px-5 text-sm font-extrabold text-ink-700 transition hover:bg-ink-50"
-                          >
-                            Download Invoice
-                          </button>
-                        )}
+                       {(booking.paymentStatus === "PAID" ||
+                         booking.paymentStatus === "PARTIAL") && (
+                           <button
+                             type="button"
+                             onClick={async () => {
+                               try {
+                                 const response =
+                                   await apiFetch<{
+                                     success: boolean;
+                                     data: { downloadUrl: string };
+                                   }>(
+                                     `/invoices/${booking.id}/generate`,
+                                     { method: "POST" }
+                                   );
+                                 if (
+                                   response.success &&
+                                   response.data?.downloadUrl
+                                 ) {
+                                   const authData = localStorage.getItem("farmstaygo_customer_auth");
+                                   const token = authData ? JSON.parse(authData).data?.token : "";
+                                   const pdfRes = await fetch(response.data.downloadUrl, {
+                                     headers: { Authorization: `Bearer ${token}` },
+                                   });
+                                   const blob = await pdfRes.blob();
+                                   const url = URL.createObjectURL(blob);
+                                   const a = document.createElement("a");
+                                   a.href = url;
+                                   a.download = `invoice_${booking.id}.pdf`;
+                                   document.body.appendChild(a);
+                                   a.click();
+                                   document.body.removeChild(a);
+                                   URL.revokeObjectURL(url);
+                                 }
+                               } catch {
+                                 // silently fail
+                               }
+                             }}
+                             className="inline-flex h-10 items-center justify-center rounded-lg border border-ink-200 bg-white px-5 text-sm font-extrabold text-ink-700 transition hover:bg-ink-50"
+                           >
+                             Download Invoice
+                           </button>
+                         )}
 
-                      <span className="text-xs text-ink-500">
-                        Requested{" "}
-                        {formatDate(booking.createdAt)}
-                      </span>
-                    </div>
+                       <span className="text-xs text-ink-500">
+                         Requested{" "}
+                         {formatDate(booking.createdAt)}
+                       </span>
+                     </div>
 
                   <div className="mt-5 grid gap-3 border-t border-ink-100 pt-4 sm:grid-cols-4">
                     <div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -173,6 +173,74 @@ export default function BookingRequestPanel({
       currency: string;
       bookingId: string;
     } | null>(null);
+
+  const [enabledPaymentMethods, setEnabledPaymentMethods] =
+    useState<string[]>(["ONLINE"]);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] =
+    useState<string>("ONLINE");
+
+  const [showBankTransferModal, setShowBankTransferModal] =
+    useState(false);
+  const [pendingBookingId, setPendingBookingId] =
+    useState<string>("");
+  const [bankDetails, setBankDetails] = useState<{
+    bankAccountName: string;
+    bankAccountNumber: string;
+    bankIfscCode: string;
+  } | null>(null);
+  const [bankTransferTransactionId, setBankTransferTransactionId] =
+    useState("");
+  const [bankTransferAmount, setBankTransferAmount] =
+    useState("");
+  const [bankTransferSubmitting, setBankTransferSubmitting] =
+    useState(false);
+  const [bankTransferError, setBankTransferError] =
+    useState("");
+  const [bankTransferSuccess, setBankTransferSuccess] =
+    useState("");
+
+  useEffect(() => {
+    const loadPaymentMethods = async () => {
+      try {
+        const res = await apiFetch<{
+          success: boolean;
+          data: {
+            paymentMethods: string[];
+          };
+        }>("/public/settings/payment-methods");
+
+        if (res.success && res.data.paymentMethods.length > 0) {
+          setEnabledPaymentMethods(res.data.paymentMethods);
+          setSelectedPaymentMethod(
+            res.data.paymentMethods[0]
+          );
+        }
+      } catch {
+        // keep defaults
+      }
+    };
+
+    void loadPaymentMethods();
+  }, []);
+
+  const loadVendorBankDetails = useCallback(async () => {
+    try {
+      const res = await apiFetch<{
+        success: boolean;
+        data: {
+          bankAccountName: string;
+          bankAccountNumber: string;
+          bankIfscCode: string;
+        };
+      }>(`/public/settings/vendor-bank-details?propertyId=${property.publicId}`);
+
+      if (res.success) {
+        setBankDetails(res.data);
+      }
+    } catch {
+      // keep defaults
+    }
+  }, [property.publicId]);
 
   const selectedRoomAvailability =
     availability?.availability.roomBooking?.roomTypes.find(
@@ -602,6 +670,8 @@ export default function BookingRequestPanel({
                   ? Number(rooms)
                   : 1,
               specialRequest,
+              paymentMethod:
+                selectedPaymentMethod,
             }),
           }
         );
@@ -612,11 +682,27 @@ export default function BookingRequestPanel({
           ? Number(response.data.reservationAmount)
           : null;
 
-      if (depositAmount) {
+      if (
+        depositAmount &&
+        selectedPaymentMethod === "ONLINE"
+      ) {
         await handleRazorpayCheckout(
           response.data.id,
           depositAmount
         );
+      } else if (
+        depositAmount &&
+        selectedPaymentMethod === "BANK_TRANSFER"
+      ) {
+        setPendingBookingId(response.data.id);
+        setBankTransferAmount(
+          String(depositAmount)
+        );
+        setBankTransferTransactionId("");
+        setBankTransferError("");
+        setBankTransferSuccess("");
+        void loadVendorBankDetails();
+        setShowBankTransferModal(true);
       } else {
         setSuccessMessage(
           response.message ||
@@ -632,6 +718,66 @@ export default function BookingRequestPanel({
       setSuccessMessage("");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const submitBankTransfer = async () => {
+    setBankTransferError("");
+    setBankTransferSuccess("");
+
+    if (!bankTransferTransactionId.trim()) {
+      setBankTransferError(
+        "Please enter a transaction ID or reference number."
+      );
+      return;
+    }
+
+    const amount = Number(bankTransferAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setBankTransferError(
+        "Please enter a valid amount."
+      );
+      return;
+    }
+
+    try {
+      setBankTransferSubmitting(true);
+
+      await apiFetch(
+        `/bookings/${pendingBookingId}/payments`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            amount,
+            paymentMethod: "BANK_TRANSFER",
+            paymentType: "RESERVATION",
+            transactionId:
+              bankTransferTransactionId.trim(),
+            notes:
+              "Bank transfer payment initiated by customer",
+          }),
+        }
+      );
+
+      setBankTransferSuccess(
+        "Bank transfer details submitted successfully. Please wait for vendor approval."
+      );
+      setShowBankTransferModal(false);
+      setSuccessMessage(
+        "Booking request submitted successfully. Your bank transfer is pending vendor approval."
+      );
+    } catch (err) {
+      setBankTransferError(
+        err instanceof Error
+          ? err.message
+          : "Unable to submit bank transfer details."
+      );
+    } finally {
+      setBankTransferSubmitting(false);
     }
   };
 
@@ -983,6 +1129,38 @@ export default function BookingRequestPanel({
         />
       </label>
 
+      {enabledPaymentMethods.length > 1 && (
+        <label className="mt-4 block">
+          <span className="mb-2 block text-xs font-extrabold uppercase tracking-wide text-ink-500">
+            Payment Method
+          </span>
+          <select
+            value={selectedPaymentMethod}
+            onChange={(event) =>
+              setSelectedPaymentMethod(
+                event.target.value
+              )
+            }
+            className="h-11 w-full rounded-lg border border-ink-200 bg-white px-3 text-sm font-bold text-ink-800 outline-none focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
+          >
+            {enabledPaymentMethods.map(
+              (method) => (
+                <option
+                  key={method}
+                  value={method}
+                >
+                  {method === "ONLINE"
+                    ? "Razorpay Online (UPI / NetBanking / Cards)"
+                    : method === "CASH"
+                      ? "Cash on Check-in"
+                      : "Direct Bank Transfer"}
+                </option>
+              )
+            )}
+          </select>
+        </label>
+      )}
+
       {message && (
         <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
           {message}
@@ -1090,6 +1268,133 @@ export default function BookingRequestPanel({
               >
                 Cancel Payment
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showBankTransferModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between border-b border-ink-100 pb-4">
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-brand-500 animate-ping" />
+                <h3 className="text-lg font-extrabold text-ink-900">
+                  Bank Transfer Details
+                </h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowBankTransferModal(false);
+                  setPendingBookingId("");
+                  setBankTransferAmount("");
+                  setBankTransferTransactionId("");
+                  setBankTransferError("");
+                  setBankTransferSuccess("");
+                }}
+                className="text-ink-400 hover:text-ink-700 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {bankDetails ? (
+              <div className="mt-4 rounded-xl border border-ink-200 bg-ink-50 p-4">
+                <h4 className="text-xs font-extrabold uppercase tracking-wide text-ink-500">
+                  Vendor Bank Account Details
+                </h4>
+                <div className="mt-3 space-y-2 text-sm text-ink-800">
+                  <p>
+                    <span className="font-semibold text-ink-600">Account Name:</span>{" "}
+                    {bankDetails.bankAccountName}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-ink-600">Account Number:</span>{" "}
+                    <span className="font-mono">{bankDetails.bankAccountNumber}</span>
+                  </p>
+                  <p>
+                    <span className="font-semibold text-ink-600">IFSC Code:</span>{" "}
+                    <span className="font-mono">{bankDetails.bankIfscCode}</span>
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+                Unable to load vendor bank details. Please contact support.
+              </div>
+            )}
+
+            <div className="mt-5 space-y-4">
+              <label className="block">
+                <span className="mb-2 block text-xs font-extrabold uppercase tracking-wide text-ink-500">
+                  Amount to Transfer (INR) *
+                </span>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-extrabold text-ink-400">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    min="1"
+                    step="0.01"
+                    value={bankTransferAmount}
+                    onChange={(e) => setBankTransferAmount(e.target.value)}
+                    placeholder="Enter amount"
+                    className="h-11 w-full rounded-lg border border-ink-200 pl-8 pr-3 text-base font-extrabold text-ink-900 outline-none focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
+                  />
+                </div>
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-xs font-extrabold uppercase tracking-wide text-ink-500">
+                  Transaction / Reference ID *
+                </span>
+                <input
+                  type="text"
+                  value={bankTransferTransactionId}
+                  onChange={(e) => setBankTransferTransactionId(e.target.value)}
+                  placeholder="e.g. UTR / UPI / Bank reference number"
+                  className="h-11 w-full rounded-lg border border-ink-200 px-3 text-sm font-bold text-ink-800 outline-none focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
+                />
+              </label>
+
+              {bankTransferError && (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                  {bankTransferError}
+                </div>
+              )}
+
+              {bankTransferSuccess && (
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+                  {bankTransferSuccess}
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={submitBankTransfer}
+                  disabled={bankTransferSubmitting}
+                  className="flex h-11 w-full items-center justify-center rounded-xl bg-brand-700 text-sm font-extrabold text-white shadow transition hover:bg-brand-800 disabled:opacity-50"
+                >
+                  {bankTransferSubmitting ? "Submitting..." : "Submit Bank Transfer"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowBankTransferModal(false);
+                    setPendingBookingId("");
+                    setBankTransferAmount("");
+                    setBankTransferTransactionId("");
+                    setBankTransferError("");
+                    setBankTransferSuccess("");
+                  }}
+                  className="h-10 w-full rounded-xl border border-ink-200 text-xs font-bold text-ink-600 hover:bg-ink-50"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>

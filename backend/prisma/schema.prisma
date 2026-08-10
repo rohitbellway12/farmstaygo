@@ -261,6 +261,7 @@ enum PaymentType {
 
 enum PaymentStatus {
   PENDING
+  PENDING_APPROVAL
   COMPLETED
   FAILED
   REFUNDED
@@ -689,6 +690,7 @@ model Booking {
   guestMobile   String?       @map("guest_mobile")
   specialRequest String?      @map("special_request")
   reservationAmount Decimal?  @db.Decimal(12, 2) @map("reservation_amount")
+  paymentMethod    PaymentMethod? @map("payment_method")
   paymentStatus  String       @default("PENDING") @map("payment_status")
   adminCommission Decimal?   @map("admin_commission") @db.Decimal(12, 2)
   vendorCommission Decimal?  @map("vendor_commission") @db.Decimal(12, 2)

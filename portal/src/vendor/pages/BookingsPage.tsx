@@ -1,13 +1,43 @@
-import axios from "axios";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import BookingsView from "../../shared/components/BookingsView";
 
+import api from "../../shared/api/api";
+
 export default function VendorBookingsPage() {
+  const [enabledPaymentMethods, setEnabledPaymentMethods] =
+    useState<string[]>(["ONLINE"]);
+
+  useEffect(() => {
+    const loadPaymentMethods = async () => {
+      try {
+        const res = await api.get<{
+          success: boolean;
+          data: {
+            paymentMethods: string[];
+          };
+        }>("/public/settings/payment-methods");
+
+        if (res.data.success && res.data.data.paymentMethods.length > 0) {
+          setEnabledPaymentMethods(res.data.data.paymentMethods);
+        }
+      } catch {
+        // keep defaults
+      }
+    };
+
+    void loadPaymentMethods();
+  }, []);
+
+  const allowCashPayment = enabledPaymentMethods.some(
+    (method) => method === "CASH" || method === "BANK_TRANSFER"
+  );
+
   const handleAccept = async (
     bookingId: string
   ): Promise<void> => {
-    await axios.post(
+    await api.post(
       `/vendor/bookings/${bookingId}/accept`
     );
 
@@ -21,7 +51,7 @@ export default function VendorBookingsPage() {
       "Reason for rejection (optional):"
     );
 
-    await axios.post(
+    await api.post(
       `/vendor/bookings/${bookingId}/reject`,
       { reason: reason || null }
     );
@@ -64,7 +94,8 @@ export default function VendorBookingsPage() {
         description=""
         showVendor={false}
         allowActions
-        allowCashPayment
+        allowCashPayment={allowCashPayment}
+        enabledPaymentMethods={enabledPaymentMethods}
         onAccept={handleAccept}
         onReject={handleReject}
         onPay={handlePay}

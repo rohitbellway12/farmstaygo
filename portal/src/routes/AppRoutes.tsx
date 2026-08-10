@@ -48,6 +48,7 @@ import RoomInventoryPage from "../vendor/pages/RoomInventoryPage";
 import RoomFormPage from "../vendor/pages/RoomFormPage";
 import AvailabilityCalendarPage from "../vendor/pages/AvailabilityCalendarPage";
 import KycBankPage from "../vendor/pages/KycBankPage";
+import VendorSettingsPage from "../vendor/pages/VendorSettingsPage";
 import VendorSupportPage from "../vendor/pages/VendorSupportPage";
 
 
@@ -397,12 +398,7 @@ export default function AppRoutes() {
 
           <Route
             path="settings"
-            element={
-              <ModulePlaceholder
-                title="Settings"
-                description="Manage your vendor account settings."
-              />
-            }
+            element={<VendorSettingsPage />}
           />
         </Route>
       </Route>

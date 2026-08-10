@@ -99,6 +99,7 @@ interface BookingsViewProps {
   showVendor: boolean;
   allowActions?: boolean;
   allowCashPayment?: boolean;
+  enabledPaymentMethods?: string[];
   onAccept?: (bookingId: string) => void;
   onReject?: (bookingId: string) => void;
   onPay?: (bookingId: string) => void;
@@ -220,6 +221,7 @@ export default function BookingsView({
   showVendor,
   allowActions,
   allowCashPayment,
+  enabledPaymentMethods,
   onAccept,
   onReject,
   onPay,
@@ -244,6 +246,21 @@ export default function BookingsView({
   const [cashSubmitting, setCashSubmitting] =
     useState(false);
   const [cashError, setCashError] = useState("");
+
+  const [showBankTransferModal, setShowBankTransferModal] =
+    useState(false);
+  const [selectedPendingPayment, setSelectedPendingPayment] =
+    useState<{
+      id: string;
+      amount: string | number;
+      transactionId: string | null;
+      notes: string | null;
+      bookingId: string;
+    } | null>(null);
+  const [bankTransferSubmitting, setBankTransferSubmitting] =
+    useState(false);
+  const [bankTransferMessage, setBankTransferMessage] =
+    useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -285,6 +302,56 @@ export default function BookingsView({
       cancelled = true;
     };
   }, [endpoint]);
+
+  async function handleApproveBankTransfer(
+    paymentId: string
+  ): Promise<void> {
+    setBankTransferSubmitting(true);
+    setBankTransferMessage("");
+
+    try {
+      await api.post(
+        `/vendor/bookings/${selectedPendingPayment?.bookingId}/payments/${paymentId}/approve`
+      );
+      setBankTransferMessage(
+        "Bank transfer approved successfully."
+      );
+      setShowBankTransferModal(false);
+      setSelectedPendingPayment(null);
+      window.location.reload();
+    } catch {
+      setBankTransferMessage(
+        "Failed to approve bank transfer."
+      );
+    } finally {
+      setBankTransferSubmitting(false);
+    }
+  }
+
+  async function handleRejectBankTransfer(
+    paymentId: string
+  ): Promise<void> {
+    setBankTransferSubmitting(true);
+    setBankTransferMessage("");
+
+    try {
+      await api.post(
+        `/vendor/bookings/${selectedPendingPayment?.bookingId}/payments/${paymentId}/reject`
+      );
+      setBankTransferMessage(
+        "Bank transfer rejected."
+      );
+      setShowBankTransferModal(false);
+      setSelectedPendingPayment(null);
+      window.location.reload();
+    } catch {
+      setBankTransferMessage(
+        "Failed to reject bank transfer."
+      );
+    } finally {
+      setBankTransferSubmitting(false);
+    }
+  }
 
   const counts = useMemo(() => {
     return bookings.reduce(
@@ -338,6 +405,55 @@ export default function BookingsView({
           </div>
         </div>
       </div>
+
+      {(() => {
+        const breakdown: Record<string, number> = {};
+        bookings.forEach((booking) => {
+          (booking.payments || [])
+            .filter(
+              (p) =>
+                p.status === "COMPLETED" &&
+                p.paymentType !== "REFUND"
+            )
+            .forEach((p) => {
+              const method = p.paymentMethod || "OTHER";
+              breakdown[method] = (breakdown[method] || 0) + Number(p.amount);
+            });
+        });
+
+        const entries = Object.entries(breakdown);
+
+        if (entries.length === 0) {
+          return null;
+        }
+
+        return (
+          <div className="rounded-dashboard-card border border-border bg-surface p-4 shadow-dashboard-card">
+            <h3 className="text-ui-sm font-extrabold text-text-main">
+              Payment Breakdown
+            </h3>
+            <div className="mt-3 flex flex-wrap gap-4">
+              {entries.map(([method, total]) => (
+                <div key={method} className="flex items-center gap-2">
+                  <span className="text-ui-xs font-bold uppercase tracking-[0.12em] text-text-muted">
+                    {method === "ONLINE"
+                      ? "Online"
+                      : method === "CASH"
+                        ? "Cash"
+                        : method === "BANK_TRANSFER"
+                          ? "Bank Transfer"
+                          : method}
+                    :
+                  </span>
+                  <span className="text-ui-sm font-extrabold text-text-main">
+                    {formatMoney(total, "INR")}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {loading ? (
         <div className="grid gap-3">
@@ -504,6 +620,40 @@ export default function BookingsView({
                               )}
                             </p>
                           )}
+                        {(() => {
+                          const breakdown: Record<string, number> = {};
+                          (booking.payments || [])
+                            .filter(
+                              (p) =>
+                                p.status === "COMPLETED" &&
+                                p.paymentType !== "REFUND"
+                            )
+                            .forEach((p) => {
+                              const method = p.paymentMethod || "OTHER";
+                              breakdown[method] = (breakdown[method] || 0) + Number(p.amount);
+                            });
+
+                          if (Object.keys(breakdown).length === 0) {
+                            return null;
+                          }
+
+                          return (
+                            <div className="mt-2 space-y-1">
+                              {Object.entries(breakdown).map(([method, total]) => (
+                                <p key={method} className="text-ui-xs font-semibold text-text-muted">
+                                  {method === "ONLINE"
+                                    ? "Online"
+                                    : method === "CASH"
+                                      ? "Cash"
+                                      : method === "BANK_TRANSFER"
+                                        ? "Bank Transfer"
+                                        : method}
+                                  : {formatMoney(total, booking.currency)}
+                                </p>
+                              ))}
+                            </div>
+                          );
+                        })()}
                         {booking.adminCommission &&
                           Number(booking.adminCommission) > 0 && (
                             <p className="mt-1 text-ui-xs font-semibold text-danger">
@@ -696,7 +846,38 @@ export default function BookingsView({
                                  >
                                    Record Cash
                                  </button>
-                               )}
+                                )}
+                              {(booking.payments || []).some(
+                                (p) =>
+                                  p.paymentMethod === "BANK_TRANSFER" &&
+                                  p.status === "PENDING_APPROVAL"
+                              ) && (
+                                <button
+                                  type="button"
+                                  disabled={actionLoading === booking.id}
+                                  onClick={() => {
+                                    const pendingPayment = (booking.payments || []).find(
+                                      (p) =>
+                                        p.paymentMethod === "BANK_TRANSFER" &&
+                                        p.status === "PENDING_APPROVAL"
+                                    );
+                                    if (pendingPayment) {
+                                      setSelectedPendingPayment({
+                                        id: pendingPayment.id,
+                                        amount: pendingPayment.amount,
+                                        transactionId: pendingPayment.transactionId,
+                                        notes: pendingPayment.notes,
+                                        bookingId: booking.id,
+                                      });
+                                      setBankTransferMessage("");
+                                      setShowBankTransferModal(true);
+                                    }
+                                  }}
+                                  className="inline-flex h-8 items-center justify-center rounded-lg bg-amber-700 px-3 text-[11px] font-extrabold text-white transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                  Bank Transfer
+                                </button>
+                              )}
                               {booking.status === "CONFIRMED" &&
                                 booking.paymentStatus === "PAID" && (
                                   <button
@@ -839,8 +1020,11 @@ export default function BookingsView({
                   onChange={(e) => setCashPaymentMethod(e.target.value)}
                   className="h-11 w-full rounded-lg border border-ink-200 bg-white px-3 text-sm font-bold text-ink-800 outline-none focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
                 >
-                  <option value="CASH">Cash</option>
-                  <option value="BANK_TRANSFER">Bank Transfer</option>
+                  {(enabledPaymentMethods || ["CASH", "BANK_TRANSFER"]).map((method) => (
+                    <option key={method} value={method}>
+                      {method === "CASH" ? "Cash" : method === "BANK_TRANSFER" ? "Bank Transfer" : method}
+                    </option>
+                  ))}
                 </select>
               </label>
 
@@ -917,6 +1101,103 @@ export default function BookingsView({
                 className="h-10 w-full rounded-xl border border-ink-200 text-xs font-bold text-ink-600 hover:bg-ink-50"
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showBankTransferModal && selectedPendingPayment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between border-b border-ink-100 pb-4">
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-amber-500 animate-ping" />
+                <h3 className="text-lg font-extrabold text-ink-900">
+                  Bank Transfer Approval
+                </h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowBankTransferModal(false);
+                  setSelectedPendingPayment(null);
+                  setBankTransferMessage("");
+                }}
+                className="text-ink-400 hover:text-ink-700 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+              <h4 className="text-xs font-extrabold uppercase tracking-wide text-amber-700">
+                Pending Bank Transfer
+              </h4>
+              <div className="mt-3 space-y-2 text-sm text-ink-800">
+                <p>
+                  <span className="font-semibold text-ink-600">Amount:</span>{" "}
+                  {formatMoney(
+                    selectedPendingPayment.amount,
+                    "INR"
+                  )}
+                </p>
+                <p>
+                  <span className="font-semibold text-ink-600">Transaction ID:</span>{" "}
+                  <span className="font-mono">
+                    {selectedPendingPayment.transactionId || "Not provided"}
+                  </span>
+                </p>
+                {selectedPendingPayment.notes && (
+                  <p>
+                    <span className="font-semibold text-ink-600">Notes:</span>{" "}
+                    {selectedPendingPayment.notes}
+                  </p>
+                )}
+                <p className="text-xs text-amber-700 mt-2">
+                  Please verify this transaction in your bank account before approving.
+                </p>
+              </div>
+            </div>
+
+            {bankTransferMessage && (
+              <div className={`mt-4 rounded-lg border px-4 py-3 text-sm font-semibold ${
+                bankTransferMessage.includes("approved") || bankTransferMessage.includes("rejected")
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-red-200 bg-red-50 text-red-700"
+              }`}>
+                {bankTransferMessage}
+              </div>
+            )}
+
+            <div className="mt-6 flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() => void handleApproveBankTransfer(selectedPendingPayment.id)}
+                disabled={bankTransferSubmitting}
+                className="flex h-11 w-full items-center justify-center rounded-xl bg-emerald-700 text-sm font-extrabold text-white shadow transition hover:bg-emerald-800 disabled:opacity-50"
+              >
+                {bankTransferSubmitting ? "Processing..." : "Approve Transfer"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void handleRejectBankTransfer(selectedPendingPayment.id)}
+                disabled={bankTransferSubmitting}
+                className="h-10 w-full rounded-xl border border-red-200 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-50"
+              >
+                Reject Transfer
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowBankTransferModal(false);
+                  setSelectedPendingPayment(null);
+                  setBankTransferMessage("");
+                }}
+                className="h-10 w-full rounded-xl border border-ink-200 text-xs font-bold text-ink-600 hover:bg-ink-50"
+              >
+                Close
               </button>
             </div>
           </div>

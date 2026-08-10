@@ -123,6 +123,7 @@ export type PaymentType = (typeof PaymentType)[keyof typeof PaymentType]
 
 export const PaymentStatus = {
   PENDING: 'PENDING',
+  PENDING_APPROVAL: 'PENDING_APPROVAL',
   COMPLETED: 'COMPLETED',
   FAILED: 'FAILED',
   REFUNDED: 'REFUNDED'

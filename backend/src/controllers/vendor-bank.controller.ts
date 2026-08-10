@@ -7,23 +7,22 @@ import type {
   AuthenticatedRequest,
 } from "../middleware/auth.middleware.js";
 
-const vendorKycSchema = z.object({
-  panNumber: z
+const vendorBankSchema = z.object({
+  bankAccountName: z
     .string()
     .trim()
-    .regex(/^[A-Z]{5}[0-9]{4}[A-Z]$/, "Please enter a valid PAN number"),
-  aadhaarNumber: z
+    .min(2, "Account holder name is required"),
+  bankAccountNumber: z
     .string()
     .trim()
-    .regex(/^[0-9]{12}$/, "Please enter a valid 12 digit Aadhaar number"),
-  addressLine: z.string().trim().min(5, "Address is required"),
-  city: z.string().trim().min(2, "City is required"),
-  state: z.string().trim().min(2, "State is required"),
-  postalCode: z.string().trim().min(3, "Postal code is required"),
-  gstNumber: z.string().trim().optional(),
+    .min(6, "Bank account number is required"),
+  bankIfscCode: z
+    .string()
+    .trim()
+    .regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Please enter a valid IFSC code"),
 });
 
-export const getVendorKyc = async (
+export const getVendorBankDetails = async (
   req: AuthenticatedRequest,
   res: Response
 ): Promise<Response> => {
@@ -39,6 +38,13 @@ export const getVendorKyc = async (
       where: {
         userId: req.user.id,
       },
+      select: {
+        id: true,
+        bankAccountName: true,
+        bankAccountNumber: true,
+        bankIfscCode: true,
+        kycStatus: true,
+      },
     });
 
     if (!vendor) {
@@ -50,20 +56,20 @@ export const getVendorKyc = async (
 
     return res.status(200).json({
       success: true,
-      message: "Vendor KYC fetched successfully",
+      message: "Vendor bank details fetched successfully",
       data: vendor,
     });
   } catch (error) {
-    console.error("Get vendor KYC error:", error);
+    console.error("Get vendor bank details error:", error);
 
     return res.status(500).json({
       success: false,
-      message: "Unable to fetch KYC details",
+      message: "Unable to fetch bank details",
     });
   }
 };
 
-export const submitVendorKyc = async (
+export const updateVendorBankDetails = async (
   req: AuthenticatedRequest,
   res: Response
 ): Promise<Response> => {
@@ -75,12 +81,12 @@ export const submitVendorKyc = async (
       });
     }
 
-    const validation = vendorKycSchema.safeParse(req.body);
+    const validation = vendorBankSchema.safeParse(req.body);
 
     if (!validation.success) {
       return res.status(422).json({
         success: false,
-        message: "Please correct the KYC information",
+        message: "Please correct the bank details",
         errors: validation.error.flatten().fieldErrors,
       });
     }
@@ -91,7 +97,6 @@ export const submitVendorKyc = async (
       },
       select: {
         id: true,
-        kycStatus: true,
       },
     });
 
@@ -102,13 +107,6 @@ export const submitVendorKyc = async (
       });
     }
 
-    if (existingVendor.kycStatus === "APPROVED") {
-      return res.status(409).json({
-        success: false,
-        message: "KYC is already approved and cannot be changed from here",
-      });
-    }
-
     const data = validation.data;
 
     const vendor = await prisma.vendor.update({
@@ -116,31 +114,30 @@ export const submitVendorKyc = async (
         id: existingVendor.id,
       },
       data: {
-        panNumber: data.panNumber.toUpperCase(),
-        aadhaarNumber: data.aadhaarNumber,
-        addressLine: data.addressLine,
-        city: data.city,
-        state: data.state,
-        postalCode: data.postalCode,
-        gstNumber: data.gstNumber?.toUpperCase() || null,
-        kycStatus: "PENDING",
-        kycSubmittedAt: new Date(),
-        kycReviewedAt: null,
-        kycRejectionReason: null,
+        bankAccountName: data.bankAccountName,
+        bankAccountNumber: data.bankAccountNumber,
+        bankIfscCode: data.bankIfscCode.toUpperCase(),
+      },
+      select: {
+        id: true,
+        bankAccountName: true,
+        bankAccountNumber: true,
+        bankIfscCode: true,
+        kycStatus: true,
       },
     });
 
     return res.status(200).json({
       success: true,
-      message: "KYC submitted successfully. Please wait for admin approval.",
+      message: "Bank details updated successfully",
       data: vendor,
     });
   } catch (error) {
-    console.error("Submit vendor KYC error:", error);
+    console.error("Update vendor bank details error:", error);
 
     return res.status(500).json({
       success: false,
-      message: "Unable to submit KYC details",
+      message: "Unable to update bank details",
     });
   }
 };

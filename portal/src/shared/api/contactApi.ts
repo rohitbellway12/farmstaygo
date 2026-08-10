@@ -60,6 +60,33 @@ export interface UnreadCountResponse {
   data: { count: number };
 }
 
+export interface PlatformSettings {
+  siteName: string;
+  siteLogoUrl: string | null;
+  siteFaviconUrl: string | null;
+  defaultCurrency: string;
+  timezone: string;
+}
+
+export interface PlatformSettingsResponse {
+  success: boolean;
+  message: string;
+  data: PlatformSettings;
+}
+
+export interface PaymentSettings {
+  paymentMethods: string[];
+  razorpayKeyId: string | null;
+  razorpayKeySecret: string | null;
+  razorpayWebhookUrl: string | null;
+}
+
+export interface PaymentSettingsResponse {
+  success: boolean;
+  message: string;
+  data: PaymentSettings;
+}
+
 export async function fetchContactMessages(params?: {
   page?: number;
   limit?: number;
@@ -159,6 +186,44 @@ export async function updateContactSettings(
 ): Promise<ContactSettingsResponse> {
   const response = await api.put<ContactSettingsResponse>(
     "/admin/contact-settings",
+    settings
+  );
+
+  return response.data;
+}
+
+export async function fetchPlatformSettings(): Promise<PlatformSettingsResponse> {
+  const response = await api.get<PlatformSettingsResponse>(
+    "/admin/settings/platform"
+  );
+
+  return response.data;
+}
+
+export async function updatePlatformSettings(
+  settings: Partial<PlatformSettings>
+): Promise<PlatformSettingsResponse> {
+  const response = await api.put<PlatformSettingsResponse>(
+    "/admin/settings/platform",
+    settings
+  );
+
+  return response.data;
+}
+
+export async function fetchPaymentSettings(): Promise<PaymentSettingsResponse> {
+  const response = await api.get<PaymentSettingsResponse>(
+    "/admin/settings/payment"
+  );
+
+  return response.data;
+}
+
+export async function updatePaymentSettings(
+  settings: Partial<PaymentSettings>
+): Promise<PaymentSettingsResponse> {
+  const response = await api.put<PaymentSettingsResponse>(
+    "/admin/settings/payment",
     settings
   );
 

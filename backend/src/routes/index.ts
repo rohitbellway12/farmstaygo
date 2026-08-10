@@ -7,6 +7,7 @@ import {
 
 import publicCategoryRoutes from "./public-category.routes.js";
 import publicPropertyRoutes from "./public-property.routes.js";
+import publicSettingsRoutes from "./public-settings.routes.js";
 import {
   adminCmsPageRoutes,
   publicCmsPageRoutes,
@@ -36,6 +37,10 @@ import {
 import {
   vendorKycRoutes,
 } from "./vendor-kyc.routes.js";
+
+import {
+  vendorBankRoutes,
+} from "./vendor-bank.routes.js";
 
 import {
   vendorEarningsRoutes,
@@ -90,6 +95,10 @@ import {
   publicServiceCityRoutes,
   vendorServiceCityRoutes,
 } from "./service-city.routes.js";
+
+import {
+  adminSettingsRoutes,
+} from "./admin-settings.routes.js";
 
 import notificationRoutes from "./notification.routes.js";
 
@@ -148,6 +157,11 @@ router.use(
 router.use(
   "/public/service-cities",
   publicServiceCityRoutes
+);
+
+router.use(
+  "/public/settings",
+  publicSettingsRoutes
 );
 
 router.use(
@@ -250,6 +264,11 @@ router.use(
 router.use(
   "/admin/service-cities",
   adminServiceCityRoutes
+);
+
+router.use(
+  "/admin/settings",
+  adminSettingsRoutes
 );
 
 router.use(
@@ -365,6 +384,11 @@ router.use(
 router.use(
   "/vendor/kyc",
   vendorKycRoutes
+);
+
+router.use(
+  "/vendor/bank-details",
+  vendorBankRoutes
 );
 
 /*

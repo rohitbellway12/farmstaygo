@@ -41,7 +41,10 @@ export const sendBookingConfirmationEmail = async (
   guests: number,
   rooms: number,
   totalAmount: string,
-  currency: string
+  currency: string,
+  totalPaid: string = "0",
+  remainingBalance: string = "0",
+  paymentStatus: string = "PENDING"
 ): Promise<void> => {
   const html = buildBookingConfirmationHtml({
     guestName,
@@ -54,6 +57,9 @@ export const sendBookingConfirmationEmail = async (
     rooms,
     totalAmount,
     currency,
+    totalPaid,
+    remainingBalance,
+    paymentStatus,
   });
 
   await sendEmail(
@@ -74,6 +80,9 @@ interface BookingConfirmationParams {
   rooms: number;
   totalAmount: string;
   currency: string;
+  totalPaid: string;
+  remainingBalance: string;
+  paymentStatus: string;
 }
 
 const buildBookingConfirmationHtml = ({
@@ -87,7 +96,20 @@ const buildBookingConfirmationHtml = ({
   rooms,
   totalAmount,
   currency,
+  totalPaid,
+  remainingBalance,
+  paymentStatus,
 }: BookingConfirmationParams): string => {
+  const paymentStatusLabel = paymentStatus === "PAID"
+    ? "Fully Paid"
+    : paymentStatus === "PARTIAL"
+      ? "Partially Paid"
+      : paymentStatus === "PENDING_APPROVAL"
+        ? "Pending Approval"
+        : paymentStatus === "PENDING"
+          ? "Payment Pending"
+          : paymentStatus;
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -138,8 +160,20 @@ const buildBookingConfirmationHtml = ({
                   <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:#333333;">${guests}</td>
                 </tr>
                 <tr>
-                  <td style="padding:12px 16px;background-color:#f8f9fa;font-weight:bold;color:#555555;font-size:13px;">Total Amount</td>
-                  <td style="padding:12px 16px;font-size:14px;color:#333333;font-weight:bold;">${currency} ${totalAmount}</td>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Total Amount</td>
+                  <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:#333333;font-weight:bold;">${currency} ${totalAmount}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Payment Status</td>
+                  <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:#333333;font-weight:bold;">${paymentStatusLabel}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Total Paid</td>
+                  <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:#2d6a4f;font-weight:bold;">${currency} ${totalPaid}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;font-weight:bold;color:#555555;font-size:13px;">Remaining Balance</td>
+                  <td style="padding:12px 16px;font-size:14px;color:#c1121f;font-weight:bold;">${currency} ${remainingBalance}</td>
                 </tr>
               </table>
               <p style="font-size:13px;color:#888888;margin:0;">
@@ -153,11 +187,11 @@ const buildBookingConfirmationHtml = ({
             </td>
           </tr>
          </table>
-       </td>
+        </td>
      </tr>
-   </table>
-</body>
-</html>`;
+    </table>
+  </body>
+  </html>`;
 };
 
 export const sendContactMessageNotificationEmail = async (

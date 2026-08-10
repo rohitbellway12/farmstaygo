@@ -4,25 +4,29 @@ import {
   useEffect,
   useState,
 } from "react";
+import { Link } from "react-router-dom";
 
+import api from "../../shared/api/api";
 import {
   fetchContactSettings,
+  fetchPaymentSettings,
+  fetchPlatformSettings,
   updateContactSettings,
+  updatePaymentSettings,
+  updatePlatformSettings,
   type ContactSettings,
   type SocialLink,
 } from "../../shared/api/contactApi";
 
 interface ApiErrorResponse {
   message?: string;
+  errors?: Record<string, string[] | string>;
 }
 
-interface ToastState {
-  type: "success" | "error";
-  message: string;
-}
+type Tab = "contact" | "platform" | "payment" | "service-cities";
 
 const inputClass =
-  "h-11 w-full rounded-control border border-border bg-surface px-3.5 text-sm text-text-main outline-none focus:border-primary-400 focus:ring-4 focus:ring-primary-100";
+  "h-11 w-full rounded-control border border-border bg-surface px-3.5 text-sm text-text-main outline-none transition placeholder:text-text-soft focus:border-primary-400 focus:ring-4 focus:ring-primary-100";
 
 const getApiErrorMessage = (
   error: unknown,
@@ -38,52 +42,72 @@ const getApiErrorMessage = (
   return fallbackMessage;
 };
 
-const emptySocialLink = {
+const emptySocialLink: SocialLinkForm = {
   platform: "",
   url: "",
   isActive: true,
   sortOrder: 0,
 };
 
+interface SocialLinkForm {
+  platform: string;
+  url: string;
+  isActive: boolean;
+  sortOrder: number;
+}
+
 export default function SettingsPage() {
-  const [settings, setSettings] =
+  const [activeTab, setActiveTab] =
+    useState<Tab>("contact");
+
+  const [contactSettings, setContactSettings] =
     useState<ContactSettings | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [pageError, setPageError] =
-    useState("");
-  const [toast, setToast] =
-    useState<ToastState | null>(null);
-  const [socialLinks, setSocialLinks] =
-    useState<Partial<SocialLink>[]>([emptySocialLink]);
+  const [serviceCities, setServiceCities] = useState<
+    Array<{
+      id: string;
+      name: string;
+      state: string;
+      country: string;
+      isActive: boolean;
+    }>
+  >([]);
 
-  const loadSettings = useCallback(async () => {
-    try {
-      setLoading(true);
-      setPageError("");
+  const [loadingContact, setLoadingContact] = useState(true);
+  const [loadingPlatform, setLoadingPlatform] = useState(true);
+  const [loadingPayment, setLoadingPayment] = useState(true);
+  const [loadingCities, setLoadingCities] = useState(true);
 
-      const response = await fetchContactSettings();
-      setSettings(response.data);
-      setSocialLinks(
-        response.data.socialLinks.length > 0
-          ? response.data.socialLinks
-          : [emptySocialLink]
-      );
-    } catch (error) {
-      setPageError(
-        getApiErrorMessage(
-          error,
-          "Unable to load settings."
-        )
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const [savingContact, setSavingContact] = useState(false);
+  const [savingPlatform, setSavingPlatform] = useState(false);
+  const [savingPayment, setSavingPayment] = useState(false);
+  const [togglingCityId, setTogglingCityId] = useState<
+    string | null
+  >(null);
 
-  useEffect(() => {
-    void loadSettings();
-  }, [loadSettings]);
+  const [pageError, setPageError] = useState("");
+  const [toast, setToast] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  const [socialLinks, setSocialLinks] = useState<
+    SocialLinkForm[]
+  >([emptySocialLink]);
+
+  const [platformForm, setPlatformForm] = useState({
+    siteName: "",
+    siteLogoUrl: "",
+    siteFaviconUrl: "",
+    defaultCurrency: "INR",
+    timezone: "Asia/Kolkata",
+  });
+
+  const [paymentForm, setPaymentForm] = useState({
+    paymentMethods: ["ONLINE"] as string[],
+    razorpayKeyId: "",
+    razorpayKeySecret: "",
+    razorpayWebhookUrl: "",
+  });
 
   useEffect(() => {
     if (!toast) return;
@@ -91,20 +115,149 @@ export default function SettingsPage() {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
+  const loadContactSettings = useCallback(async () => {
+    try {
+      setLoadingContact(true);
+      setPageError("");
+      const response = await fetchContactSettings();
+      setContactSettings(response.data);
+      setSocialLinks(
+        response.data.socialLinks.length > 0
+          ? response.data.socialLinks.map(
+              (link) => ({
+                platform: link.platform,
+                url: link.url,
+                isActive: link.isActive,
+                sortOrder: link.sortOrder,
+              })
+            )
+          : [emptySocialLink]
+      );
+    } catch (error) {
+      setPageError(
+        getApiErrorMessage(
+          error,
+          "Unable to load contact settings."
+        )
+      );
+    } finally {
+      setLoadingContact(false);
+    }
+  }, []);
+
+  const loadPlatformSettings = useCallback(async () => {
+    try {
+      setLoadingPlatform(true);
+      setPageError("");
+      const response = await fetchPlatformSettings();
+      const data = response.data;
+      setPlatformForm({
+        siteName: data.siteName,
+        siteLogoUrl: data.siteLogoUrl || "",
+        siteFaviconUrl: data.siteFaviconUrl || "",
+        defaultCurrency: data.defaultCurrency,
+        timezone: data.timezone,
+      });
+    } catch (error) {
+      setPageError(
+        getApiErrorMessage(
+          error,
+          "Unable to load platform settings."
+        )
+      );
+    } finally {
+      setLoadingPlatform(false);
+    }
+  }, []);
+
+  const loadPaymentSettings = useCallback(async () => {
+    try {
+      setLoadingPayment(true);
+      setPageError("");
+      const response = await fetchPaymentSettings();
+      const data = response.data;
+      setPaymentForm({
+        paymentMethods: data.paymentMethods,
+        razorpayKeyId: data.razorpayKeyId || "",
+        razorpayKeySecret: data.razorpayKeySecret || "",
+        razorpayWebhookUrl: data.razorpayWebhookUrl || "",
+      });
+    } catch (error) {
+      setPageError(
+        getApiErrorMessage(
+          error,
+          "Unable to load payment settings."
+        )
+      );
+    } finally {
+      setLoadingPayment(false);
+    }
+  }, []);
+
+  const loadServiceCities = useCallback(async () => {
+    try {
+      setLoadingCities(true);
+      setPageError("");
+      const response = await api.get<{
+        success: boolean;
+        data: Array<{
+          id: string;
+          name: string;
+          state: string;
+          country: string;
+          isActive: boolean;
+        }>;
+      }>("/admin/service-cities");
+
+      setServiceCities(response.data.data);
+    } catch (error) {
+      setPageError(
+        getApiErrorMessage(
+          error,
+          "Unable to load service cities."
+        )
+      );
+    } finally {
+      setLoadingCities(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadContactSettings();
+  }, [loadContactSettings]);
+
+  useEffect(() => {
+    void loadPlatformSettings();
+  }, [loadPlatformSettings]);
+
+  useEffect(() => {
+    void loadPaymentSettings();
+  }, [loadPaymentSettings]);
+
+  useEffect(() => {
+    if (activeTab === "service-cities") {
+      void loadServiceCities();
+    }
+  }, [activeTab, loadServiceCities]);
+
   const updateSocialLinkField = (
     index: number,
-    field: keyof SocialLink,
+    field: keyof SocialLinkForm,
     value: unknown
   ) => {
     const newLinks = [...socialLinks];
-    (newLinks[index] as Record<string, unknown>)[
-      field
-    ] = value;
+    (newLinks[index] as unknown as Record<
+      string,
+      unknown
+    >)[field] = value;
     setSocialLinks(newLinks);
   };
 
   const addSocialLink = () => {
-    setSocialLinks([...socialLinks, emptySocialLink]);
+    setSocialLinks([
+      ...socialLinks,
+      emptySocialLink,
+    ]);
   };
 
   const removeSocialLink = (index: number) => {
@@ -114,63 +267,178 @@ export default function SettingsPage() {
     setSocialLinks(newLinks);
   };
 
-  const handleSave = async () => {
-    if (!settings) return;
-
-    setSaving(true);
+  const handleSaveContact = async () => {
+    if (!contactSettings) return;
+    setSavingContact(true);
+    setPageError("");
 
     try {
       const response = await updateContactSettings({
-        contactEmail: settings.contactEmail,
-        contactPhone: settings.contactPhone,
+        contactEmail: contactSettings.contactEmail,
+        contactPhone: contactSettings.contactPhone,
         socialLinks: socialLinks.filter(
           (link) =>
             link.platform &&
             link.platform.trim() &&
             link.url &&
             link.url.trim()
-        ),
+        ) as SocialLink[],
       });
 
-      setSettings(response.data);
+      setContactSettings(response.data);
+      setSocialLinks(
+        response.data.socialLinks.length > 0
+          ? response.data.socialLinks.map(
+              (link) => ({
+                platform: link.platform,
+                url: link.url,
+                isActive: link.isActive,
+                sortOrder: link.sortOrder,
+              })
+            )
+          : [emptySocialLink]
+      );
       setToast({
         type: "success",
         message:
           "Contact settings updated successfully.",
       });
     } catch (error) {
+      setPageError(
+        getApiErrorMessage(
+          error,
+          "Unable to save contact settings."
+        )
+      );
       setToast({
         type: "error",
         message: getApiErrorMessage(
           error,
-          "Unable to save settings."
+          "Unable to save contact settings."
         ),
       });
     } finally {
-      setSaving(false);
+      setSavingContact(false);
     }
   };
 
-  const setField = (
-    field: keyof ContactSettings,
-    value: string | null
-  ) => {
-    if (!settings) return;
-    setSettings((prev) => ({
-      ...(prev as ContactSettings),
-      [field]: value,
+  const handleSavePlatform = async () => {
+    setSavingPlatform(true);
+    setPageError("");
+
+    try {
+      await updatePlatformSettings(platformForm);
+      setToast({
+        type: "success",
+        message:
+          "Platform settings updated successfully.",
+      });
+    } catch (error) {
+      setPageError(
+        getApiErrorMessage(
+          error,
+          "Unable to save platform settings."
+        )
+      );
+      setToast({
+        type: "error",
+        message: getApiErrorMessage(
+          error,
+          "Unable to save platform settings."
+        ),
+      });
+    } finally {
+      setSavingPlatform(false);
+    }
+  };
+
+  const handleSavePayment = async () => {
+    setSavingPayment(true);
+    setPageError("");
+
+    try {
+      await updatePaymentSettings({
+        ...paymentForm,
+      } as Parameters<typeof updatePaymentSettings>[0]);
+      setToast({
+        type: "success",
+        message:
+          "Payment settings updated successfully.",
+      });
+    } catch (error) {
+      setPageError(
+        getApiErrorMessage(
+          error,
+          "Unable to save payment settings."
+        )
+      );
+      setToast({
+        type: "error",
+        message: getApiErrorMessage(
+          error,
+          "Unable to save payment settings."
+        ),
+      });
+    } finally {
+      setSavingPayment(false);
+    }
+  };
+
+  const togglePaymentMethod = (method: string) => {
+    setPaymentForm((current) => ({
+      ...current,
+      paymentMethods: current.paymentMethods.includes(
+        method
+      )
+        ? current.paymentMethods.filter(
+            (m) => m !== method
+          )
+        : [...current.paymentMethods, method],
     }));
   };
 
-  if (loading) {
-    return (
-      <section className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card">
-        <div className="text-sm font-bold text-text-muted">
-          Loading settings...
-        </div>
-      </section>
-    );
-  }
+  const toggleCityStatus = async (
+    city: { id: string; isActive: boolean }
+  ) => {
+    setTogglingCityId(city.id);
+    try {
+      await api.patch(
+        `/admin/service-cities/${city.id}/status`,
+        { isActive: !city.isActive }
+      );
+      setServiceCities((current) =>
+        current.map((c) =>
+          c.id === city.id
+            ? { ...c, isActive: !c.isActive }
+            : c
+        )
+      );
+      setToast({
+        type: "success",
+        message: !city.isActive
+          ? "City activated successfully."
+          : "City deactivated successfully.",
+      });
+    } catch {
+      setToast({
+        type: "error",
+        message:
+          "Unable to update city status.",
+      });
+    } finally {
+      setTogglingCityId(null);
+    }
+  };
+
+  const tabs: { key: Tab; label: string }[] = [
+    { key: "contact", label: "Contact" },
+    { key: "platform", label: "Platform" },
+    { key: "payment", label: "Payment" },
+    {
+      key: "service-cities",
+      label: "Service Cities",
+    },
+  ];
 
   return (
     <div className="space-y-5">
@@ -197,31 +465,47 @@ export default function SettingsPage() {
         </div>
       )}
 
-      <section className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary-50 text-primary-700">
-            <svg
-              viewBox="0 0 24 24"
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-            >
-              <path d="M3 10.5 12 3l9 7.5" />
-              <path d="M5 9.5V21h14V9.5" />
-              <path d="M9 21v-7h6v7" />
-            </svg>
-          </span>
-          <div>
-            <h1 className="text-2xl font-extrabold text-text-main">
-              Settings
-            </h1>
-            <p className="mt-1 text-sm text-text-muted">
-              Manage platform contact configuration.
-            </p>
-          </div>
+      <section className="flex items-center gap-3">
+        <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary-50 text-primary-700">
+          <svg
+            viewBox="0 0 24 24"
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+          >
+            <path d="M3 10.5 12 3l9 7.5" />
+            <path d="M5 9.5V21h14V9.5" />
+            <path d="M9 21v-7h6v7" />
+          </svg>
+        </span>
+        <div>
+          <h1 className="text-2xl font-extrabold text-text-main">
+            Settings
+          </h1>
+          <p className="mt-1 text-sm text-text-muted">
+            Manage platform, payment, and service
+            configuration.
+          </p>
         </div>
       </section>
+
+      <div className="flex gap-1 rounded-control border border-border bg-surface-soft p-1">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => setActiveTab(tab.key)}
+            className={`h-10 flex-1 rounded-control text-sm font-bold transition ${
+              activeTab === tab.key
+                ? "bg-surface text-text-main shadow-sm"
+                : "text-text-muted hover:text-text-secondary"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
       {pageError && (
         <div className="rounded-control border border-danger/20 bg-danger-soft px-4 py-3 text-sm font-bold text-danger">
@@ -229,7 +513,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {settings && (
+      {activeTab === "contact" && (
         <section className="space-y-6 rounded-dashboard-card border border-border bg-surface p-6 shadow-dashboard-card">
           <div>
             <h2 className="text-lg font-extrabold text-text-main">
@@ -237,144 +521,581 @@ export default function SettingsPage() {
             </h2>
             <p className="mt-1 text-sm text-text-muted">
               These details appear on the website contact
-              page and footer. Contact form submissions are
-              sent to this email.
+              page and footer. Contact form submissions
+              are sent to this email.
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
-              Contact Email
-              <input
-                type="email"
-                value={settings.contactEmail ?? ""}
-                onChange={(e) =>
-                  setField(
-                    "contactEmail",
-                    e.target.value || null
-                  )
-                }
-                placeholder="admin@farmstaygo.com"
-                className={inputClass}
-              />
-            </label>
+          {loadingContact ? (
+            <div className="text-sm font-bold text-text-muted">
+              Loading contact settings...
+            </div>
+          ) : contactSettings ? (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
+                  Contact Email
+                  <input
+                    type="email"
+                    value={
+                      contactSettings.contactEmail ?? ""
+                    }
+                    onChange={(e) =>
+                      setContactSettings(
+                        (prev) =>
+                          prev
+                            ? {
+                                ...prev,
+                                contactEmail:
+                                  e.target.value || null,
+                              }
+                            : null
+                      )
+                    }
+                    placeholder="admin@farmstaygo.com"
+                    className={inputClass}
+                  />
+                </label>
 
-            <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
-              Contact Phone
-              <input
-                type="tel"
-                value={settings.contactPhone ?? ""}
-                onChange={(e) =>
-                  setField(
-                    "contactPhone",
-                    e.target.value || null
-                  )
-                }
-                placeholder="+91 9876543210"
-                className={inputClass}
-              />
-            </label>
+                <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
+                  Contact Phone
+                  <input
+                    type="tel"
+                    value={
+                      contactSettings.contactPhone ?? ""
+                    }
+                    onChange={(e) =>
+                      setContactSettings(
+                        (prev) =>
+                          prev
+                            ? {
+                                ...prev,
+                                contactPhone:
+                                  e.target.value || null,
+                              }
+                            : null
+                      )
+                    }
+                    placeholder="+91 9876543210"
+                    className={inputClass}
+                  />
+                </label>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-extrabold text-text-main">
+                  Social Links
+                </h3>
+
+                <div className="mt-3 space-y-3">
+                  {socialLinks.map(
+                    (link, index) => (
+                      <div
+                        key={index}
+                        className="flex items-end gap-3"
+                      >
+                        <label className="flex-1 text-xs font-extrabold text-text-secondary">
+                          Platform
+                          <input
+                            type="text"
+                            value={link.platform ?? ""}
+                            onChange={(e) =>
+                              updateSocialLinkField(
+                                index,
+                                "platform",
+                                e.target.value
+                              )
+                            }
+                            placeholder="e.g. Facebook"
+                            className={inputClass}
+                          />
+                        </label>
+
+                        <label className="flex-1 text-xs font-extrabold text-text-secondary">
+                          URL
+                          <input
+                            type="url"
+                            value={link.url ?? ""}
+                            onChange={(e) =>
+                              updateSocialLinkField(
+                                index,
+                                "url",
+                                e.target.value
+                              )
+                            }
+                            placeholder="https://..."
+                            className={inputClass}
+                          />
+                        </label>
+
+                        <label className="flex items-center gap-2 text-xs font-bold text-text-secondary">
+                          <input
+                            type="checkbox"
+                            checked={link.isActive ?? true}
+                            onChange={(e) =>
+                              updateSocialLinkField(
+                                index,
+                                "isActive",
+                                e.target.checked
+                              )
+                            }
+                          />
+                          Active
+                        </label>
+
+                        {socialLinks.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              removeSocialLink(index)
+                            }
+                            className="rounded-lg border border-danger/30 bg-surface px-3 py-2 text-xs font-bold text-danger hover:bg-danger-soft"
+                            title="Remove"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    )
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={addSocialLink}
+                  className="mt-4 rounded-control border border-border bg-surface px-4 py-2 text-sm font-bold text-text-secondary hover:bg-surface-muted"
+                >
+                  Add Social Link
+                </button>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleSaveContact}
+                  disabled={savingContact}
+                  className="h-11 rounded-control bg-primary-700 px-6 text-sm font-bold text-white hover:bg-primary-800 disabled:opacity-60"
+                >
+                  {savingContact
+                    ? "Saving..."
+                    : "Save Contact Settings"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="text-sm font-bold text-text-muted">
+              Unable to load contact settings.
+            </div>
+          )}
+        </section>
+      )}
+
+      {activeTab === "platform" && (
+        <section className="space-y-6 rounded-dashboard-card border border-border bg-surface p-6 shadow-dashboard-card">
+          <div>
+            <h2 className="text-lg font-extrabold text-text-main">
+              Platform Settings
+            </h2>
+            <p className="mt-1 text-sm text-text-muted">
+              Configure your platform brand, currency, and
+              timezone.
+            </p>
           </div>
 
-          <div>
-            <h3 className="text-sm font-extrabold text-text-main">
-              Social Links
-            </h3>
-
-            <div className="mt-3 space-y-3">
-              {socialLinks.map(
-                (link, index) => (
-                  <div
-                    key={index}
-                    className="flex items-end gap-3"
-                  >
-                    <label className="flex-1 text-xs font-extrabold text-text-secondary">
-                      Platform
-                      <input
-                        type="text"
-                        value={link.platform ?? ""}
-                        onChange={(e) =>
-                          updateSocialLinkField(
-                            index,
-                            "platform",
-                            e.target.value
-                          )
-                        }
-                        placeholder="e.g. Facebook"
-                        className={inputClass}
-                      />
-                    </label>
-
-                    <label className="flex-1 text-xs font-extrabold text-text-secondary">
-                      URL
-                      <input
-                        type="url"
-                        value={link.url ?? ""}
-                        onChange={(e) =>
-                          updateSocialLinkField(
-                            index,
-                            "url",
-                            e.target.value
-                          )
-                        }
-                        placeholder="https://..."
-                        className={inputClass}
-                      />
-                    </label>
-
-                    <label className="flex items-center gap-2 text-xs font-bold text-text-secondary">
-                      <input
-                        type="checkbox"
-                        checked={link.isActive ?? true}
-                        onChange={(e) =>
-                          updateSocialLinkField(
-                            index,
-                            "isActive",
-                            e.target.checked
-                          )
-                        }
-                      />
-                      Active
-                    </label>
-
-                    {socialLinks.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          removeSocialLink(index)
-                        }
-                        className="rounded-lg border border-danger/30 bg-surface px-3 py-2 text-xs font-bold text-danger hover:bg-danger-soft"
-                        title="Remove"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                )
-              )}
+          {loadingPlatform ? (
+            <div className="text-sm font-bold text-text-muted">
+              Loading platform settings...
             </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="sm:col-span-2 grid gap-1.5 text-xs font-extrabold text-text-secondary">
+                Site Name *
+                <input
+                  type="text"
+                  value={platformForm.siteName}
+                  onChange={(e) =>
+                    setPlatformForm(
+                      (current) => ({
+                        ...current,
+                        siteName: e.target.value,
+                      })
+                    )
+                  }
+                  placeholder="FarmStay"
+                  className={inputClass}
+                />
+              </label>
 
+              <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
+                Site Logo URL
+                <input
+                  type="url"
+                  value={platformForm.siteLogoUrl}
+                  onChange={(e) =>
+                    setPlatformForm(
+                      (current) => ({
+                        ...current,
+                        siteLogoUrl: e.target.value,
+                      })
+                    )
+                  }
+                  placeholder="https://example.com/logo.png"
+                  className={inputClass}
+                />
+              </label>
+
+              <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
+                Favicon URL
+                <input
+                  type="url"
+                  value={platformForm.siteFaviconUrl}
+                  onChange={(e) =>
+                    setPlatformForm(
+                      (current) => ({
+                        ...current,
+                        siteFaviconUrl: e.target.value,
+                      })
+                    )
+                  }
+                  placeholder="https://example.com/favicon.ico"
+                  className={inputClass}
+                />
+              </label>
+
+              <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
+                Default Currency
+                <select
+                  value={platformForm.defaultCurrency}
+                  onChange={(e) =>
+                    setPlatformForm(
+                      (current) => ({
+                        ...current,
+                        defaultCurrency: e.target.value,
+                      })
+                    )
+                  }
+                  className={inputClass}
+                >
+                  <option value="INR">INR (₹)</option>
+                  <option value="USD">USD ($)</option>
+                </select>
+              </label>
+
+              <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
+                Timezone
+                <input
+                  type="text"
+                  value={platformForm.timezone}
+                  onChange={(e) =>
+                    setPlatformForm(
+                      (current) => ({
+                        ...current,
+                        timezone: e.target.value,
+                      })
+                    )
+                  }
+                  placeholder="Asia/Kolkata"
+                  className={inputClass}
+                />
+              </label>
+            </div>
+          )}
+
+          <div className="flex justify-end">
             <button
               type="button"
-              onClick={addSocialLink}
-              className="mt-4 rounded-control border border-border bg-surface px-4 py-2 text-sm font-bold text-text-secondary hover:bg-surface-muted"
+              onClick={handleSavePlatform}
+              disabled={savingPlatform}
+              className="h-11 rounded-control bg-primary-700 px-6 text-sm font-bold text-white hover:bg-primary-800 disabled:opacity-60"
             >
-              Add Social Link
+              {savingPlatform
+                ? "Saving..."
+                : "Save Platform Settings"}
             </button>
           </div>
         </section>
       )}
 
-      <div className="flex justify-end gap-3">
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={saving}
-          className="h-11 rounded-control bg-primary-700 px-6 text-sm font-bold text-white hover:bg-primary-800 disabled:opacity-60"
-        >
-          {saving ? "Saving..." : "Save Changes"}
-        </button>
-      </div>
+      {activeTab === "payment" && (
+        <section className="space-y-6 rounded-dashboard-card border border-border bg-surface p-6 shadow-dashboard-card">
+          <div>
+            <h2 className="text-lg font-extrabold text-text-main">
+              Payment Settings
+            </h2>
+            <p className="mt-1 text-sm text-text-muted">
+              Configure payment methods and Razorpay
+              gateway credentials.
+            </p>
+          </div>
+
+          {loadingPayment ? (
+            <div className="text-sm font-bold text-text-muted">
+              Loading payment settings...
+            </div>
+          ) : (
+            <>
+              <div>
+                <h3 className="text-sm font-extrabold text-text-main">
+                  Payment Methods
+                </h3>
+                <p className="mt-1 text-xs text-text-muted">
+                  Enable the payment methods you want to
+                  accept from guests.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-3">
+                  {[
+                    {
+                      value: "ONLINE",
+                      label: "Online Payment",
+                    },
+                    {
+                      value: "CASH",
+                      label: "Cash",
+                    },
+                    {
+                      value: "BANK_TRANSFER",
+                      label: "Bank Transfer",
+                    },
+                  ].map((method) => (
+                    <label
+                      key={method.value}
+                      className="flex items-center gap-2 rounded-control border border-border bg-surface-soft px-4 py-3"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={paymentForm.paymentMethods.includes(
+                          method.value
+                        )}
+                        onChange={() =>
+                          togglePaymentMethod(
+                            method.value
+                          )
+                        }
+                        className="h-5 w-5 accent-primary-700"
+                      />
+                      <span className="text-sm font-bold text-text-main">
+                        {method.label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-extrabold text-text-main">
+                  Razorpay Configuration
+                </h3>
+                <p className="mt-1 text-xs text-text-muted">
+                  Enter your Razorpay dashboard credentials.
+                  Leave blank to use sandbox mode.
+                </p>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
+                    Razorpay Key ID
+                    <input
+                      type="text"
+                      value={paymentForm.razorpayKeyId}
+                      onChange={(e) =>
+                        setPaymentForm(
+                          (current) => ({
+                            ...current,
+                            razorpayKeyId: e.target.value,
+                          })
+                        )
+                      }
+                      placeholder="rzp_test_..."
+                      className={inputClass}
+                    />
+                  </label>
+
+                  <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
+                    Razorpay Key Secret
+                    <input
+                      type="password"
+                      value={paymentForm.razorpayKeySecret}
+                      onChange={(e) =>
+                        setPaymentForm(
+                          (current) => ({
+                            ...current,
+                            razorpayKeySecret: e.target.value,
+                          })
+                        )
+                      }
+                      placeholder="••••••••••••••••"
+                      className={inputClass}
+                    />
+                  </label>
+
+                  <label className="sm:col-span-2 grid gap-1.5 text-xs font-extrabold text-text-secondary">
+                    Webhook URL
+                    <input
+                      type="url"
+                      value={paymentForm.razorpayWebhookUrl}
+                      onChange={(e) =>
+                        setPaymentForm(
+                          (current) => ({
+                            ...current,
+                            razorpayWebhookUrl: e.target.value,
+                          })
+                        )
+                      }
+                      placeholder="https://yourdomain.com/api/webhooks/razorpay"
+                      className={inputClass}
+                    />
+                  </label>
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleSavePayment}
+              disabled={savingPayment}
+              className="h-11 rounded-control bg-primary-700 px-6 text-sm font-bold text-white hover:bg-primary-800 disabled:opacity-60"
+            >
+              {savingPayment
+                ? "Saving..."
+                : "Save Payment Settings"}
+            </button>
+          </div>
+        </section>
+      )}
+
+      {activeTab === "service-cities" && (
+        <section className="space-y-5 rounded-dashboard-card border border-border bg-surface p-6 shadow-dashboard-card">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h2 className="text-lg font-extrabold text-text-main">
+                Service Cities
+              </h2>
+              <p className="mt-1 text-sm text-text-muted">
+                Vendors can list properties only in active
+                cities configured here.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <div className="rounded-control border border-border bg-surface-soft px-4 py-3">
+                <span className="block text-[10px] font-bold uppercase text-text-muted">
+                  Total
+                </span>
+                <strong className="text-lg text-text-main">
+                  {serviceCities.length}
+                </strong>
+              </div>
+              <div className="rounded-control border border-primary-100 bg-primary-50 px-4 py-3">
+                <span className="block text-[10px] font-bold uppercase text-primary-700">
+                  Active
+                </span>
+                <strong className="text-lg text-primary-800">
+                  {serviceCities.filter((c) => c.isActive).length}
+                </strong>
+              </div>
+              <Link
+                to="/admin/service-cities"
+                className="inline-flex h-11 items-center justify-center rounded-control bg-primary-700 px-5 text-sm font-bold text-white hover:bg-primary-800"
+              >
+                Manage Cities
+              </Link>
+            </div>
+          </div>
+
+          {loadingCities ? (
+            <div className="text-sm font-bold text-text-muted">
+              Loading cities...
+            </div>
+          ) : (
+            <div className="overflow-hidden rounded-control border border-border">
+              <table className="min-w-full divide-y divide-border text-left text-sm">
+                <thead className="bg-surface-soft text-xs uppercase tracking-[0.08em] text-text-muted">
+                  <tr>
+                    <th className="px-4 py-3">
+                      City
+                    </th>
+                    <th className="px-4 py-3">
+                      State
+                    </th>
+                    <th className="px-4 py-3">
+                      Country
+                    </th>
+                    <th className="px-4 py-3">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-right">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody className="divide-y divide-border">
+                  {serviceCities.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="px-4 py-8 text-center text-text-muted"
+                      >
+                        No cities found.
+                      </td>
+                    </tr>
+                  ) : (
+                    serviceCities.map(
+                      (city) => (
+                        <tr key={city.id}>
+                          <td className="px-4 py-3 font-bold text-text-main">
+                            {city.name}
+                          </td>
+                          <td className="px-4 py-3 text-text-secondary">
+                            {city.state}
+                          </td>
+                          <td className="px-4 py-3 text-text-secondary">
+                            {city.country}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${
+                                city.isActive
+                                  ? "bg-success-soft text-success"
+                                  : "bg-surface-soft text-text-muted"
+                              }`}
+                            >
+                              {city.isActive
+                                ? "Active"
+                                : "Inactive"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  toggleCityStatus(
+                                    city
+                                  )
+                                }
+                                disabled={
+                                  togglingCityId ===
+                                  city.id
+                                }
+                                className="h-9 rounded-control border border-primary-100 px-3 text-xs font-bold text-primary-700 hover:bg-primary-50 disabled:opacity-60"
+                              >
+                                {city.isActive
+                                  ? "Disable"
+                                  : "Enable"}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    )
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

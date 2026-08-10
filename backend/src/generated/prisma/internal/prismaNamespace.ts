@@ -2637,6 +2637,7 @@ export const BookingScalarFieldEnum = {
   guestMobile: 'guestMobile',
   specialRequest: 'specialRequest',
   reservationAmount: 'reservationAmount',
+  paymentMethod: 'paymentMethod',
   paymentStatus: 'paymentStatus',
   adminCommission: 'adminCommission',
   vendorCommission: 'vendorCommission',

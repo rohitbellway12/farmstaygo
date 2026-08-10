@@ -67,6 +67,7 @@ export type BookingMinAggregateOutputType = {
   guestMobile: string | null
   specialRequest: string | null
   reservationAmount: runtime.Decimal | null
+  paymentMethod: $Enums.PaymentMethod | null
   paymentStatus: string | null
   adminCommission: runtime.Decimal | null
   vendorCommission: runtime.Decimal | null
@@ -95,6 +96,7 @@ export type BookingMaxAggregateOutputType = {
   guestMobile: string | null
   specialRequest: string | null
   reservationAmount: runtime.Decimal | null
+  paymentMethod: $Enums.PaymentMethod | null
   paymentStatus: string | null
   adminCommission: runtime.Decimal | null
   vendorCommission: runtime.Decimal | null
@@ -123,6 +125,7 @@ export type BookingCountAggregateOutputType = {
   guestMobile: number
   specialRequest: number
   reservationAmount: number
+  paymentMethod: number
   paymentStatus: number
   adminCommission: number
   vendorCommission: number
@@ -175,6 +178,7 @@ export type BookingMinAggregateInputType = {
   guestMobile?: true
   specialRequest?: true
   reservationAmount?: true
+  paymentMethod?: true
   paymentStatus?: true
   adminCommission?: true
   vendorCommission?: true
@@ -203,6 +207,7 @@ export type BookingMaxAggregateInputType = {
   guestMobile?: true
   specialRequest?: true
   reservationAmount?: true
+  paymentMethod?: true
   paymentStatus?: true
   adminCommission?: true
   vendorCommission?: true
@@ -231,6 +236,7 @@ export type BookingCountAggregateInputType = {
   guestMobile?: true
   specialRequest?: true
   reservationAmount?: true
+  paymentMethod?: true
   paymentStatus?: true
   adminCommission?: true
   vendorCommission?: true
@@ -346,6 +352,7 @@ export type BookingGroupByOutputType = {
   guestMobile: string | null
   specialRequest: string | null
   reservationAmount: runtime.Decimal | null
+  paymentMethod: $Enums.PaymentMethod | null
   paymentStatus: string
   adminCommission: runtime.Decimal | null
   vendorCommission: runtime.Decimal | null
@@ -397,6 +404,7 @@ export type BookingWhereInput = {
   guestMobile?: Prisma.StringNullableFilter<"Booking"> | string | null
   specialRequest?: Prisma.StringNullableFilter<"Booking"> | string | null
   reservationAmount?: Prisma.DecimalNullableFilter<"Booking"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.EnumPaymentMethodNullableFilter<"Booking"> | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFilter<"Booking"> | string
   adminCommission?: Prisma.DecimalNullableFilter<"Booking"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.DecimalNullableFilter<"Booking"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -430,6 +438,7 @@ export type BookingOrderByWithRelationInput = {
   guestMobile?: Prisma.SortOrderInput | Prisma.SortOrder
   specialRequest?: Prisma.SortOrderInput | Prisma.SortOrder
   reservationAmount?: Prisma.SortOrderInput | Prisma.SortOrder
+  paymentMethod?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentStatus?: Prisma.SortOrder
   adminCommission?: Prisma.SortOrderInput | Prisma.SortOrder
   vendorCommission?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -466,6 +475,7 @@ export type BookingWhereUniqueInput = Prisma.AtLeast<{
   guestMobile?: Prisma.StringNullableFilter<"Booking"> | string | null
   specialRequest?: Prisma.StringNullableFilter<"Booking"> | string | null
   reservationAmount?: Prisma.DecimalNullableFilter<"Booking"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.EnumPaymentMethodNullableFilter<"Booking"> | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFilter<"Booking"> | string
   adminCommission?: Prisma.DecimalNullableFilter<"Booking"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.DecimalNullableFilter<"Booking"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -499,6 +509,7 @@ export type BookingOrderByWithAggregationInput = {
   guestMobile?: Prisma.SortOrderInput | Prisma.SortOrder
   specialRequest?: Prisma.SortOrderInput | Prisma.SortOrder
   reservationAmount?: Prisma.SortOrderInput | Prisma.SortOrder
+  paymentMethod?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentStatus?: Prisma.SortOrder
   adminCommission?: Prisma.SortOrderInput | Prisma.SortOrder
   vendorCommission?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -535,6 +546,7 @@ export type BookingScalarWhereWithAggregatesInput = {
   guestMobile?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
   specialRequest?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
   reservationAmount?: Prisma.DecimalNullableWithAggregatesFilter<"Booking"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.EnumPaymentMethodNullableWithAggregatesFilter<"Booking"> | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringWithAggregatesFilter<"Booking"> | string
   adminCommission?: Prisma.DecimalNullableWithAggregatesFilter<"Booking"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.DecimalNullableWithAggregatesFilter<"Booking"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -560,6 +572,7 @@ export type BookingCreateInput = {
   guestMobile?: string | null
   specialRequest?: string | null
   reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: $Enums.PaymentMethod | null
   paymentStatus?: string
   adminCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -593,6 +606,7 @@ export type BookingUncheckedCreateInput = {
   guestMobile?: string | null
   specialRequest?: string | null
   reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: $Enums.PaymentMethod | null
   paymentStatus?: string
   adminCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -620,6 +634,7 @@ export type BookingUpdateInput = {
   guestMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   specialRequest?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
   adminCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -653,6 +668,7 @@ export type BookingUncheckedUpdateInput = {
   guestMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   specialRequest?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
   adminCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -683,6 +699,7 @@ export type BookingCreateManyInput = {
   guestMobile?: string | null
   specialRequest?: string | null
   reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: $Enums.PaymentMethod | null
   paymentStatus?: string
   adminCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -708,6 +725,7 @@ export type BookingUpdateManyMutationInput = {
   guestMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   specialRequest?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
   adminCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -736,6 +754,7 @@ export type BookingUncheckedUpdateManyInput = {
   guestMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   specialRequest?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
   adminCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -779,6 +798,7 @@ export type BookingCountOrderByAggregateInput = {
   guestMobile?: Prisma.SortOrder
   specialRequest?: Prisma.SortOrder
   reservationAmount?: Prisma.SortOrder
+  paymentMethod?: Prisma.SortOrder
   paymentStatus?: Prisma.SortOrder
   adminCommission?: Prisma.SortOrder
   vendorCommission?: Prisma.SortOrder
@@ -818,6 +838,7 @@ export type BookingMaxOrderByAggregateInput = {
   guestMobile?: Prisma.SortOrder
   specialRequest?: Prisma.SortOrder
   reservationAmount?: Prisma.SortOrder
+  paymentMethod?: Prisma.SortOrder
   paymentStatus?: Prisma.SortOrder
   adminCommission?: Prisma.SortOrder
   vendorCommission?: Prisma.SortOrder
@@ -846,6 +867,7 @@ export type BookingMinOrderByAggregateInput = {
   guestMobile?: Prisma.SortOrder
   specialRequest?: Prisma.SortOrder
   reservationAmount?: Prisma.SortOrder
+  paymentMethod?: Prisma.SortOrder
   paymentStatus?: Prisma.SortOrder
   adminCommission?: Prisma.SortOrder
   vendorCommission?: Prisma.SortOrder
@@ -1014,6 +1036,10 @@ export type EnumBookingStatusFieldUpdateOperationsInput = {
   set?: $Enums.BookingStatus
 }
 
+export type NullableEnumPaymentMethodFieldUpdateOperationsInput = {
+  set?: $Enums.PaymentMethod | null
+}
+
 export type BookingCreateNestedOneWithoutPaymentsInput = {
   create?: Prisma.XOR<Prisma.BookingCreateWithoutPaymentsInput, Prisma.BookingUncheckedCreateWithoutPaymentsInput>
   connectOrCreate?: Prisma.BookingCreateOrConnectWithoutPaymentsInput
@@ -1044,6 +1070,7 @@ export type BookingCreateWithoutUserInput = {
   guestMobile?: string | null
   specialRequest?: string | null
   reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: $Enums.PaymentMethod | null
   paymentStatus?: string
   adminCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1075,6 +1102,7 @@ export type BookingUncheckedCreateWithoutUserInput = {
   guestMobile?: string | null
   specialRequest?: string | null
   reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: $Enums.PaymentMethod | null
   paymentStatus?: string
   adminCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1134,6 +1162,7 @@ export type BookingScalarWhereInput = {
   guestMobile?: Prisma.StringNullableFilter<"Booking"> | string | null
   specialRequest?: Prisma.StringNullableFilter<"Booking"> | string | null
   reservationAmount?: Prisma.DecimalNullableFilter<"Booking"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.EnumPaymentMethodNullableFilter<"Booking"> | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFilter<"Booking"> | string
   adminCommission?: Prisma.DecimalNullableFilter<"Booking"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.DecimalNullableFilter<"Booking"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1159,6 +1188,7 @@ export type BookingCreateWithoutCommissionsInput = {
   guestMobile?: string | null
   specialRequest?: string | null
   reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: $Enums.PaymentMethod | null
   paymentStatus?: string
   adminCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1191,6 +1221,7 @@ export type BookingUncheckedCreateWithoutCommissionsInput = {
   guestMobile?: string | null
   specialRequest?: string | null
   reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: $Enums.PaymentMethod | null
   paymentStatus?: string
   adminCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1233,6 +1264,7 @@ export type BookingUpdateWithoutCommissionsInput = {
   guestMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   specialRequest?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
   adminCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1265,6 +1297,7 @@ export type BookingUncheckedUpdateWithoutCommissionsInput = {
   guestMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   specialRequest?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
   adminCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1291,6 +1324,7 @@ export type BookingCreateWithoutPropertyInput = {
   guestMobile?: string | null
   specialRequest?: string | null
   reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: $Enums.PaymentMethod | null
   paymentStatus?: string
   adminCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1322,6 +1356,7 @@ export type BookingUncheckedCreateWithoutPropertyInput = {
   guestMobile?: string | null
   specialRequest?: string | null
   reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: $Enums.PaymentMethod | null
   paymentStatus?: string
   adminCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1375,6 +1410,7 @@ export type BookingCreateWithoutRoomTypeInput = {
   guestMobile?: string | null
   specialRequest?: string | null
   reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: $Enums.PaymentMethod | null
   paymentStatus?: string
   adminCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1406,6 +1442,7 @@ export type BookingUncheckedCreateWithoutRoomTypeInput = {
   guestMobile?: string | null
   specialRequest?: string | null
   reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: $Enums.PaymentMethod | null
   paymentStatus?: string
   adminCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1459,6 +1496,7 @@ export type BookingCreateWithoutPaymentsInput = {
   guestMobile?: string | null
   specialRequest?: string | null
   reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: $Enums.PaymentMethod | null
   paymentStatus?: string
   adminCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1491,6 +1529,7 @@ export type BookingUncheckedCreateWithoutPaymentsInput = {
   guestMobile?: string | null
   specialRequest?: string | null
   reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: $Enums.PaymentMethod | null
   paymentStatus?: string
   adminCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1533,6 +1572,7 @@ export type BookingUpdateWithoutPaymentsInput = {
   guestMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   specialRequest?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
   adminCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1565,6 +1605,7 @@ export type BookingUncheckedUpdateWithoutPaymentsInput = {
   guestMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   specialRequest?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
   adminCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1593,6 +1634,7 @@ export type BookingCreateManyUserInput = {
   guestMobile?: string | null
   specialRequest?: string | null
   reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: $Enums.PaymentMethod | null
   paymentStatus?: string
   adminCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1618,6 +1660,7 @@ export type BookingUpdateWithoutUserInput = {
   guestMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   specialRequest?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
   adminCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1649,6 +1692,7 @@ export type BookingUncheckedUpdateWithoutUserInput = {
   guestMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   specialRequest?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
   adminCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1678,6 +1722,7 @@ export type BookingUncheckedUpdateManyWithoutUserInput = {
   guestMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   specialRequest?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
   adminCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1705,6 +1750,7 @@ export type BookingCreateManyPropertyInput = {
   guestMobile?: string | null
   specialRequest?: string | null
   reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: $Enums.PaymentMethod | null
   paymentStatus?: string
   adminCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1730,6 +1776,7 @@ export type BookingUpdateWithoutPropertyInput = {
   guestMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   specialRequest?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
   adminCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1761,6 +1808,7 @@ export type BookingUncheckedUpdateWithoutPropertyInput = {
   guestMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   specialRequest?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
   adminCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1790,6 +1838,7 @@ export type BookingUncheckedUpdateManyWithoutPropertyInput = {
   guestMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   specialRequest?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
   adminCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1817,6 +1866,7 @@ export type BookingCreateManyRoomTypeInput = {
   guestMobile?: string | null
   specialRequest?: string | null
   reservationAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: $Enums.PaymentMethod | null
   paymentStatus?: string
   adminCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1842,6 +1892,7 @@ export type BookingUpdateWithoutRoomTypeInput = {
   guestMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   specialRequest?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
   adminCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1873,6 +1924,7 @@ export type BookingUncheckedUpdateWithoutRoomTypeInput = {
   guestMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   specialRequest?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
   adminCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1902,6 +1954,7 @@ export type BookingUncheckedUpdateManyWithoutRoomTypeInput = {
   guestMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   specialRequest?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
   adminCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   vendorCommission?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1970,6 +2023,7 @@ export type BookingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   guestMobile?: boolean
   specialRequest?: boolean
   reservationAmount?: boolean
+  paymentMethod?: boolean
   paymentStatus?: boolean
   adminCommission?: boolean
   vendorCommission?: boolean
@@ -2004,6 +2058,7 @@ export type BookingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   guestMobile?: boolean
   specialRequest?: boolean
   reservationAmount?: boolean
+  paymentMethod?: boolean
   paymentStatus?: boolean
   adminCommission?: boolean
   vendorCommission?: boolean
@@ -2035,6 +2090,7 @@ export type BookingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   guestMobile?: boolean
   specialRequest?: boolean
   reservationAmount?: boolean
+  paymentMethod?: boolean
   paymentStatus?: boolean
   adminCommission?: boolean
   vendorCommission?: boolean
@@ -2066,6 +2122,7 @@ export type BookingSelectScalar = {
   guestMobile?: boolean
   specialRequest?: boolean
   reservationAmount?: boolean
+  paymentMethod?: boolean
   paymentStatus?: boolean
   adminCommission?: boolean
   vendorCommission?: boolean
@@ -2075,7 +2132,7 @@ export type BookingSelectScalar = {
   updatedAt?: boolean
 }
 
-export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "propertyId" | "roomTypeId" | "bookingMode" | "status" | "checkIn" | "checkOut" | "guests" | "rooms" | "totalNights" | "estimatedTotal" | "currency" | "guestName" | "guestEmail" | "guestMobile" | "specialRequest" | "reservationAmount" | "paymentStatus" | "adminCommission" | "vendorCommission" | "acceptedAt" | "rejectedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
+export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "propertyId" | "roomTypeId" | "bookingMode" | "status" | "checkIn" | "checkOut" | "guests" | "rooms" | "totalNights" | "estimatedTotal" | "currency" | "guestName" | "guestEmail" | "guestMobile" | "specialRequest" | "reservationAmount" | "paymentMethod" | "paymentStatus" | "adminCommission" | "vendorCommission" | "acceptedAt" | "rejectedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
 export type BookingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   property?: boolean | Prisma.PropertyDefaultArgs<ExtArgs>
@@ -2123,6 +2180,7 @@ export type $BookingPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     guestMobile: string | null
     specialRequest: string | null
     reservationAmount: runtime.Decimal | null
+    paymentMethod: $Enums.PaymentMethod | null
     paymentStatus: string
     adminCommission: runtime.Decimal | null
     vendorCommission: runtime.Decimal | null
@@ -2576,6 +2634,7 @@ export interface BookingFieldRefs {
   readonly guestMobile: Prisma.FieldRef<"Booking", 'String'>
   readonly specialRequest: Prisma.FieldRef<"Booking", 'String'>
   readonly reservationAmount: Prisma.FieldRef<"Booking", 'Decimal'>
+  readonly paymentMethod: Prisma.FieldRef<"Booking", 'PaymentMethod'>
   readonly paymentStatus: Prisma.FieldRef<"Booking", 'String'>
   readonly adminCommission: Prisma.FieldRef<"Booking", 'Decimal'>
   readonly vendorCommission: Prisma.FieldRef<"Booking", 'Decimal'>

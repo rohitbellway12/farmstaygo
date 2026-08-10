@@ -28,6 +28,7 @@ interface Booking {
   currency: string;
   paymentStatus: string | null;
   property: {
+    id: string;
     title: string;
   };
 }
@@ -54,6 +55,7 @@ declare global {
 
 const paymentStatusStyles: Record<string, string> = {
   PENDING: "border-amber-200 bg-amber-50 text-amber-700",
+  PENDING_APPROVAL: "border-orange-200 bg-orange-50 text-orange-700",
   PARTIAL: "border-blue-200 bg-blue-50 text-blue-700",
   PAID: "border-emerald-200 bg-emerald-50 text-emerald-700",
   REFUNDED: "border-slate-200 bg-slate-100 text-slate-700",
@@ -61,6 +63,7 @@ const paymentStatusStyles: Record<string, string> = {
 
 const paymentStatusLabels: Record<string, string> = {
   PENDING: "Payment pending",
+  PENDING_APPROVAL: "Pending vendor approval",
   PARTIAL: "Partial paid",
   PAID: "Paid",
   REFUNDED: "Paid in full",
@@ -73,6 +76,16 @@ export default function BookingPaymentPage() {
 
   const [booking, setBooking] = useState<Booking | null>(null);
   const [summary, setSummary] = useState<PaymentSummary | null>(null);
+  const [payments, setPayments] = useState<Array<{
+    id: string;
+    amount: string | number;
+    paymentMethod: string;
+    paymentType: string;
+    status: string;
+    transactionId: string | null;
+    notes: string | null;
+    createdAt: string;
+  }>>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -83,6 +96,15 @@ export default function BookingPaymentPage() {
   const [paymentType, setPaymentType] = useState<PaymentType>("RESERVATION");
   const [transactionId, setTransactionId] = useState("");
   const [notes, setNotes] = useState("");
+
+  const [enabledPaymentMethods, setEnabledPaymentMethods] =
+    useState<string[]>(["ONLINE"]);
+
+  const [bankDetails, setBankDetails] = useState<{
+    bankAccountName: string;
+    bankAccountNumber: string;
+    bankIfscCode: string;
+  } | null>(null);
 
   // Sandbox Modal state
   const [showSandboxModal, setShowSandboxModal] = useState(false);
@@ -114,6 +136,16 @@ export default function BookingPaymentPage() {
         apiFetch<{
           success: boolean;
           summary: PaymentSummary;
+          data: Array<{
+            id: string;
+            amount: string | number;
+            paymentMethod: string;
+            paymentType: string;
+            status: string;
+            transactionId: string | null;
+            notes: string | null;
+            createdAt: string;
+          }>;
         }>(`/bookings/${bookingId}/payments`),
       ]);
 
@@ -127,6 +159,7 @@ export default function BookingPaymentPage() {
       setBooking(found);
       const sum = paymentsRes.summary;
       setSummary(sum);
+      setPayments(paymentsRes.data || []);
 
       // Auto-populate recommended deposit or balance amount if empty
       const reqDeposit = sum.reservationAmount ? Number(sum.reservationAmount) : 0;
@@ -150,6 +183,55 @@ export default function BookingPaymentPage() {
   useEffect(() => {
     void loadData();
   }, [bookingId]);
+
+  useEffect(() => {
+    const loadPaymentMethods = async () => {
+      try {
+        const res = await apiFetch<{
+          success: boolean;
+          data: {
+            paymentMethods: string[];
+          };
+        }>("/public/settings/payment-methods");
+
+        if (res.success && res.data.paymentMethods.length > 0) {
+          setEnabledPaymentMethods(res.data.paymentMethods);
+          if (!res.data.paymentMethods.includes(paymentMethod)) {
+            setPaymentMethod(res.data.paymentMethods[0] as PaymentMethod);
+          }
+        }
+      } catch {
+        // keep defaults
+      }
+    };
+
+    void loadPaymentMethods();
+  }, []);
+
+  useEffect(() => {
+    const loadBankDetails = async () => {
+      try {
+        const bankRes = await apiFetch<{
+          success: boolean;
+          data: {
+            bankAccountName: string;
+            bankAccountNumber: string;
+            bankIfscCode: string;
+          };
+        }>(`/public/settings/vendor-bank-details?propertyId=${booking?.property?.id || ""}`);
+
+        if (bankRes.success) {
+          setBankDetails(bankRes.data);
+        }
+      } catch {
+        // keep defaults
+      }
+    };
+
+    if (booking?.property?.id) {
+      void loadBankDetails();
+    }
+  }, [booking?.property?.id]);
 
   // Handle Online Razorpay Payment flow
   const handleRazorpayCheckout = async (payAmount: number) => {
@@ -315,7 +397,11 @@ export default function BookingPaymentPage() {
         }),
       });
 
-      setSuccess("Payment recorded successfully");
+      if (paymentMethod === "BANK_TRANSFER") {
+        setSuccess("Bank transfer payment submitted successfully. Waiting for vendor approval.");
+      } else {
+        setSuccess("Payment recorded successfully");
+      }
       setAmount("");
       setTransactionId("");
       setNotes("");
@@ -338,6 +424,15 @@ export default function BookingPaymentPage() {
       maximumFractionDigits: 0,
     }).format(val || 0);
   };
+
+  const hasPendingBankTransfer = payments.some(
+    (p) => p.paymentMethod === "BANK_TRANSFER" && p.status === "PENDING_APPROVAL"
+  );
+
+  const isPaymentLocked =
+    summary?.paymentStatus === "PAID" ||
+    summary?.paymentStatus === "REFUNDED" ||
+    hasPendingBankTransfer;
 
   if (loading) {
     return (
@@ -397,7 +492,25 @@ export default function BookingPaymentPage() {
         )}
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-          <form
+          {isPaymentLocked ? (
+            <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-[0_8px_28px_rgba(27,58,39,0.08)]">
+              <h2 className="text-lg font-extrabold text-ink-900">
+                {summary?.paymentStatus === "PAID"
+                  ? "Booking Fully Paid"
+                  : hasPendingBankTransfer
+                    ? "Payment Pending Approval"
+                    : "Payment Locked"}
+              </h2>
+              <p className="mt-2 text-sm text-ink-600">
+                {summary?.paymentStatus === "PAID"
+                  ? "This booking has been fully paid. No further payments are required."
+                  : hasPendingBankTransfer
+                    ? "Your bank transfer is pending vendor approval. You can make another payment only after the vendor reviews this transaction."
+                    : "This booking cannot accept additional payments at this time."}
+              </p>
+            </div>
+          ) : (
+            <form
             onSubmit={handleSubmit}
             className="rounded-2xl border border-ink-100 bg-white p-6 shadow-[0_8px_28px_rgba(27,58,39,0.08)]"
           >
@@ -461,16 +574,42 @@ export default function BookingPaymentPage() {
                   }
                   className="h-11 w-full rounded-lg border border-ink-200 bg-white px-3 text-sm font-bold text-ink-800 outline-none focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
                 >
-                  <option value="ONLINE">
-                    Razorpay Online (UPI / NetBanking / Cards)
-                  </option>
-                  <option value="CASH">Cash on Check-in</option>
-                  <option value="BANK_TRANSFER">Direct Bank Transfer</option>
+                  {enabledPaymentMethods.map((method) => (
+                    <option key={method} value={method}>
+                      {method === "ONLINE"
+                        ? "Razorpay Online (UPI / NetBanking / Cards)"
+                        : method === "CASH"
+                          ? "Cash on Check-in"
+                          : "Direct Bank Transfer"}
+                    </option>
+                  ))}
                 </select>
               </label>
 
               {paymentMethod !== "ONLINE" && (
                 <>
+                  {paymentMethod === "BANK_TRANSFER" && bankDetails && (
+                    <div className="rounded-lg border border-ink-200 bg-ink-50 p-4">
+                      <h4 className="text-xs font-extrabold uppercase tracking-wide text-ink-500">
+                        Vendor Bank Details
+                      </h4>
+                      <div className="mt-2 space-y-1 text-sm text-ink-800">
+                        <p>
+                          <span className="font-semibold text-ink-600">Account Name:</span>{" "}
+                          {bankDetails.bankAccountName}
+                        </p>
+                        <p>
+                          <span className="font-semibold text-ink-600">Account Number:</span>{" "}
+                          <span className="font-mono">{bankDetails.bankAccountNumber}</span>
+                        </p>
+                        <p>
+                          <span className="font-semibold text-ink-600">IFSC Code:</span>{" "}
+                          <span className="font-mono">{bankDetails.bankIfscCode}</span>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <label className="block">
                     <span className="mb-2 block text-xs font-extrabold uppercase tracking-wide text-ink-500">
                       Payment Type
@@ -532,6 +671,7 @@ export default function BookingPaymentPage() {
                 : "Submit Payment Record"}
             </button>
           </form>
+          )}
 
           {/* Payment & Booking Breakdown Sidebar */}
           <aside className="space-y-5">
@@ -581,6 +721,39 @@ export default function BookingPaymentPage() {
                       "Pending"}
                   </span>
                 </div>
+
+                {payments.some(
+                  (p) =>
+                    p.paymentMethod === "BANK_TRANSFER" &&
+                    p.status === "PENDING_APPROVAL"
+                ) && (
+                  <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                    <p className="text-xs font-extrabold uppercase tracking-wide text-amber-700">
+                      Bank Transfer Pending Approval
+                    </p>
+                    {payments
+                      .filter(
+                        (p) =>
+                          p.paymentMethod === "BANK_TRANSFER" &&
+                          p.status === "PENDING_APPROVAL"
+                      )
+                      .map((p) => (
+                        <div key={p.id} className="mt-2 text-xs text-amber-800">
+                          <p>
+                            <span className="font-semibold">Amount:</span>{" "}
+                            {formatCurrency(Number(p.amount))}
+                          </p>
+                          <p>
+                            <span className="font-semibold">Transaction ID:</span>{" "}
+                            <span className="font-mono">{p.transactionId || "Not provided"}</span>
+                          </p>
+                        </div>
+                      ))}
+                    <p className="mt-2 text-xs text-amber-700">
+                      Your payment is pending vendor approval.
+                    </p>
+                  </div>
+                )}
               </div>
             </section>
           </aside>

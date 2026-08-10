@@ -24,6 +24,39 @@ import type {
   AuthenticatedRequest,
 } from "../middleware/auth.middleware.js";
 
+const getEnabledPaymentMethods = async (): Promise<string[]> => {
+  const setting = await prisma.setting.findUnique({
+    where: { key: "payment_methods" },
+    select: { value: true },
+  });
+
+  const rawValue = setting?.value;
+
+  if (typeof rawValue === "string" && rawValue.trim()) {
+    try {
+      const parsed = JSON.parse(rawValue);
+
+      if (Array.isArray(parsed)) {
+        const valid = parsed.filter(
+          (method): method is string =>
+            typeof method === "string" &&
+            ["ONLINE", "CASH", "BANK_TRANSFER"].includes(
+              method.toUpperCase()
+            )
+        );
+
+        if (valid.length > 0) {
+          return valid.map((m) => m.toUpperCase());
+        }
+      }
+    } catch {
+      // ignore invalid JSON
+    }
+  }
+
+  return ["ONLINE"];
+};
+
 interface CreateBookingBody {
   propertyId?: unknown;
   bookingMode?: unknown;
@@ -468,20 +501,17 @@ export const createBookingRequest =
               .toUpperCase()
           : null;
 
-      const validPaymentMethods = [
-        PaymentMethod.ONLINE,
-        PaymentMethod.CASH,
-        PaymentMethod.BANK_TRANSFER,
-      ];
+      const enabledPaymentMethods =
+        await getEnabledPaymentMethods();
 
       if (
         paymentMethod &&
-        !validPaymentMethods.includes(
+        !enabledPaymentMethods.includes(
           paymentMethod as PaymentMethod
         )
       ) {
         errors.paymentMethod =
-          "Invalid payment method.";
+          "This payment method is not enabled.";
       }
 
       if (
@@ -723,6 +753,10 @@ export const createBookingRequest =
                     customer
                       .mobile,
                   specialRequest,
+                  paymentMethod:
+                    (paymentMethod || null) as
+                      | PaymentMethod
+                      | null,
                 },
               }
             );
@@ -977,41 +1011,17 @@ export const createBookingRequest =
                     customer
                       .mobile,
                   specialRequest,
+                  paymentMethod:
+                    (paymentMethod || null) as
+                      | PaymentMethod
+                      | null,
                 },
               }
             );
         }
       );
 
-      if (
-        paymentMethod &&
-        booking.reservationAmount &&
-        Number(booking.reservationAmount) > 0
-      ) {
-        await prisma.payment.create({
-          data: {
-            bookingId: booking.id,
-            amount: new Prisma.Decimal(
-              booking.reservationAmount
-            ),
-            paymentMethod:
-              paymentMethod as PaymentMethod,
-            paymentType: PaymentType.RESERVATION,
-            status: PaymentStatus.COMPLETED,
-          },
-        });
-
-        await prisma.booking.update({
-          where: {
-            id: booking.id,
-          },
-          data: {
-            paymentStatus: "PAID",
-          },
-        });
-      }
-
-        try {
+      try {
           const property = await prisma.property.findUnique({
             where: { id: propertyId },
             select: { title: true, vendor: { select: { userId: true } } },
@@ -1091,9 +1101,327 @@ export const createBookingRequest =
         success: false,
         message:
           "Unable to submit booking request",
+    });
+  }
+};
+
+export const approvePayment = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
       });
     }
-  };
+
+    const paymentId =
+      typeof req.params.paymentId === "string"
+        ? req.params.paymentId.trim()
+        : "";
+
+    if (!paymentId) {
+      return res.status(422).json({
+        success: false,
+        message: "Payment ID is required",
+      });
+    }
+
+    const payment = await prisma.payment.findFirst({
+      where: {
+        id: paymentId,
+        status: PaymentStatus.PENDING_APPROVAL,
+        booking: {
+          property: {
+            vendor: {
+              userId: req.user.id,
+            },
+          },
+        },
+      },
+      include: {
+        booking: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+            property: {
+              select: {
+                id: true,
+                title: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Pending approval payment not found",
+      });
+    }
+
+    const updatedPayment =
+      await prisma.payment.update({
+        where: { id: paymentId },
+        data: {
+          status: PaymentStatus.COMPLETED,
+        },
+      });
+
+    const booking = payment.booking;
+
+    const totalPaidSoFar =
+      await prisma.payment.aggregate({
+        where: {
+          bookingId: booking.id,
+          status: PaymentStatus.COMPLETED,
+          paymentType: {
+            not: PaymentType.REFUND,
+          },
+        },
+        _sum: {
+          amount: true,
+        },
+      });
+
+    const totalPaid =
+      totalPaidSoFar._sum.amount
+        ? Number(totalPaidSoFar._sum.amount)
+        : 0;
+
+    const estimatedTotal = booking.estimatedTotal
+      ? Number(booking.estimatedTotal)
+      : 0;
+
+    let newPaymentStatus = "PENDING";
+    if (totalPaid >= estimatedTotal && estimatedTotal > 0) {
+      newPaymentStatus = "PAID";
+    } else if (totalPaid > 0) {
+      newPaymentStatus = "PARTIAL";
+    }
+
+    const reservationAmount = booking.reservationAmount
+      ? Number(booking.reservationAmount)
+      : 0;
+
+    let shouldConfirm = false;
+    if (
+      booking.status === BookingStatus.REQUESTED &&
+      reservationAmount > 0 &&
+      totalPaid >= reservationAmount
+    ) {
+      shouldConfirm = true;
+    }
+
+    const updatedBooking =
+      await prisma.booking.update({
+        where: { id: booking.id },
+        data: {
+          paymentStatus: newPaymentStatus,
+          ...(shouldConfirm && {
+            status: BookingStatus.CONFIRMED,
+            acceptedAt: new Date(),
+          }),
+        },
+      });
+
+    try {
+      await prisma.notification.create({
+        data: {
+          recipientType:
+            NotificationRecipientType.USER,
+          recipientId: booking.userId,
+          actorId: req.user!.id,
+          type: NotificationType.PAYMENT,
+          entityType: "payment",
+          entityId: paymentId,
+          title: "Bank Transfer Approved",
+          message: `Your bank transfer payment of ₹${Number(payment.amount)} for booking ${booking.id} has been approved by the vendor.`,
+        },
+      });
+    } catch (notificationError) {
+      console.error(
+        "Payment approval notification error:",
+        notificationError
+      );
+    }
+
+    if (shouldConfirm) {
+      try {
+        const remainingBalance = Math.max(
+          0,
+          estimatedTotal - totalPaid
+        );
+
+        await sendBookingConfirmationEmail(
+          booking.user.email,
+          `${booking.user.firstName} ${booking.user.lastName}`,
+          booking.id,
+          booking.property.title,
+          booking.checkIn.toISOString().slice(0, 10),
+          booking.checkOut.toISOString().slice(0, 10),
+          booking.totalNights,
+          booking.guests,
+          booking.rooms,
+          booking.estimatedTotal?.toString() ?? "0",
+          booking.currency,
+          totalPaid.toFixed(2),
+          remainingBalance.toFixed(2),
+          newPaymentStatus
+        );
+      } catch (emailError) {
+        console.error(
+          "Booking confirmation email error:",
+          emailError
+        );
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Bank transfer payment approved successfully",
+      data: {
+        payment: updatedPayment,
+        booking: updatedBooking,
+        confirmed: shouldConfirm,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Approve payment error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Unable to approve payment",
+    });
+  }
+};
+
+export const rejectPayment = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const paymentId =
+      typeof req.params.paymentId === "string"
+        ? req.params.paymentId.trim()
+        : "";
+
+    if (!paymentId) {
+      return res.status(422).json({
+        success: false,
+        message: "Payment ID is required",
+      });
+    }
+
+    const payment = await prisma.payment.findFirst({
+      where: {
+        id: paymentId,
+        status: PaymentStatus.PENDING_APPROVAL,
+        booking: {
+          property: {
+            vendor: {
+              userId: req.user.id,
+            },
+          },
+        },
+      },
+      include: {
+        booking: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Pending approval payment not found",
+      });
+    }
+
+    const updatedPayment =
+      await prisma.payment.update({
+        where: { id: paymentId },
+        data: {
+          status: PaymentStatus.FAILED,
+        },
+      });
+
+     try {
+      await prisma.notification.create({
+        data: {
+          recipientType:
+            NotificationRecipientType.USER,
+          recipientId: payment.booking.userId,
+          actorId: req.user!.id,
+          type: NotificationType.PAYMENT,
+          entityType: "payment",
+          entityId: paymentId,
+          title: "Bank Transfer Rejected",
+          message: `Your bank transfer payment of ₹${Number(payment.amount)} for booking ${payment.bookingId} has been rejected by the vendor. Please contact support if you have any questions.`,
+        },
+      });
+    } catch (notificationError) {
+      console.error(
+        "Payment rejection notification error:",
+        notificationError
+      );
+    }
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Bank transfer payment rejected",
+      data: {
+        payment: updatedPayment,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Reject payment error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Unable to reject payment",
+    });
+  }
+};
 
 export const getMyBookings = async (
   req: AuthenticatedRequest,
@@ -1356,6 +1684,38 @@ export const acceptBooking = async (
       }
 
       try {
+        const payments =
+          await prisma.payment.findMany({
+            where: {
+              bookingId,
+              status: PaymentStatus.COMPLETED,
+              paymentType: {
+                not: PaymentType.REFUND,
+              },
+            },
+          });
+
+        const totalPaid = payments.reduce(
+          (sum, p) => sum + Number(p.amount),
+          0
+        );
+
+        const estimatedTotal = updated.estimatedTotal
+          ? Number(updated.estimatedTotal)
+          : 0;
+
+        const remainingBalance = Math.max(
+          0,
+          estimatedTotal - totalPaid
+        );
+
+        let paymentStatus = "PENDING";
+        if (totalPaid >= estimatedTotal && estimatedTotal > 0) {
+          paymentStatus = "PAID";
+        } else if (totalPaid > 0) {
+          paymentStatus = "PARTIAL";
+        }
+
         await sendBookingConfirmationEmail(
           updated.user.email,
           `${updated.user.firstName} ${updated.user.lastName}`,
@@ -1367,7 +1727,10 @@ export const acceptBooking = async (
           updated.guests,
           updated.rooms,
           updated.estimatedTotal?.toString() ?? "0",
-          updated.currency
+          updated.currency,
+          totalPaid.toFixed(2),
+          remainingBalance.toFixed(2),
+          paymentStatus
         );
       } catch (error) {
         console.error("Accept booking email error:", error);
@@ -1585,11 +1948,7 @@ export const recordPayment = async (
       });
     }
 
-    const validMethods = [
-      PaymentMethod.ONLINE,
-      PaymentMethod.CASH,
-      PaymentMethod.BANK_TRANSFER,
-    ];
+    const validMethods = await getEnabledPaymentMethods();
 
     const validTypes = [
       PaymentType.RESERVATION,
@@ -1602,6 +1961,19 @@ export const recordPayment = async (
       !paymentMethod ||
       !validMethods.includes(
         paymentMethod as PaymentMethod
+      )
+    ) {
+      return res.status(422).json({
+        success: false,
+        message:
+          "Please select a valid payment method.",
+      });
+    }
+
+    if (
+      !paymentType ||
+      !validTypes.includes(
+        paymentType as PaymentType
       )
     ) {
       return res.status(422).json({
@@ -1683,11 +2055,57 @@ export const recordPayment = async (
             paymentMethod as PaymentMethod,
           paymentType:
             paymentType as PaymentType,
-          status: PaymentStatus.COMPLETED,
+          status:
+            paymentMethod === "BANK_TRANSFER" &&
+            booking.userId !== req.user!.id
+              ? PaymentStatus.PENDING_APPROVAL
+              : PaymentStatus.COMPLETED,
           transactionId,
           notes,
         },
       });
+
+    if (
+      paymentMethod === "BANK_TRANSFER" &&
+      booking.userId !== req.user!.id &&
+      payment.status === PaymentStatus.PENDING_APPROVAL
+    ) {
+      try {
+        const vendorUser = await prisma.vendor.findFirst({
+          where: {
+            properties: {
+              some: {
+                id: booking.propertyId,
+              },
+            },
+          },
+          select: {
+            userId: true,
+          },
+        });
+
+        if (vendorUser) {
+          await prisma.notification.create({
+            data: {
+              recipientType:
+                NotificationRecipientType.VENDOR,
+              recipientId: vendorUser.userId,
+              actorId: req.user!.id,
+              type: NotificationType.PAYMENT,
+              entityType: "payment",
+              entityId: payment.id,
+              title: "Bank Transfer Pending Approval",
+              message: `A bank transfer payment of ₹${amount} is pending your approval for booking ${bookingId}. Transaction ID: ${transactionId || "Not provided"}`,
+            },
+          });
+        }
+      } catch (notificationError) {
+        console.error(
+          "Bank transfer notification error:",
+          notificationError
+        );
+      }
+    }
 
     const totalPaid =
       booking.payments
@@ -1711,48 +2129,6 @@ export const recordPayment = async (
             booking.estimatedTotal
           )
         : null;
-
-    let paymentStatus = "PENDING";
-
-    if (total && totalPaid.gte(total)) {
-      paymentStatus = "PAID";
-    } else if (totalPaid.gt(0)) {
-      paymentStatus = "PARTIAL";
-    }
-
-    const reservationThreshold =
-      booking.reservationAmount
-        ? new Prisma.Decimal(
-            booking.reservationAmount
-          )
-        : null;
-
-    if (
-      reservationThreshold &&
-      totalPaid.gte(reservationThreshold) &&
-      booking.status ===
-        BookingStatus.REQUESTED
-    ) {
-      await prisma.booking.update({
-        where: {
-          id: bookingId,
-        },
-        data: {
-          status: BookingStatus.CONFIRMED,
-          paymentStatus,
-          acceptedAt: new Date(),
-        },
-      });
-    } else {
-      await prisma.booking.update({
-        where: {
-          id: bookingId,
-        },
-        data: {
-          paymentStatus,
-        },
-      });
-    }
 
     const updatedBooking =
       await prisma.booking.findUnique({
