@@ -17,6 +17,7 @@ import {
   getAuth,
 } from "../../shared/utils/auth";
 import api from "../../shared/api/api";
+import type { SupportTicketStatsResponse } from "../../shared/api/supportTicketApi";
 import NotificationBell from "../../shared/components/NotificationBell";
 
 interface MenuItem {
@@ -540,9 +541,9 @@ export default function AdminLayout() {
           api.get<{
             data: { count: number };
           }>("/admin/contact-messages/unread-count"),
-          api.get<{
-            data: { total: number };
-          }>("/admin/support-tickets/stats"),
+          api.get<SupportTicketStatsResponse>(
+            "/admin/support-tickets/stats"
+          ),
         ]);
 
         if (cancelled) {
@@ -563,7 +564,7 @@ export default function AdminLayout() {
           contactMessages:
             contactMessagesResponse.data.data.count || 0,
           supportTickets:
-            supportTicketsResponse.data.data.total || 0,
+            supportTicketsResponse.data.data.open || 0,
         });
       } catch {
         if (!cancelled) {
