@@ -201,11 +201,11 @@ export async function fetchPlatformSettings(): Promise<PlatformSettingsResponse>
 }
 
 export async function updatePlatformSettings(
-  settings: Partial<PlatformSettings>
+  formData: FormData
 ): Promise<PlatformSettingsResponse> {
   const response = await api.put<PlatformSettingsResponse>(
     "/admin/settings/platform",
-    settings
+    formData
   );
 
   return response.data;

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import BrandLogo from "../common/BrandLogo";
+import { apiFetch } from "@/lib/api";
 
 const navigation = [
   { label: "Home", href: "/" },
@@ -24,6 +25,7 @@ export default function SiteHeader() {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [customerName, setCustomerName] = useState("");
+  const [siteLogoUrl, setSiteLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAuth = () => {
@@ -60,6 +62,27 @@ export default function SiteHeader() {
       window.removeEventListener("storage", handleAuthChange);
       window.removeEventListener("focus", handleFocus);
     };
+  }, []);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const data = await apiFetch<{
+          success: boolean;
+          data: {
+            siteLogoUrl: string | null;
+          };
+        }>("/public/settings/platform");
+
+        if (data?.success && data?.data) {
+          setSiteLogoUrl(data.data.siteLogoUrl);
+        }
+      } catch {
+        // keep defaults
+      }
+    };
+
+    void loadSettings();
   }, []);
 
   useEffect(() => {
@@ -109,7 +132,7 @@ export default function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-ink-100 bg-white/95 shadow-[0_8px_28px_rgba(23,35,27,0.07)] backdrop-blur">
       <div className="site-container flex h-[72px] items-center gap-4">
         <div className="flex min-w-0 flex-1 items-center">
-          <BrandLogo />
+          <BrandLogo logoUrl={siteLogoUrl} />
         </div>
 
         <nav className="hidden items-center rounded-full border border-ink-100 bg-ink-50/70 p-1 lg:flex">

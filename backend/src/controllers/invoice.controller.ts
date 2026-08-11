@@ -70,6 +70,7 @@ export const generateInvoice = async (
             paymentType: true,
             status: true,
             transactionId: true,
+            createdAt: true,
           },
           orderBy: { createdAt: "desc" },
         },
@@ -88,9 +89,11 @@ export const generateInvoice = async (
       .filter((p) => p.status === "COMPLETED" && p.paymentType !== "REFUND")
       .reduce((sum, p) => sum + Number(p.amount), 0);
 
-    const totalAmount = booking.estimatedTotal
-      ? Number(booking.estimatedTotal)
-      : 0;
+    const totalAmount = totalPaid > 0
+      ? totalPaid
+      : booking.estimatedTotal
+        ? Number(booking.estimatedTotal)
+        : 0;
 
     const totalNights = booking.totalNights;
     const rooms = booking.rooms;
@@ -127,6 +130,18 @@ export const generateInvoice = async (
       currency: booking.currency,
       paymentStatus: booking.paymentStatus,
       bookingStatus: booking.status,
+      payments: payments
+        .filter((p) => p.status === "COMPLETED" && p.paymentType !== "REFUND")
+        .map((p) => ({
+          amount: Number(p.amount),
+          paymentMethod: p.paymentMethod,
+          paymentType: p.paymentType,
+          status: p.status,
+          transactionId: p.transactionId,
+          createdAt: p.createdAt.toISOString().slice(0, 10),
+        })),
+      totalPaid: Math.round(totalPaid * 100) / 100,
+      remainingBalance: Math.round(Math.max(0, Number(booking.estimatedTotal || 0) - totalPaid) * 100) / 100,
     };
 
     const filePath = getInvoiceFilePath(bookingId);

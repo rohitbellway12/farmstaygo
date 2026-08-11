@@ -12,27 +12,61 @@ const inter = Inter({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: {
-    default:
-      "FarmStayGo | Farmhouses, Villas & Nature Stays",
-    template: "%s | FarmStayGo",
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  let faviconUrl: string | undefined;
+  let siteName = "FarmStayGo";
 
-  description:
-    "Discover and book verified farmhouses, villas, resorts, homestays and unique nature stays across India.",
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/public/settings/platform`,
+      { next: { revalidate: 60 } }
+    );
 
-  applicationName: "FarmStayGo",
+    if (response.ok) {
+      const data = await response.json();
 
-  keywords: [
-    "farmhouse booking",
-    "villa booking",
-    "resort booking",
-    "homestay",
-    "nature stays",
-    "weekend getaway",
-  ],
-};
+      if (data?.success && data?.data) {
+        faviconUrl = data.data.siteFaviconUrl || undefined;
+        siteName = data.data.siteName || siteName;
+      }
+    }
+  } catch {
+    // keep defaults
+  }
+
+  const icon = faviconUrl
+    ? [
+        {
+          url: faviconUrl,
+          type: "image/x-icon",
+          sizes: "32x32",
+        },
+      ]
+    : undefined;
+
+  return {
+    title: {
+      default: `${siteName} | Farmhouses, Villas & Nature Stays`,
+      template: "%s | FarmStayGo",
+    },
+
+    description:
+      "Discover and book verified farmhouses, villas, resorts, homestays and unique nature stays across India.",
+
+    applicationName: siteName,
+
+    icons: icon,
+
+    keywords: [
+      "farmhouse booking",
+      "villa booking",
+      "resort booking",
+      "homestay",
+      "nature stays",
+      "weekend getaway",
+    ],
+  };
+}
 
 export default function RootLayout({
   children,

@@ -18,6 +18,8 @@ import {
 } from "../../shared/utils/auth";
 import NotificationBell from "../../shared/components/NotificationBell";
 
+import api from "../../shared/api/api";
+
 interface MenuItem {
   group: "overview" | "listings" | "operations" | "money" | "account";
   label: string;
@@ -226,6 +228,31 @@ export default function VendorLayout() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [siteLogoUrl, setSiteLogoUrl] = useState<string | null>(null);
+  const [siteName, setSiteName] = useState("");
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const res = await api.get<{
+          success: boolean;
+          data: {
+            siteLogoUrl: string | null;
+            siteName: string;
+          };
+        }>("/public/settings/platform");
+
+        if (res.data.success && res.data.data) {
+          setSiteLogoUrl(res.data.data.siteLogoUrl);
+          setSiteName(res.data.data.siteName || "");
+        }
+      } catch {
+        // keep defaults
+      }
+    };
+
+    void loadSettings();
+  }, []);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -329,23 +356,26 @@ export default function VendorLayout() {
           onClick={() => navigate("/vendor/dashboard")}
           className="flex min-w-0 items-center gap-3"
         >
-          <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary-50 text-primary-700">
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <path d="M3 10.5 12 3l9 7.5" />
-              <path d="M5 9.5V21h14V9.5" />
-              <path d="M9 21v-7h6v7" />
-              <path d="M7 8.5 4 6" />
-              <path d="M17 8.5 20 6" />
-            </svg>
-          </span>
+          {siteLogoUrl ? (
+            <img
+              src={siteLogoUrl}
+              alt={siteName || "FarmStayGo"}
+              className="h-11 w-auto rounded-xl bg-primary-50 object-contain"
+            />
+          ) : (
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary-50 text-primary-700">
+              <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M3 10.5 12 3l9 7.5" />
+                <path d="M5 9.5V21h14V9.5" />
+                <path d="M9 21v-7h6v7" />
+                <path d="M7 8.5 4 6" />
+                <path d="M17 8.5 20 6" />
+              </svg>
+            </span>
+          )}
 
           <span className="text-left">
-            <strong className="block text-xl font-extrabold leading-none text-primary-700">
-              FarmStayGo
-            </strong>
-            <small className="mt-1 block text-[10px] font-extrabold uppercase tracking-[0.22em] text-primary-500">
-              Vendor Partner
-            </small>
+            <strong className="sr-only">Vendor Portal</strong>
           </span>
         </button>
 

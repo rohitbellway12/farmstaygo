@@ -27,6 +27,16 @@ export interface InvoiceData {
   currency: string;
   paymentStatus: string;
   bookingStatus: string;
+  payments: Array<{
+    amount: number;
+    paymentMethod: string;
+    paymentType: string;
+    status: string;
+    transactionId: string | null;
+    createdAt: string;
+  }>;
+  totalPaid: number;
+  remainingBalance: number;
 }
 
 export const generateInvoicePdf = (
@@ -301,7 +311,175 @@ export const generateInvoicePdf = (
       doc.y = Math.max(leftY, rightY) + 13;
 
       /*
-       * Line Items
+       * Payment History
+       */
+      if (invoiceData.payments && invoiceData.payments.length > 0) {
+        sectionTitle("Payment History");
+
+        const paymentTableX = leftMargin;
+        const paymentTableWidth = contentWidth;
+
+        const paymentDateWidth = paymentTableWidth * 0.20;
+        const paymentMethodWidth = paymentTableWidth * 0.25;
+        const paymentTypeWidth = paymentTableWidth * 0.20;
+        const paymentTxnWidth = paymentTableWidth * 0.20;
+        const paymentAmountWidth =
+          paymentTableWidth -
+          paymentDateWidth -
+          paymentMethodWidth -
+          paymentTypeWidth -
+          paymentTxnWidth;
+
+        const paymentDateX = paymentTableX;
+        const paymentMethodX = paymentDateX + paymentDateWidth;
+        const paymentTypeX = paymentMethodX + paymentMethodWidth;
+        const paymentTxnX = paymentTypeX + paymentTypeWidth;
+        const paymentAmountX = paymentTxnX + paymentTxnWidth;
+
+        const paymentHeaderHeight = 22;
+        const paymentHeaderY = doc.y;
+
+        doc
+          .rect(
+            paymentTableX,
+            paymentHeaderY,
+            paymentTableWidth,
+            paymentHeaderHeight
+          )
+          .fill(lightBackground);
+
+        doc
+          .font("Helvetica-Bold")
+          .fontSize(7.5)
+          .fillColor(primaryColor)
+          .text(
+            "Date",
+            paymentDateX + 5,
+            paymentHeaderY + 7,
+            {
+              width: paymentDateWidth - 10,
+            }
+          );
+
+        doc.text(
+          "Method",
+          paymentMethodX + 5,
+          paymentHeaderY + 7,
+          {
+            width: paymentMethodWidth - 10,
+          }
+        );
+
+        doc.text(
+          "Type",
+          paymentTypeX + 5,
+          paymentHeaderY + 7,
+          {
+            width: paymentTypeWidth - 10,
+          }
+        );
+
+        doc.text(
+          "Transaction ID",
+          paymentTxnX + 5,
+          paymentHeaderY + 7,
+          {
+            width: paymentTxnWidth - 10,
+          }
+        );
+
+        doc.text(
+          "Amount",
+          paymentAmountX + 5,
+          paymentHeaderY + 7,
+          {
+            width: paymentAmountWidth - 10,
+            align: "right",
+          }
+        );
+
+        let paymentRowY = paymentHeaderY + paymentHeaderHeight;
+
+        for (const payment of invoiceData.payments) {
+          const rowHeight = 16;
+
+          doc
+            .rect(
+              paymentTableX,
+              paymentRowY,
+              paymentTableWidth,
+              rowHeight
+            )
+            .strokeColor(borderColor)
+            .lineWidth(0.5)
+            .stroke();
+
+          doc
+            .font("Helvetica")
+            .fontSize(7.5)
+            .fillColor(textColor)
+            .text(
+              payment.createdAt,
+              paymentDateX + 5,
+              paymentRowY + 4,
+              {
+                width: paymentDateWidth - 10,
+              }
+            );
+
+          const methodLabel = payment.paymentMethod === "ONLINE"
+            ? "Online"
+            : payment.paymentMethod === "CASH"
+              ? "Cash"
+              : payment.paymentMethod === "BANK_TRANSFER"
+                ? "Bank Transfer"
+                : payment.paymentMethod;
+
+          doc.text(
+            methodLabel,
+            paymentMethodX + 5,
+            paymentRowY + 4,
+            {
+              width: paymentMethodWidth - 10,
+            }
+          );
+
+          doc.text(
+            payment.paymentType,
+            paymentTypeX + 5,
+            paymentRowY + 4,
+            {
+              width: paymentTypeWidth - 10,
+            }
+          );
+
+          doc.text(
+            payment.transactionId || "N/A",
+            paymentTxnX + 5,
+            paymentRowY + 4,
+            {
+              width: paymentTxnWidth - 10,
+            }
+          );
+
+          doc.text(
+            formatMoney(payment.amount),
+            paymentAmountX + 5,
+            paymentRowY + 4,
+            {
+              width: paymentAmountWidth - 10,
+              align: "right",
+            }
+          );
+
+          paymentRowY += rowHeight;
+        }
+
+        doc.y = paymentRowY + 13;
+      }
+
+      /*
+       * Totals
        */
       sectionTitle("Line Items");
 
@@ -503,17 +681,17 @@ export const generateInvoicePdf = (
       let currentTotalsY = totalsStartY;
 
       totalRow(
-        "Subtotal",
+        "Booking Total",
         formatMoney(invoiceData.subtotal),
         currentTotalsY
       );
 
       currentTotalsY += 17;
 
-      if (invoiceData.taxAmount > 0) {
+      if (invoiceData.remainingBalance > 0) {
         totalRow(
-          `Tax (${invoiceData.taxRate}%)`,
-          formatMoney(invoiceData.taxAmount),
+          "Remaining Balance",
+          formatMoney(invoiceData.remainingBalance),
           currentTotalsY
         );
 
@@ -533,11 +711,49 @@ export const generateInvoicePdf = (
       currentTotalsY += 9;
 
       totalRow(
-        "Total",
-        formatMoney(invoiceData.totalAmount),
+        "Total Paid",
+        formatMoney(invoiceData.totalPaid),
         currentTotalsY,
         true
       );
+
+      currentTotalsY += 25;
+
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(8)
+        .fillColor(primaryColor)
+        .text(
+          "Payment Status:",
+          totalsBoxX,
+          currentTotalsY,
+          {
+            width: totalsLabelWidth,
+            align: "left",
+          }
+        );
+
+      const paymentStatusText = invoiceData.paymentStatus === "PAID"
+        ? "Fully Paid"
+        : invoiceData.paymentStatus === "PARTIAL"
+          ? "Partially Paid"
+          : invoiceData.paymentStatus === "PENDING"
+            ? "Payment Pending"
+            : invoiceData.paymentStatus;
+
+      doc
+        .font("Helvetica")
+        .fontSize(8)
+        .fillColor(textColor)
+        .text(
+          paymentStatusText,
+          totalsBoxX + totalsLabelWidth,
+          currentTotalsY,
+          {
+            width: totalsValueWidth,
+            align: "right",
+          }
+        );
 
       /*
        * Footer note

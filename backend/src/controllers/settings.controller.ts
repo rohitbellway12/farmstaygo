@@ -6,6 +6,12 @@ import type {
   AuthenticatedRequest,
 } from "../middleware/auth.middleware.js";
 
+import {
+  createSettingsImageUpload,
+  deletePublicStorageFile,
+  getSettingsImageStoragePath,
+} from "../config/upload.js";
+
 interface PlatformSettings {
   siteName: string;
   siteLogoUrl: string | null;
@@ -50,7 +56,7 @@ const parseJsonArray = (
 };
 
 export const getPlatformSettings = async (
-  _req: AuthenticatedRequest,
+  req: AuthenticatedRequest,
   res: Response
 ): Promise<Response> => {
   try {
@@ -68,10 +74,26 @@ export const getPlatformSettings = async (
       getSetting("timezone"),
     ]);
 
+    const protocol = req.protocol;
+    const host = req.get("host");
+    const baseUrl = `${protocol}://${host}`;
+
+    const resolveUrl = (url: string | null | undefined): string | null => {
+      if (!url) {
+        return null;
+      }
+
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        return url;
+      }
+
+      return `${baseUrl}${url}`;
+    };
+
     const settings: PlatformSettings = {
       siteName: siteName || "FarmStay",
-      siteLogoUrl: siteLogoUrl,
-      siteFaviconUrl: siteFaviconUrl,
+      siteLogoUrl: resolveUrl(siteLogoUrl),
+      siteFaviconUrl: resolveUrl(siteFaviconUrl),
       defaultCurrency: defaultCurrency || "INR",
       timezone: timezone || "Asia/Kolkata",
     };
@@ -99,28 +121,70 @@ export const updatePlatformSettings = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const body = req.body as Partial<PlatformSettings> & Record<string, unknown>;
+    const isFormData =
+      req.body instanceof FormData ||
+      (typeof req.headers?.["content-type"] === "string" &&
+        req.headers["content-type"].includes("multipart/form-data"));
 
-    const siteName =
-      typeof body.siteName === "string"
-        ? body.siteName.trim()
-        : "";
-    const siteLogoUrl =
-      typeof body.siteLogoUrl === "string"
-        ? body.siteLogoUrl.trim() || null
-        : null;
-    const siteFaviconUrl =
-      typeof body.siteFaviconUrl === "string"
-        ? body.siteFaviconUrl.trim() || null
-        : null;
-    const defaultCurrency =
-      typeof body.defaultCurrency === "string"
-        ? body.defaultCurrency.trim().toUpperCase() || "INR"
-        : "INR";
-    const timezone =
-      typeof body.timezone === "string"
-        ? body.timezone.trim() || "Asia/Kolkata"
-        : "Asia/Kolkata";
+    let siteName = "";
+    let defaultCurrency = "INR";
+    let timezone = "Asia/Kolkata";
+    let siteLogoUrl: string | null = null;
+    let siteFaviconUrl: string | null = null;
+
+    if (isFormData) {
+      const body = req.body as Record<string, unknown>;
+
+      siteName =
+        typeof body.siteName === "string"
+          ? body.siteName.trim()
+          : "";
+      defaultCurrency =
+        typeof body.defaultCurrency === "string"
+          ? body.defaultCurrency.trim().toUpperCase() || "INR"
+          : "INR";
+      timezone =
+        typeof body.timezone === "string"
+          ? body.timezone.trim() || "Asia/Kolkata"
+          : "Asia/Kolkata";
+
+      const files = (req as unknown as { files?: Record<string, Express.Multer.File[]> }).files;
+
+      if (files?.logo && files.logo[0]) {
+        siteLogoUrl = getSettingsImageStoragePath(
+          files.logo[0].filename
+        );
+      }
+
+      if (files?.favicon && files.favicon[0]) {
+        siteFaviconUrl = getSettingsImageStoragePath(
+          files.favicon[0].filename
+        );
+      }
+    } else {
+      const body = req.body as Partial<PlatformSettings> & Record<string, unknown>;
+
+      siteName =
+        typeof body.siteName === "string"
+          ? body.siteName.trim()
+          : "";
+      siteLogoUrl =
+        typeof body.siteLogoUrl === "string"
+          ? body.siteLogoUrl.trim() || null
+          : null;
+      siteFaviconUrl =
+        typeof body.siteFaviconUrl === "string"
+          ? body.siteFaviconUrl.trim() || null
+          : null;
+      defaultCurrency =
+        typeof body.defaultCurrency === "string"
+          ? body.defaultCurrency.trim().toUpperCase() || "INR"
+          : "INR";
+      timezone =
+        typeof body.timezone === "string"
+          ? body.timezone.trim() || "Asia/Kolkata"
+          : "Asia/Kolkata";
+    }
 
     const errors: Record<string, string> = {};
 
@@ -136,6 +200,17 @@ export const updatePlatformSettings = async (
           "Please correct the platform settings",
         errors,
       });
+    }
+
+    const existingLogoUrl = await getSetting("site_logo_url");
+    const existingFaviconUrl = await getSetting("site_favicon_url");
+
+    if (siteLogoUrl && existingLogoUrl && existingLogoUrl !== siteLogoUrl) {
+      deletePublicStorageFile(existingLogoUrl);
+    }
+
+    if (siteFaviconUrl && existingFaviconUrl && existingFaviconUrl !== siteFaviconUrl) {
+      deletePublicStorageFile(existingFaviconUrl);
     }
 
     await prisma.$transaction(async (tx) => {
@@ -179,10 +254,26 @@ export const updatePlatformSettings = async (
       });
     });
 
+    const protocol = req.protocol;
+    const host = req.get("host");
+    const baseUrl = `${protocol}://${host}`;
+
+    const resolveUrl = (url: string | null | undefined): string | null => {
+      if (!url) {
+        return null;
+      }
+
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        return url;
+      }
+
+      return `${baseUrl}${url}`;
+    };
+
     const settings: PlatformSettings = {
       siteName,
-      siteLogoUrl,
-      siteFaviconUrl,
+      siteLogoUrl: resolveUrl(siteLogoUrl || existingLogoUrl),
+      siteFaviconUrl: resolveUrl(siteFaviconUrl || existingFaviconUrl),
       defaultCurrency,
       timezone,
     };

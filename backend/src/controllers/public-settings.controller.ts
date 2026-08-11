@@ -129,3 +129,78 @@ export const getPublicVendorBankDetails = async (
     });
   }
 };
+
+export const getPublicPlatformSettings = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const [
+      siteName,
+      siteLogoUrl,
+      siteFaviconUrl,
+      defaultCurrency,
+      timezone,
+    ] = await Promise.all([
+      prisma.setting.findUnique({
+        where: { key: "site_name" },
+        select: { value: true },
+      }),
+      prisma.setting.findUnique({
+        where: { key: "site_logo_url" },
+        select: { value: true },
+      }),
+      prisma.setting.findUnique({
+        where: { key: "site_favicon_url" },
+        select: { value: true },
+      }),
+      prisma.setting.findUnique({
+        where: { key: "default_currency" },
+        select: { value: true },
+      }),
+      prisma.setting.findUnique({
+        where: { key: "timezone" },
+        select: { value: true },
+      }),
+    ]);
+
+    const protocol = req.protocol;
+    const host = req.get("host");
+    const baseUrl = `${protocol}://${host}`;
+
+    const resolveUrl = (url: string | null | undefined): string | null => {
+      if (!url) {
+        return null;
+      }
+
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        return url;
+      }
+
+      return `${baseUrl}${url}`;
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: "Public platform settings fetched successfully",
+      data: {
+        siteName: siteName?.value || "FarmStay",
+        siteLogoUrl: resolveUrl(siteLogoUrl?.value),
+        siteFaviconUrl: resolveUrl(siteFaviconUrl?.value),
+        defaultCurrency: defaultCurrency?.value || "INR",
+        timezone: timezone?.value || "Asia/Kolkata",
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Get public platform settings error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Unable to fetch platform settings",
+    });
+  }
+};

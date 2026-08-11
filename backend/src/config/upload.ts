@@ -14,7 +14,8 @@ export type PublicUploadFolder =
   | "amenities"
   | "properties"
   | "profiles"
-  | "cms";
+  | "cms"
+  | "settings";
 
 /*
 |--------------------------------------------------------------------------
@@ -605,4 +606,65 @@ export const getRoomImageStoragePath = (
   fileName: string
 ): string => {
   return `/storage/properties/${propertyId}/rooms/${roomTypeId}/${fileName}`;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Settings Image Upload
+|--------------------------------------------------------------------------
+|
+| Logo and favicon images are stored inside:
+| storage/public/settings/
+|
+*/
+
+export const createSettingsImageUpload = (
+  maxFileSizeMB = 2
+) => {
+  const uploadDirectory = ensureUploadDirectory("settings");
+
+  const storage = multer.diskStorage({
+    destination: (_request, _file, callback) => {
+      callback(null, uploadDirectory);
+    },
+    filename: (_request, file, callback) => {
+      callback(null, createSafeFileName(file.originalname));
+    },
+  });
+
+  return multer({
+    storage,
+    limits: {
+      fileSize: maxFileSizeMB * 1024 * 1024,
+      files: 2,
+    },
+    fileFilter: (_request, file, callback) => {
+      const extension = path
+        .extname(file.originalname)
+        .toLowerCase();
+
+      const isValidMimeType =
+        allowedImageMimeTypes.includes(file.mimetype);
+
+      const isValidExtension =
+        allowedImageExtensions.includes(extension);
+
+      if (!isValidMimeType || !isValidExtension) {
+        callback(
+          new Error(
+            "Only JPG, JPEG, PNG and WEBP images are allowed"
+          )
+        );
+        return;
+      }
+
+      callback(null, true);
+    },
+  });
+};
+
+export const getSettingsImageStoragePath = (
+  fileName: string
+): string => {
+  return `/storage/settings/${fileName}`;
 };

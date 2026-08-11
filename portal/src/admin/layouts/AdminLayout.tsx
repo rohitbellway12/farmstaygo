@@ -476,6 +476,31 @@ export default function AdminLayout() {
       contactMessages: 0,
       supportTickets: 0,
     });
+  const [siteLogoUrl, setSiteLogoUrl] = useState<string | null>(null);
+  const [siteName, setSiteName] = useState("");
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const res = await api.get<{
+          success: boolean;
+          data: {
+            siteLogoUrl: string | null;
+            siteName: string;
+          };
+        }>("/public/settings/platform");
+
+        if (res.data.success && res.data.data) {
+          setSiteLogoUrl(res.data.data.siteLogoUrl);
+          setSiteName(res.data.data.siteName || "");
+        }
+      } catch {
+        // keep defaults
+      }
+    };
+
+    void loadSettings();
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -604,28 +629,30 @@ const currentTitle = useMemo(() => {
           onClick={() => navigate("/admin/dashboard")}
           className="flex min-w-0 items-center gap-3"
         >
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary-50 text-primary-700">
-            <svg
-              viewBox="0 0 24 24"
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-            >
-              <path d="M3 10.5 12 3l9 7.5" />
-              <path d="M5 9.5V21h14V9.5" />
-              <path d="M9 21v-7h6v7" />
-            </svg>
-          </span>
+          {siteLogoUrl ? (
+            <img
+              src={siteLogoUrl}
+              alt={siteName || "FarmStayGo"}
+              className="h-10 w-auto rounded-xl bg-primary-50 object-contain"
+            />
+          ) : (
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary-50 text-primary-700">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              >
+                <path d="M3 10.5 12 3l9 7.5" />
+                <path d="M5 9.5V21h14V9.5" />
+                <path d="M9 21v-7h6v7" />
+              </svg>
+            </span>
+          )}
 
           <span className="text-left">
-            <strong className="block text-[18px] font-extrabold leading-none text-primary-700">
-              FarmStayGo
-            </strong>
-
-            <small className="mt-1 block text-[8px] font-extrabold uppercase tracking-[0.22em] text-primary-500">
-              Stays That Connect
-            </small>
+            <strong className="sr-only">Administration</strong>
           </span>
         </button>
 

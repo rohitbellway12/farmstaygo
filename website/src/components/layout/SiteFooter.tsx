@@ -87,10 +87,38 @@ async function getContactInfo(): Promise<PublicContactInfo> {
   }
 }
 
+async function getPublicPlatformSettings(): Promise<{
+  siteLogoUrl: string | null;
+  siteName: string;
+}> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    const response = await fetch(`${baseUrl}/public/settings/platform`);
+
+    if (!response.ok) {
+      return { siteLogoUrl: null, siteName: "" };
+    }
+
+    const data = await response.json();
+
+    if (data?.success && data?.data) {
+      return {
+        siteLogoUrl: data.data.siteLogoUrl,
+        siteName: data.data.siteName || "",
+      };
+    }
+  } catch {
+    // keep defaults
+  }
+
+  return { siteLogoUrl: null, siteName: "" };
+}
+
 export default async function SiteFooter() {
-  const [footerPages, contactInfo] = await Promise.all([
+  const [footerPages, contactInfo, platformSettings] = await Promise.all([
     getFooterPages(),
     getContactInfo(),
+    getPublicPlatformSettings(),
   ]);
 
   const pageGroups = ["company", "policies", "support"]
@@ -113,7 +141,10 @@ export default async function SiteFooter() {
         <div className="site-container py-12">
           <div className="grid gap-10 lg:grid-cols-2">
             <div>
-              <BrandLogo light />
+              <BrandLogo
+                light
+                logoUrl={platformSettings.siteLogoUrl}
+              />
 
               <p className="mt-4 max-w-sm text-[14px] leading-7 text-white/68">
                 Discover verified farmhouses, villas, resorts and peaceful

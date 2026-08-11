@@ -1659,6 +1659,73 @@ export const acceptBooking = async (
         include: bookingListInclude,
       });
 
+      const payments =
+        await prisma.payment.findMany({
+          where: {
+            bookingId,
+          },
+        });
+
+      const totalPaid = payments
+        .filter(
+          (p) =>
+            p.status === PaymentStatus.COMPLETED &&
+            p.paymentType !== PaymentType.REFUND
+        )
+        .reduce(
+          (sum, p) => sum.plus(p.amount),
+          new Prisma.Decimal(0)
+        );
+
+      const pendingPayments = payments.filter(
+        (p) =>
+          (p.paymentMethod === PaymentMethod.CASH ||
+            p.paymentMethod === PaymentMethod.BANK_TRANSFER) &&
+          p.status === PaymentStatus.PENDING
+      );
+
+      if (pendingPayments.length > 0) {
+        await prisma.payment.updateMany({
+          where: {
+            id: {
+              in: pendingPayments.map((p) => p.id),
+            },
+          },
+          data: {
+            status: PaymentStatus.COMPLETED,
+          },
+        });
+      }
+
+      const allPaid =
+        totalPaid.plus(
+          pendingPayments.reduce(
+            (sum, p) => sum.plus(p.amount),
+            new Prisma.Decimal(0)
+          )
+        );
+
+      const estimatedTotal = updated.estimatedTotal
+        ? new Prisma.Decimal(updated.estimatedTotal)
+        : null;
+
+      let newPaymentStatus = "PENDING";
+      if (
+        estimatedTotal &&
+        allPaid.gte(estimatedTotal)
+      ) {
+        newPaymentStatus = "PAID";
+      } else if (allPaid.gt(new Prisma.Decimal(0))) {
+        newPaymentStatus = "PARTIAL";
+      }
+
+      await prisma.booking.update({
+        where: { id: bookingId },
+        data: {
+          paymentStatus: newPaymentStatus,
+        },
+      });
+
       try {
         const updatedProperty =
           await prisma.property.findUnique({

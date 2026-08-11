@@ -2,9 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link id="favicon" rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>portal</title>
+    <script>
+      (function() {
+        var apiBase = localStorage.getItem('farmstaygo_api_base') || 'http://localhost:5000/api';
+        fetch(apiBase + '/public/settings/platform')
+          .then(function(res) { return res.ok ? res.json() : Promise.reject(); })
+          .then(function(data) {
+            if (data && data.success && data.data && data.data.siteFaviconUrl) {
+              var link = document.getElementById('favicon');
+              if (link) {
+                link.href = data.data.siteFaviconUrl;
+              }
+            }
+          })
+          .catch(function() {
+            // keep default favicon
+          });
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

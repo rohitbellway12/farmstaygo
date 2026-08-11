@@ -102,6 +102,11 @@ export default function SettingsPage() {
     timezone: "Asia/Kolkata",
   });
 
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [faviconFile, setFaviconFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>("");
+  const [faviconPreview, setFaviconPreview] = useState<string>("");
+
   const [paymentForm, setPaymentForm] = useState({
     paymentMethods: ["ONLINE"] as string[],
     razorpayKeyId: "",
@@ -158,6 +163,8 @@ export default function SettingsPage() {
         defaultCurrency: data.defaultCurrency,
         timezone: data.timezone,
       });
+      setLogoPreview(data.siteLogoUrl || "");
+      setFaviconPreview(data.siteFaviconUrl || "");
     } catch (error) {
       setPageError(
         getApiErrorMessage(
@@ -327,7 +334,29 @@ export default function SettingsPage() {
     setPageError("");
 
     try {
-      await updatePlatformSettings(platformForm);
+      const formData = new FormData();
+      formData.append("siteName", platformForm.siteName);
+      formData.append("defaultCurrency", platformForm.defaultCurrency);
+      formData.append("timezone", platformForm.timezone);
+      if (logoFile) {
+        formData.append("logo", logoFile);
+      }
+      if (faviconFile) {
+        formData.append("favicon", faviconFile);
+      }
+
+      const response = await updatePlatformSettings(formData);
+      setPlatformForm({
+        siteName: response.data.siteName,
+        siteLogoUrl: response.data.siteLogoUrl || "",
+        siteFaviconUrl: response.data.siteFaviconUrl || "",
+        defaultCurrency: response.data.defaultCurrency,
+        timezone: response.data.timezone,
+      });
+      setLogoPreview(response.data.siteLogoUrl || "");
+      setFaviconPreview(response.data.siteFaviconUrl || "");
+      setLogoFile(null);
+      setFaviconFile(null);
       setToast({
         type: "success",
         message:
@@ -727,39 +756,63 @@ export default function SettingsPage() {
               </label>
 
               <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
-                Site Logo URL
+                Site Logo
                 <input
-                  type="url"
-                  value={platformForm.siteLogoUrl}
-                  onChange={(e) =>
-                    setPlatformForm(
-                      (current) => ({
-                        ...current,
-                        siteLogoUrl: e.target.value,
-                      })
-                    )
-                  }
-                  placeholder="https://example.com/logo.png"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setLogoFile(file);
+                      setLogoPreview(
+                        URL.createObjectURL(file)
+                      );
+                    }
+                  }}
                   className={inputClass}
                 />
+                {logoPreview && (
+                  <div className="mt-2">
+                    <img
+                      src={logoPreview}
+                      alt="Logo preview"
+                      className="h-12 w-auto rounded border border-border bg-white object-contain"
+                    />
+                  </div>
+                )}
+                <p className="text-[11px] text-text-soft">
+                  Upload a new logo image. Recommended size: 200x50px. Max 2MB.
+                </p>
               </label>
 
               <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
-                Favicon URL
+                Favicon
                 <input
-                  type="url"
-                  value={platformForm.siteFaviconUrl}
-                  onChange={(e) =>
-                    setPlatformForm(
-                      (current) => ({
-                        ...current,
-                        siteFaviconUrl: e.target.value,
-                      })
-                    )
-                  }
-                  placeholder="https://example.com/favicon.ico"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setFaviconFile(file);
+                      setFaviconPreview(
+                        URL.createObjectURL(file)
+                      );
+                    }
+                  }}
                   className={inputClass}
                 />
+                {faviconPreview && (
+                  <div className="mt-2">
+                    <img
+                      src={faviconPreview}
+                      alt="Favicon preview"
+                      className="h-10 w-10 rounded border border-border bg-white object-contain"
+                    />
+                  </div>
+                )}
+                <p className="text-[11px] text-text-soft">
+                  Upload a new favicon image. Recommended size: 32x32px or 64x64px. Max 2MB.
+                </p>
               </label>
 
               <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
