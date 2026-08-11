@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 import BrandLogo from "../common/BrandLogo";
 import { apiFetch } from "@/lib/api";
+import { portalUrl } from "@/lib/config";
 
 const navigation = [
   { label: "Home", href: "/" },
@@ -113,9 +114,7 @@ export default function SiteHeader() {
     };
   }, [profileOpen]);
 
-  const portalUrl =
-    process.env.NEXT_PUBLIC_PORTAL_URL ||
-    "http://localhost:5173";
+  const portalUrlFinal = portalUrl;
 
   const handleLogout = () => {
     localStorage.removeItem("farmstaygo_customer_auth");
@@ -333,8 +332,8 @@ export default function SiteHeader() {
             </Link>
           )}
 
-          <a
-            href={`${portalUrl}/vendor/login`}
+            <a
+              href={`${portalUrlFinal}/vendor/login`}
             className="inline-flex h-10 items-center rounded-full bg-brand-700 px-4 text-[13px] font-extrabold text-white shadow-[0_8px_18px_rgba(36,99,47,0.20)] transition hover:bg-brand-800"
           >
             Host
@@ -455,7 +454,7 @@ export default function SiteHeader() {
               )}
 
               <a
-                href={`${portalUrl}/vendor/login`}
+                href={`${portalUrlFinal}/vendor/login`}
                 className="inline-flex h-11 items-center justify-center rounded-full bg-brand-700 px-4 text-sm font-extrabold text-white"
               >
                 Host Login

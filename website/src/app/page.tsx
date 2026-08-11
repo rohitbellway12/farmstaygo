@@ -4,6 +4,7 @@ import HomeSearchForm from "@/components/common/HomeSearchForm";
 import PropertyCard from "@/components/property/PropertyCard";
 import { apiFetch } from "@/lib/api";
 import { getAssetUrl } from "@/lib/assets";
+import { portalUrl } from "@/lib/config";
 import type {
   PublicCategoriesResponse,
   PublicCategory,
@@ -448,11 +449,7 @@ export default async function Home() {
             </p>
 
             <a
-              href={`${
-                process.env
-                  .NEXT_PUBLIC_PORTAL_URL ||
-                "http://localhost:5173"
-              }/vendor/login`}
+              href={`${portalUrl}/vendor/login`}
               className="mt-6 inline-flex h-11 items-center rounded-lg bg-white px-5 text-sm font-extrabold text-brand-800 shadow-sm"
             >
               Become a Host

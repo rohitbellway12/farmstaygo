@@ -1,7 +1,4 @@
-const apiBaseUrl = (
-  process.env.NEXT_PUBLIC_API_URL ||
-  "http://localhost:5000/api"
-).replace(/\/+$/, "");
+import { apiBaseUrl } from "./config";
 
 export class ApiRequestError extends Error {
   status: number;

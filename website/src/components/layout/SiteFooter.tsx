@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import BrandLogo from "../common/BrandLogo";
 import { apiFetch } from "@/lib/api";
+import { portalUrl } from "@/lib/config";
 import type {
   PublicCmsPage,
   PublicCmsPagesResponse,
@@ -10,8 +11,8 @@ import type {
 } from "@/types/public";
 
 const hostLinks = [
-  ["Host Login", "http://localhost:5173/vendor/login"],
-  ["List Your Property", "http://localhost:5173/vendor/register"],
+  ["Host Login", `${portalUrl}/vendor/login`],
+  ["List Your Property", `${portalUrl}/vendor/register`],
 ];
 
 const groupLabels: Record<string, string> = {
@@ -87,13 +88,14 @@ async function getContactInfo(): Promise<PublicContactInfo> {
   }
 }
 
+import { apiBaseUrl } from "@/lib/config";
+
 async function getPublicPlatformSettings(): Promise<{
   siteLogoUrl: string | null;
   siteName: string;
 }> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-    const response = await fetch(`${baseUrl}/public/settings/platform`);
+    const response = await fetch(`${apiBaseUrl}/public/settings/platform`);
 
     if (!response.ok) {
       return { siteLogoUrl: null, siteName: "" };

@@ -4,6 +4,8 @@ import { Inter } from "next/font/google";
 import SiteFooter from "@/components/layout/SiteFooter";
 import SiteHeader from "@/components/layout/SiteHeader";
 
+import { apiBaseUrl } from "@/lib/config";
+
 import "./globals.css";
 
 const inter = Inter({
@@ -18,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/public/settings/platform`,
+      `${apiBaseUrl}/public/settings/platform`,
       { next: { revalidate: 60 } }
     );
 
