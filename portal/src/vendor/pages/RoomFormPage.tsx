@@ -14,6 +14,7 @@ import {
 } from "react-router-dom";
 
 import api from "../../shared/api/api";
+import { getAssetUrl } from "../../shared/config/assets";
 
 /*
 |--------------------------------------------------------------------------
@@ -167,37 +168,6 @@ const amenityGroupLabels: Record<
   KITCHEN: "Kitchen",
   ENTERTAINMENT: "Entertainment",
   ACCESSIBILITY: "Accessibility",
-};
-
-/*
-|--------------------------------------------------------------------------
-| Asset URL
-|--------------------------------------------------------------------------
-*/
-
-const backendBaseUrl = (
-  import.meta.env.VITE_BACKEND_URL ||
-  "http://localhost:5000"
-).replace(/\/+$/, "");
-
-const getAssetUrl = (
-  storedPath?: string | null
-): string => {
-  if (!storedPath) {
-    return "";
-  }
-
-  if (
-    storedPath.startsWith("http://") ||
-    storedPath.startsWith("https://") ||
-    storedPath.startsWith("blob:")
-  ) {
-    return storedPath;
-  }
-
-  return `${backendBaseUrl}${
-    storedPath.startsWith("/") ? "" : "/"
-  }${storedPath}`;
 };
 
 /*

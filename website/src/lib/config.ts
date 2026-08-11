@@ -1,9 +1,11 @@
-const apiBaseUrl = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+const backendBaseUrl = (
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, "") ||
+  "http://localhost:5000"
 ).replace(/\/+$/, "");
 
-const backendBaseUrl = (
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000"
+const apiBaseUrl = (
+  process.env.NEXT_PUBLIC_API_URL || `${backendBaseUrl}/api`
 ).replace(/\/+$/, "");
 
 const portalUrl = (

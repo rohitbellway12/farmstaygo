@@ -7,7 +7,13 @@
     <title>portal</title>
     <script>
       (function() {
-        var apiBase = localStorage.getItem('farmstaygo_api_base') || 'http://localhost:5000/api';
+        var envApiBase = '%VITE_API_URL%';
+        var envBackendBase = '%VITE_BACKEND_URL%';
+        var derivedApiBase = envBackendBase && envBackendBase.indexOf('%') !== 0
+          ? envBackendBase.replace(/\/+$/, '') + '/api'
+          : '';
+        var apiBase = localStorage.getItem('farmstaygo_api_base') ||
+          (envApiBase && envApiBase.indexOf('%') !== 0 ? envApiBase : derivedApiBase || 'http://localhost:5000/api');
         fetch(apiBase + '/public/settings/platform')
           .then(function(res) { return res.ok ? res.json() : Promise.reject(); })
           .then(function(data) {

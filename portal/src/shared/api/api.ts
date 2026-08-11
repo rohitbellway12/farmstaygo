@@ -3,14 +3,13 @@ import {
   clearAuth,
   getToken,
 } from "../utils/auth";
+import { apiBaseUrl } from "../config/app";
 
 export const AUTH_EXPIRED_EVENT =
   "farmstaygo:auth-expired";
 
 const api = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_URL ||
-    "http://localhost:5000/api",
+  baseURL: apiBaseUrl,
 
   headers: {
     "Content-Type": "application/json",

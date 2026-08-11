@@ -7,6 +7,7 @@ import {
 } from "react";
 
 import api from "../../shared/api/api";
+import { getAssetUrl } from "../../shared/config/assets";
 
 interface PropertyCategory {
   id: string;
@@ -100,37 +101,6 @@ const slugify = (value: string): string => {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-};
-
-/*
-|--------------------------------------------------------------------------
-| Backend Asset URL
-|--------------------------------------------------------------------------
-*/
-
-const backendBaseUrl = (
-  import.meta.env.VITE_BACKEND_URL ||
-  "http://localhost:5000"
-).replace(/\/+$/, "");
-
-const getAssetUrl = (
-  storedPath?: string | null
-): string => {
-  if (!storedPath) {
-    return "";
-  }
-
-  if (
-    storedPath.startsWith("http://") ||
-    storedPath.startsWith("https://") ||
-    storedPath.startsWith("blob:")
-  ) {
-    return storedPath;
-  }
-
-  return `${backendBaseUrl}${
-    storedPath.startsWith("/") ? "" : "/"
-  }${storedPath}`;
 };
 
 function PageIcon() {

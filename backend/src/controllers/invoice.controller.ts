@@ -12,6 +12,11 @@ import {
   generateInvoicePdf,
   getInvoiceFilePath,
 } from "../services/invoice.js";
+import {
+  buildUrl,
+  getBackendBaseUrl,
+  trimTrailingSlashes,
+} from "../config/url.js";
 
 export const generateInvoice = async (
   req: AuthenticatedRequest,
@@ -148,9 +153,17 @@ export const generateInvoice = async (
 
     await generateInvoicePdf(invoiceData, filePath);
 
-    const publicUrl = `${process.env.PUBLIC_STORAGE_URL || "http://localhost:5000/uploads"}/invoices/${`invoice_${bookingId}.pdf`}`;
+    const downloadUrl = buildUrl(
+      getBackendBaseUrl(req),
+      `/api/invoices/${bookingId}/download`
+    );
 
-    const downloadUrl = `${req.protocol}://${req.get("host")}/api/invoices/${bookingId}/download`;
+    const publicUrl = process.env.PUBLIC_STORAGE_URL
+      ? buildUrl(
+          trimTrailingSlashes(process.env.PUBLIC_STORAGE_URL),
+          `/invoices/${`invoice_${bookingId}.pdf`}`
+        )
+      : downloadUrl;
 
     return res.json({
       success: true,
