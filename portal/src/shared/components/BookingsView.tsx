@@ -103,6 +103,8 @@ interface BookingsViewProps {
   onAccept?: (bookingId: string) => void;
   onReject?: (bookingId: string) => void;
   onPay?: (bookingId: string) => void;
+  onBookingUpdated?: (bookingId: string, updates: Partial<Booking>) => void;
+  refreshTrigger?: number;
 }
 
 const statusStyles: Record<
@@ -225,6 +227,8 @@ export default function BookingsView({
   onAccept,
   onReject,
   onPay,
+  onBookingUpdated,
+  refreshTrigger,
 }: BookingsViewProps) {
   const [bookings, setBookings] = useState<
     Booking[]
@@ -301,7 +305,7 @@ export default function BookingsView({
     return () => {
       cancelled = true;
     };
-  }, [endpoint]);
+  }, [endpoint, refreshTrigger]);
 
   async function handleApproveBankTransfer(
     paymentId: string
@@ -746,50 +750,76 @@ export default function BookingsView({
                       {allowActions && (
                         <td className="px-4 py-4">
                           <div className="flex flex-wrap items-center gap-2">
-                            {booking.status ===
-                              "REQUESTED" &&
-                              onAccept && (
-                                <button
-                                  type="button"
-                                  disabled={
-                                    actionLoading ===
-                                    booking.id
-                                  }
-                                  onClick={() =>
-                                    void onAccept(
-                                      booking.id
-                                    )
-                                  }
-                                  className="inline-flex h-8 items-center justify-center rounded-lg bg-emerald-700 px-3 text-[11px] font-extrabold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                  {actionLoading ===
-                                  booking.id
-                                    ? "..."
-                                    : "Accept"}
-                                </button>
-                              )}
-                            {booking.status ===
-                              "REQUESTED" &&
-                              onReject && (
-                                <button
-                                  type="button"
-                                  disabled={
-                                    actionLoading ===
-                                    booking.id
-                                  }
-                                  onClick={() =>
-                                    void onReject(
-                                      booking.id
-                                    )
-                                  }
-                                  className="inline-flex h-8 items-center justify-center rounded-lg bg-red-700 px-3 text-[11px] font-extrabold text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                  {actionLoading ===
-                                  booking.id
-                                    ? "..."
-                                    : "Reject"}
-                                </button>
-                              )}
+                             {booking.status ===
+                               "REQUESTED" &&
+                               onAccept && (
+                                 <button
+                                   type="button"
+                                   disabled={
+                                     actionLoading ===
+                                     booking.id
+                                   }
+                                   onClick={async () => {
+                                     _setActionLoading(booking.id);
+                                     try {
+                                       await onAccept(
+                                         booking.id
+                                       );
+                                       onBookingUpdated?.(
+                                         booking.id,
+                                         {
+                                           status: "CONFIRMED",
+                                         }
+                                       );
+                                     } catch {
+                                       // error handled by parent
+                                     } finally {
+                                       _setActionLoading(null);
+                                     }
+                                   }}
+                                   className="inline-flex h-8 items-center justify-center rounded-lg bg-emerald-700 px-3 text-[11px] font-extrabold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
+                                 >
+                                   {actionLoading ===
+                                   booking.id
+                                     ? "..."
+                                     : "Accept"}
+                                 </button>
+                               )}
+                             {booking.status ===
+                               "REQUESTED" &&
+                               onReject && (
+                                 <button
+                                   type="button"
+                                   disabled={
+                                     actionLoading ===
+                                     booking.id
+                                   }
+                                   onClick={async () => {
+                                     _setActionLoading(booking.id);
+                                     try {
+                                       await onReject(
+                                         booking.id
+                                       );
+                                       onBookingUpdated?.(
+                                         booking.id,
+                                         {
+                                           status: "REJECTED",
+                                         }
+                                       );
+                                     } catch {
+                                       // error handled by parent
+                                     } finally {
+                                       _setActionLoading(null);
+                                     }
+                                   }}
+                                   className="inline-flex h-8 items-center justify-center rounded-lg bg-red-700 px-3 text-[11px] font-extrabold text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50"
+                                 >
+                                   {actionLoading ===
+                                   booking.id
+                                     ? "..."
+                                     : "Reject"}
+                                 </button>
+                               )}
                             {(booking.status ===
                                 "CONFIRMED" ||
                               booking.status ===

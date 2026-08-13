@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 
 import {
   fetchNotifications,
@@ -16,6 +16,12 @@ export default function NotificationBell() {
   const [recentNotifications, setRecentNotifications] =
     useState<Notification[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+
+  const notificationsPath =
+    location.pathname.startsWith("/vendor")
+      ? "/vendor/notifications"
+      : "/admin/notifications";
 
   useEffect(() => {
     let cancelled = false;
@@ -254,7 +260,7 @@ export default function NotificationBell() {
 
           <div className="border-t border-border px-4 py-2">
             <NavLink
-              to="/admin/notifications"
+              to={notificationsPath}
               onClick={() => setDropdownOpen(false)}
               className="block text-center text-[11px] font-bold text-brand-700 hover:text-brand-800"
             >

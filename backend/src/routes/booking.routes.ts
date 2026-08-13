@@ -3,6 +3,8 @@ import { Router } from "express";
 import {
   acceptBooking,
   approvePayment,
+  calculateBookingPrice,
+  cancelBooking,
   createBookingRequest,
   getAdminBookings,
   getBookingPayments,
@@ -15,6 +17,7 @@ import {
 
 import {
   createRazorpayOrder,
+  createStandaloneRazorpayOrder,
   verifyRazorpayPayment,
   getRazorpayStatus,
 } from "../controllers/payment-gateway.controller.js";
@@ -43,6 +46,12 @@ bookingRoutes.post(
   createBookingRequest
 );
 
+bookingRoutes.post(
+  "/calculate",
+  authenticate,
+  calculateBookingPrice
+);
+
 bookingRoutes.get(
   "/:id/payments",
   authenticate,
@@ -53,6 +62,18 @@ bookingRoutes.post(
   "/:id/payments",
   authenticate,
   recordPayment
+);
+
+bookingRoutes.post(
+  "/:id/cancel",
+  authenticate,
+  cancelBooking
+);
+
+bookingRoutes.post(
+  "/payments/razorpay/order",
+  authenticate,
+  createStandaloneRazorpayOrder
 );
 
 // Razorpay payment gateway routes

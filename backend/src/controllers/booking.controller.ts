@@ -1,5 +1,7 @@
 import type { Response } from "express";
 
+import crypto from "crypto";
+
 import {
   BookingMode,
   BookingStatus,
@@ -15,6 +17,10 @@ import {
 } from "../generated/prisma/client.js";
 
 import prisma from "../config/database.js";
+
+import {
+  getRazorpaySettings,
+} from "../controllers/payment-gateway.controller.js";
 
 import {
   sendBookingConfirmationEmail,
@@ -67,6 +73,17 @@ interface CreateBookingBody {
   rooms?: unknown;
   specialRequest?: unknown;
   paymentMethod?: unknown;
+}
+
+interface CreateBookingWithPaymentBody
+  extends CreateBookingBody {
+  paymentVerification?: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+    amount: number;
+    sandbox?: boolean;
+  };
 }
 
 const dateOnlyPattern =
@@ -256,6 +273,686 @@ const nightsOverlapWhere = (
   },
 });
 
+interface BookingQuoteInput {
+  propertyId: string;
+  bookingMode: BookingMode;
+  checkIn: Date;
+  checkOut: Date;
+  guests: number;
+  rooms: number;
+  totalNights: number;
+  specialRequest: string | null;
+  paymentMethod: PaymentMethod | null;
+  roomTypeId?: string;
+}
+
+interface BookingQuoteResult {
+  propertyId: string;
+  bookingMode: BookingMode;
+  checkIn: Date;
+  checkOut: Date;
+  guests: number;
+  rooms: number;
+  totalNights: number;
+  estimatedTotal: number;
+  reservationAmount: number | null;
+  currency: string;
+  roomTypeId?: string;
+  commissionRate: number;
+  vendorId?: number;
+}
+
+const validateBookingInput = (
+  body: CreateBookingBody
+): BookingQuoteInput => {
+  const propertyId =
+    typeof body.propertyId === "string"
+      ? body.propertyId.trim()
+      : "";
+
+  const bookingMode = parseBookingMode(
+    body.bookingMode
+  );
+
+  const checkIn = parseDateOnly(body.checkIn);
+
+  const checkOut = parseDateOnly(body.checkOut);
+
+  const guests = parsePositiveInteger(
+    body.guests,
+    1
+  );
+
+  const rooms = parsePositiveInteger(
+    body.rooms,
+    1
+  );
+
+  const roomTypeId =
+    typeof body.roomTypeId === "string"
+      ? body.roomTypeId.trim()
+      : "";
+
+  const specialRequest = parseOptionalText(
+    body.specialRequest,
+    500
+  );
+
+  const paymentMethod =
+    typeof body.paymentMethod === "string"
+      ? (body.paymentMethod
+          .trim()
+          .toUpperCase() as PaymentMethod)
+      : null;
+
+  const errors: Record<string, string> =
+    {};
+
+  if (!propertyId) {
+    errors.propertyId =
+      "Property is required.";
+  }
+
+  if (!bookingMode) {
+    errors.bookingMode =
+      "Please select a valid booking option.";
+  }
+
+  if (!checkIn) {
+    errors.checkIn =
+      "Please select a valid check-in date.";
+  }
+
+  if (!checkOut) {
+    errors.checkOut =
+      "Please select a valid check-out date.";
+  }
+
+  if (
+    checkIn &&
+    checkOut &&
+    checkOut.getTime() <= checkIn.getTime()
+  ) {
+    errors.checkOut =
+      "Check-out must be after check-in.";
+  }
+
+  if (
+    checkIn &&
+    checkIn.getTime() <
+      getTodayDateOnly().getTime()
+  ) {
+    errors.checkIn =
+      "Check-in cannot be in the past.";
+  }
+
+  if (specialRequest === undefined) {
+    errors.specialRequest =
+      "Special request must be valid text up to 500 characters.";
+  }
+
+  if (Object.keys(errors).length > 0) {
+    const error = new Error(
+      "VALIDATION_ERROR"
+    ) as Error & {
+      errors: Record<string, string>;
+    };
+    error.errors = errors;
+    throw error;
+  }
+
+  const nights = buildNights(checkIn!, checkOut!);
+
+  if (nights.length > 60) {
+    throw new Error(
+      "MAX_NIGHTS_EXCEEDED"
+    );
+  }
+
+  return {
+    propertyId,
+    bookingMode: bookingMode!,
+    checkIn: checkIn!,
+    checkOut: checkOut!,
+    guests,
+    rooms,
+    totalNights: nights.length,
+    specialRequest:
+      specialRequest || null,
+    paymentMethod,
+    roomTypeId,
+  };
+};
+
+const getBookingQuote = async (
+  input: BookingQuoteInput
+): Promise<BookingQuoteResult> => {
+  const {
+    propertyId,
+    bookingMode,
+    checkIn,
+    checkOut,
+    guests,
+    rooms,
+    roomTypeId,
+  } = input;
+
+  const nights = buildNights(checkIn, checkOut);
+
+  return await prisma.$transaction(
+    async (transaction) => {
+      await transaction.$executeRaw`
+        SELECT pg_advisory_xact_lock(hashtext(${propertyId}))
+      `;
+
+      const property =
+        await transaction.property.findFirst(
+          {
+            where: {
+              id: propertyId,
+              status: PropertyStatus.APPROVED,
+              category: {
+                isActive: true,
+              },
+            },
+            include: {
+              roomTypes: {
+                include: {
+                  images: true,
+                },
+              },
+            },
+          }
+        );
+
+      if (!property) {
+        throw new Error(
+          "PROPERTY_UNAVAILABLE"
+        );
+      }
+
+      if (
+        !propertySupportsMode(
+          property.bookingType,
+          bookingMode
+        )
+      ) {
+        throw new Error(
+          "BOOKING_MODE_UNSUPPORTED"
+        );
+      }
+
+      const propertyBlocks =
+        await transaction.propertyAvailabilityBlock.count(
+          {
+            where: {
+              propertyId,
+              date: {
+                in: nights,
+              },
+            },
+          }
+        );
+
+      if (propertyBlocks > 0) {
+        throw new Error(
+          "PROPERTY_BLOCKED"
+        );
+      }
+
+      const activeOverlapWhere = {
+        propertyId,
+        ...activeAvailabilityBookingWhere,
+        ...nightsOverlapWhere(
+          checkIn,
+          checkOut
+        ),
+      };
+
+      if (
+        bookingMode ===
+        BookingMode.ENTIRE_PROPERTY
+      ) {
+        if (
+          (property.maxGuests || 0) <
+          guests
+        ) {
+          throw new Error(
+            "GUEST_CAPACITY_EXCEEDED"
+          );
+        }
+
+        const conflictingBookings =
+          await transaction.booking.count(
+            {
+              where: activeOverlapWhere,
+            }
+          );
+
+        if (
+          conflictingBookings > 0
+        ) {
+          throw new Error(
+            "BOOKING_CONFLICT"
+          );
+        }
+
+        const roomTypeIds =
+          property.roomTypes.map(
+            (roomType) => roomType.id
+          );
+
+        if (roomTypeIds.length > 0) {
+          const roomBlocks =
+            await transaction.roomAvailabilityBlock.count(
+              {
+                where: {
+                  roomTypeId: {
+                    in: roomTypeIds,
+                  },
+                  date: {
+                    in: nights,
+                  },
+                  blockedRooms: {
+                    gt: 0,
+                  },
+                },
+              }
+            );
+
+          if (roomBlocks > 0) {
+            throw new Error(
+              "ROOM_INVENTORY_CONFLICT"
+            );
+          }
+        }
+
+        const estimatedTotalValue =
+          Number(property.basePrice) *
+          nights.length;
+
+        const reservationAmountValue =
+          property.reservationAmount
+            ? Number(
+                property.reservationAmount
+              ) * nights.length
+            : null;
+
+        const vendor =
+          await transaction.vendor.findFirst(
+            {
+              where: {
+                properties: {
+                  some: {
+                    id: propertyId,
+                  },
+                },
+              },
+              select: {
+                id: true,
+                commissionRate: true,
+              },
+            }
+          );
+
+        return {
+          propertyId,
+          bookingMode,
+          checkIn,
+          checkOut,
+          guests,
+          rooms: 1,
+          totalNights: nights.length,
+          estimatedTotal:
+            estimatedTotalValue,
+          reservationAmount:
+            reservationAmountValue,
+          currency: "INR",
+          commissionRate:
+            vendor?.commissionRate
+              ? Number(vendor.commissionRate)
+              : 0,
+          vendorId: vendor?.id,
+        };
+      }
+
+      if (!roomTypeId) {
+        throw new Error(
+          "ROOM_TYPE_REQUIRED"
+        );
+      }
+
+      const roomType =
+        property.roomTypes.find(
+          (room) => room.id === roomTypeId
+        );
+
+      if (
+        !roomType ||
+        !roomType.isActive ||
+        roomType.totalRooms < 1 ||
+        Number(roomType.basePrice) <=
+          0 ||
+        roomType.images.length === 0
+      ) {
+        throw new Error(
+          "ROOM_TYPE_UNAVAILABLE"
+        );
+      }
+
+      const guestsPerRoom = Math.ceil(
+        guests / rooms
+      );
+
+      if (
+        roomType.maxGuests < guestsPerRoom
+      ) {
+        throw new Error(
+          "ROOM_GUEST_CAPACITY_EXCEEDED"
+        );
+      }
+
+      const fullPropertyBookings =
+        await transaction.booking.count(
+          {
+            where: {
+              ...activeOverlapWhere,
+              bookingMode:
+                BookingMode.ENTIRE_PROPERTY,
+            },
+          }
+        );
+
+      if (fullPropertyBookings > 0) {
+        throw new Error(
+          "FULL_PROPERTY_CONFLICT"
+        );
+      }
+
+      const roomBlocks =
+        await transaction.roomAvailabilityBlock.findMany(
+          {
+            where: {
+              roomTypeId,
+              date: {
+                in: nights,
+              },
+            },
+            select: {
+              date: true,
+              blockedRooms: true,
+            },
+          }
+        );
+
+      const roomBookings =
+        await transaction.booking.findMany(
+          {
+            where: {
+              roomTypeId,
+              ...activeAvailabilityBookingWhere,
+              ...nightsOverlapWhere(
+                checkIn,
+                checkOut
+              ),
+            },
+            select: {
+              checkIn: true,
+              checkOut: true,
+              rooms: true,
+            },
+          }
+        );
+
+      const blockedByDate = new Map<
+        string,
+        number
+      >();
+
+      roomBlocks.forEach((block) => {
+        blockedByDate.set(
+          formatDateKey(block.date),
+          block.blockedRooms
+        );
+      });
+
+      const bookedByDate = new Map<
+        string,
+        number
+      >();
+
+      roomBookings.forEach(
+        (existingBooking) => {
+          buildNights(
+            existingBooking.checkIn,
+            existingBooking.checkOut
+          ).forEach((night) => {
+            const key =
+              formatDateKey(night);
+
+            bookedByDate.set(
+              key,
+              (bookedByDate.get(key) ||
+                0) +
+                existingBooking.rooms
+            );
+          });
+        }
+      );
+
+      const minimumAvailableRooms =
+        nights.reduce(
+          (minimum, night) => {
+            const key =
+              formatDateKey(night);
+
+            const available =
+              roomType.totalRooms -
+              (blockedByDate.get(key) || 0) -
+              (bookedByDate.get(key) || 0);
+
+            return Math.min(
+              minimum,
+              available
+            );
+          },
+          roomType.totalRooms
+        );
+
+      if (
+        minimumAvailableRooms < rooms
+      ) {
+        throw new Error(
+          "ROOM_INVENTORY_EXCEEDED"
+        );
+      }
+
+      const estimatedTotalValue =
+        Number(roomType.basePrice) *
+        rooms *
+        nights.length;
+
+      const reservationAmountValue =
+        roomType.reservationAmount
+          ? Number(
+              roomType.reservationAmount
+            ) * rooms * nights.length
+          : property.reservationAmount
+            ? Number(
+                property.reservationAmount
+              ) * rooms * nights.length
+            : null;
+
+      const vendor =
+        await transaction.vendor.findFirst(
+          {
+            where: {
+              properties: {
+                some: {
+                  id: propertyId,
+                },
+              },
+            },
+            select: {
+              id: true,
+              commissionRate: true,
+            },
+          }
+        );
+
+      return {
+        propertyId,
+        bookingMode,
+        checkIn,
+        checkOut,
+        guests,
+        rooms,
+        totalNights: nights.length,
+        estimatedTotal:
+          estimatedTotalValue,
+        reservationAmount:
+          reservationAmountValue,
+        currency: "INR",
+        roomTypeId,
+        commissionRate:
+          vendor?.commissionRate
+            ? Number(vendor.commissionRate)
+            : 0,
+        vendorId: vendor?.id,
+      };
+    }
+  );
+};
+
+const recordOnlinePaymentForBooking = async (
+  tx: Prisma.TransactionClient,
+  bookingId: string,
+  amount: number,
+  propertyId: string,
+  bookingStatus: string,
+  estimatedTotal: number,
+  reservationAmount: number | null
+): Promise<void> => {
+  const transactionId =
+    `razorpay_${Date.now()}`;
+
+  await tx.payment.create({
+    data: {
+      bookingId,
+      amount: new Prisma.Decimal(amount),
+      paymentMethod: "ONLINE",
+      paymentType: "RESERVATION",
+      status: "COMPLETED",
+      transactionId,
+      notes:
+        "Online payment via Razorpay",
+    },
+  });
+
+  let newPaymentStatus = "PENDING";
+  if (
+    estimatedTotal > 0 &&
+    amount >= estimatedTotal
+  ) {
+    newPaymentStatus = "PAID";
+  } else if (amount > 0) {
+    newPaymentStatus = "PARTIAL";
+  }
+
+  let shouldConfirm = false;
+  if (
+    bookingStatus ===
+      BookingStatus.REQUESTED &&
+    reservationAmount &&
+    reservationAmount > 0 &&
+    amount >= reservationAmount
+  ) {
+    shouldConfirm = true;
+  }
+
+  if (shouldConfirm) {
+    await tx.booking.update({
+      where: { id: bookingId },
+      data: {
+        status: BookingStatus.CONFIRMED,
+        acceptedAt: new Date(),
+        paymentStatus: newPaymentStatus,
+      },
+    });
+  } else {
+    await tx.booking.update({
+      where: { id: bookingId },
+      data: {
+        paymentStatus: newPaymentStatus,
+      },
+    });
+  }
+
+  const vendor =
+    await tx.vendor.findFirst({
+      where: {
+        properties: {
+          some: {
+            id: propertyId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        commissionRate: true,
+      },
+    });
+
+  if (vendor) {
+    const commissionRate =
+      vendor.commissionRate
+        ? Number(vendor.commissionRate)
+        : 0;
+
+    const commissionAmount =
+      estimatedTotal *
+      (commissionRate / 100);
+
+    const vendorEarning =
+      estimatedTotal - commissionAmount;
+
+    await tx.vendorCommission.create(
+      {
+        data: {
+          vendorId: vendor.id,
+          bookingId,
+          bookingAmount: new Prisma.Decimal(
+            estimatedTotal
+          ),
+          commissionRate: new Prisma.Decimal(
+            commissionRate
+          ),
+          commissionAmount: new Prisma.Decimal(
+            commissionAmount
+          ),
+          vendorEarning: new Prisma.Decimal(
+            vendorEarning
+          ),
+          status:
+            CommissionStatus.PENDING,
+        },
+      }
+    );
+
+    await tx.vendor.update({
+      where: { id: vendor.id },
+      data: {
+        totalEarnings: {
+          increment: vendorEarning,
+        },
+        totalCommission: {
+          increment: commissionAmount,
+        },
+      },
+    });
+  }
+};
+
 const bookingListInclude = {
   user: {
     select: {
@@ -360,6 +1057,153 @@ const bookingListInclude = {
   },
 } satisfies Prisma.BookingInclude;
 
+interface BookingQuoteResponse {
+  success: boolean;
+  message: string;
+  data: {
+    estimatedTotal: number;
+    reservationAmount: number | null;
+    currency: string;
+    totalNights: number;
+    roomTypeId?: string;
+    bookingMode: BookingMode;
+  };
+}
+
+const quoteConflictMessages: Record<
+  string,
+  string
+> = {
+  PROPERTY_UNAVAILABLE:
+    "This property is not available for booking.",
+  BOOKING_MODE_UNSUPPORTED:
+    "This property does not support the selected booking option.",
+  PROPERTY_BLOCKED:
+    "The selected dates are blocked by the vendor.",
+  GUEST_CAPACITY_EXCEEDED:
+    "Guest count exceeds the property capacity.",
+  BOOKING_CONFLICT:
+    "The selected dates already have a booking request.",
+  ROOM_INVENTORY_CONFLICT:
+    "Room inventory is blocked on one or more selected dates, so full-property booking is not available.",
+  ROOM_TYPE_REQUIRED:
+    "Please select a room type.",
+  ROOM_TYPE_UNAVAILABLE:
+    "The selected room type is unavailable.",
+  ROOM_GUEST_CAPACITY_EXCEEDED:
+    "Guest count exceeds the selected room capacity.",
+  FULL_PROPERTY_CONFLICT:
+    "The full property is already booked or requested for the selected dates.",
+  ROOM_INVENTORY_EXCEEDED:
+    "Selected room quantity is no longer available for these dates.",
+  MAX_NIGHTS_EXCEEDED:
+    "A booking cannot exceed 60 nights",
+};
+
+export const calculateBookingPrice =
+  async (
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<Response> => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+      }
+
+      if (req.user.role !== "USER") {
+        return res.status(403).json({
+          success: false,
+          message:
+            "Only customer accounts can calculate booking prices",
+        });
+      }
+
+      const body =
+        req.body as CreateBookingBody;
+
+      let input: BookingQuoteInput;
+
+      try {
+        input = validateBookingInput(body);
+      } catch (validationError) {
+        const err =
+          validationError as Error & {
+            errors?: Record<
+              string,
+              string
+            >;
+          };
+
+        if (err.errors) {
+          return res.status(422).json({
+            success: false,
+            message:
+              "Please correct the booking information",
+            errors: err.errors,
+          });
+        }
+
+        const message =
+          err.message || "Invalid booking details";
+
+        return res.status(422).json({
+          success: false,
+          message:
+            quoteConflictMessages[message] ||
+            message,
+        });
+      }
+
+      try {
+        const quote =
+          await getBookingQuote(input);
+
+        return res.json({
+          success: true,
+          message: "Price calculated successfully",
+          data: {
+            estimatedTotal:
+              quote.estimatedTotal,
+            reservationAmount:
+              quote.reservationAmount,
+            currency: quote.currency,
+            totalNights:
+              quote.totalNights,
+            roomTypeId: quote.roomTypeId,
+            bookingMode: quote.bookingMode,
+          },
+        });
+      } catch (quoteError) {
+        const message =
+          quoteError instanceof Error
+            ? quoteError.message
+            : "";
+
+        return res.status(409).json({
+          success: false,
+          message:
+            quoteConflictMessages[message] ||
+            message ||
+            "Unable to calculate booking price",
+        });
+      }
+    } catch (error) {
+      console.error(
+        "Calculate booking price error:",
+        error
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Unable to calculate booking price",
+      });
+    }
+  };
+
 export const createBookingRequest =
   async (
     req: AuthenticatedRequest,
@@ -382,7 +1226,10 @@ export const createBookingRequest =
       }
 
       const body =
-        req.body as CreateBookingBody;
+        req.body as CreateBookingWithPaymentBody;
+
+      const paymentVerification =
+        body.paymentVerification;
 
       const customer =
         await prisma.user.findFirst({
@@ -515,6 +1362,14 @@ export const createBookingRequest =
       }
 
       if (
+        paymentMethod === "ONLINE" &&
+        !paymentVerification
+      ) {
+        errors.paymentMethod =
+          "Online payment verification is required. Please complete the payment first.";
+      }
+
+      if (
         Object.keys(errors).length > 0 ||
         !checkIn ||
         !checkOut ||
@@ -542,8 +1397,115 @@ export const createBookingRequest =
         });
       }
 
-      const booking = await prisma.$transaction(
-        async (transaction) => {
+      let verifiedPaymentAmount = 0;
+      let verifiedPaymentId: string | null =
+        null;
+      let isSandboxPayment = false;
+
+      if (paymentVerification) {
+        const razorpayOrderId =
+          typeof paymentVerification
+            .razorpay_order_id ===
+            "string"
+            ? paymentVerification.razorpay_order_id.trim()
+            : "";
+
+        const razorpayPaymentId =
+          typeof paymentVerification
+            .razorpay_payment_id ===
+            "string"
+            ? paymentVerification.razorpay_payment_id.trim()
+            : "";
+
+        const razorpaySignature =
+          typeof paymentVerification
+            .razorpay_signature ===
+            "string"
+            ? paymentVerification.razorpay_signature.trim()
+            : "";
+
+        const paymentAmount =
+          typeof paymentVerification.amount ===
+          "number"
+            ? paymentVerification.amount
+            : Number(
+                paymentVerification.amount
+              );
+
+        isSandboxPayment =
+          paymentVerification.sandbox ===
+            true ||
+          razorpayOrderId.startsWith(
+            "sandbox_order_"
+          );
+
+        if (!isSandboxPayment) {
+          const { keySecret } =
+            await getRazorpaySettings();
+
+          if (!keySecret) {
+            return res.status(400).json({
+              success: false,
+              message:
+                "Payment verification failed — Razorpay is not configured",
+            });
+          }
+
+          if (
+            !razorpayOrderId ||
+            !razorpayPaymentId ||
+            !razorpaySignature
+          ) {
+            return res.status(422).json({
+              success: false,
+              message:
+                "razorpay_order_id, razorpay_payment_id and razorpay_signature are required",
+            });
+          }
+
+          const expectedSignature =
+            crypto
+              .createHmac(
+                "sha256",
+                keySecret
+              )
+              .update(
+                `${razorpayOrderId}|${razorpayPaymentId}`
+              )
+              .digest("hex");
+
+          if (
+            expectedSignature !==
+            razorpaySignature
+          ) {
+            return res.status(400).json({
+              success: false,
+              message:
+                "Payment verification failed — invalid signature",
+            });
+          }
+        }
+
+        if (
+          !Number.isFinite(paymentAmount) ||
+          paymentAmount <= 0
+        ) {
+          return res.status(422).json({
+            success: false,
+            message:
+              "A valid payment amount is required",
+          });
+        }
+
+        verifiedPaymentAmount =
+          paymentAmount;
+        verifiedPaymentId =
+          razorpayPaymentId;
+      }
+
+      const booking =
+        await prisma.$transaction(
+          async (transaction) => {
           await transaction.$executeRaw`
             SELECT pg_advisory_xact_lock(hashtext(${propertyId}))
           `;
@@ -711,55 +1673,94 @@ export const createBookingRequest =
               estimatedTotalValue -
               adminCommissionValue;
 
-            return transaction.booking.create(
-              {
-                data: {
-                  userId:
-                    customer.id,
-                  propertyId,
-                  bookingMode,
-                  checkIn,
-                  checkOut,
-                  guests,
-                  rooms: 1,
-                  totalNights:
-                    nights.length,
-                  estimatedTotal:
-                    estimatedTotalValue,
-                  reservationAmount:
-                    property.reservationAmount
-                      ? Number(
-                          property.reservationAmount
-                        ) * nights.length
-                      : null,
-                  adminCommission:
-                    new Prisma.Decimal(
-                      adminCommissionValue
-                    ),
-                  vendorCommission:
-                    new Prisma.Decimal(
-                      vendorCommissionValue
-                    ),
-                  guestName:
-                    [
-                      customer.firstName,
-                      customer.lastName,
-                    ]
-                      .filter(Boolean)
-                      .join(" "),
-                  guestEmail:
-                    customer.email,
-                  guestMobile:
-                    customer
-                      .mobile,
-                  specialRequest,
-                  paymentMethod:
-                    (paymentMethod || null) as
-                      | PaymentMethod
-                      | null,
-                },
+            let createdBooking =
+              await transaction.booking.create(
+                {
+                  data: {
+                    userId:
+                      customer.id,
+                    propertyId,
+                    bookingMode,
+                    checkIn,
+                    checkOut,
+                    guests,
+                    rooms: 1,
+                    totalNights:
+                      nights.length,
+                    estimatedTotal:
+                      estimatedTotalValue,
+                    reservationAmount:
+                      property.reservationAmount
+                        ? Number(
+                            property.reservationAmount
+                          ) * nights.length
+                        : null,
+                    adminCommission:
+                      new Prisma.Decimal(
+                        adminCommissionValue
+                      ),
+                    vendorCommission:
+                      new Prisma.Decimal(
+                        vendorCommissionValue
+                      ),
+                    guestName:
+                      [
+                        customer.firstName,
+                        customer.lastName,
+                      ]
+                        .filter(Boolean)
+                        .join(" "),
+                    guestEmail:
+                      customer.email,
+                    guestMobile:
+                      customer
+                        .mobile,
+                    specialRequest,
+                    paymentMethod:
+                      (paymentMethod || null) as
+                        | PaymentMethod
+                        | null,
+                  },
+                }
+              );
+
+            if (paymentVerification) {
+              await recordOnlinePaymentForBooking(
+                transaction,
+                createdBooking.id,
+                verifiedPaymentAmount,
+                propertyId,
+                createdBooking.status,
+                Number(
+                  createdBooking.estimatedTotal
+                ) || 0,
+                createdBooking.reservationAmount
+                  ? Number(
+                      createdBooking.reservationAmount
+                    )
+                  : null
+              );
+
+              const refreshedBooking =
+                await transaction.booking.findFirst(
+                  {
+                    where: {
+                      id: createdBooking.id,
+                    },
+                  }
+                );
+
+              if (!refreshedBooking) {
+                throw new Error(
+                  "BOOKING_NOT_FOUND_AFTER_CREATION"
+                );
               }
-            );
+
+              createdBooking =
+                refreshedBooking;
+            }
+
+            return createdBooking;
           }
 
           const roomTypeId =
@@ -962,62 +1963,101 @@ export const createBookingRequest =
               estimatedTotalValue -
               adminCommissionValue;
 
-            return transaction.booking.create(
-              {
-                data: {
-                  userId:
-                    customer.id,
-                  propertyId,
-                  roomTypeId,
-                  bookingMode,
-                  checkIn,
-                  checkOut,
-                  guests,
-                  rooms,
-                  totalNights:
-                    nights.length,
-                  estimatedTotal:
-                    estimatedTotalValue,
-                  reservationAmount:
-                    roomType.reservationAmount
-                      ? Number(
-                          roomType.reservationAmount
-                        ) * rooms *
-                        nights.length
-                      : property.reservationAmount
+            let createdBooking =
+              await transaction.booking.create(
+                {
+                  data: {
+                    userId:
+                      customer.id,
+                    propertyId,
+                    roomTypeId,
+                    bookingMode,
+                    checkIn,
+                    checkOut,
+                    guests,
+                    rooms,
+                    totalNights:
+                      nights.length,
+                    estimatedTotal:
+                      estimatedTotalValue,
+                    reservationAmount:
+                      roomType.reservationAmount
                         ? Number(
-                            property.reservationAmount
+                            roomType.reservationAmount
                           ) * rooms *
                           nights.length
-                        : null,
-                  adminCommission:
-                    new Prisma.Decimal(
-                      adminCommissionValue
-                    ),
-                  vendorCommission:
-                    new Prisma.Decimal(
-                      vendorCommissionValue
-                    ),
-                  guestName:
-                    [
-                      customer.firstName,
-                      customer.lastName,
-                    ]
-                      .filter(Boolean)
-                      .join(" "),
-                  guestEmail:
-                    customer.email,
-                  guestMobile:
-                    customer
-                      .mobile,
-                  specialRequest,
-                  paymentMethod:
-                    (paymentMethod || null) as
-                      | PaymentMethod
-                      | null,
-                },
+                        : property.reservationAmount
+                          ? Number(
+                              property.reservationAmount
+                            ) * rooms *
+                              nights.length
+                          : null,
+                    adminCommission:
+                      new Prisma.Decimal(
+                        adminCommissionValue
+                      ),
+                    vendorCommission:
+                      new Prisma.Decimal(
+                        vendorCommissionValue
+                      ),
+                    guestName:
+                      [
+                        customer.firstName,
+                        customer.lastName,
+                      ]
+                        .filter(Boolean)
+                        .join(" "),
+                    guestEmail:
+                      customer.email,
+                    guestMobile:
+                      customer
+                        .mobile,
+                    specialRequest,
+                    paymentMethod:
+                      (paymentMethod || null) as
+                        | PaymentMethod
+                        | null,
+                  },
+                }
+              );
+
+            if (paymentVerification) {
+              await recordOnlinePaymentForBooking(
+                transaction,
+                createdBooking.id,
+                verifiedPaymentAmount,
+                propertyId,
+                createdBooking.status,
+                Number(
+                  createdBooking.estimatedTotal
+                ) || 0,
+                createdBooking.reservationAmount
+                  ? Number(
+                      createdBooking.reservationAmount
+                    )
+                  : null
+              );
+
+              const refreshedBooking =
+                await transaction.booking.findFirst(
+                  {
+                    where: {
+                      id: createdBooking.id,
+                    },
+                  }
+                );
+
+              if (!refreshedBooking) {
+                throw new Error(
+                  "BOOKING_NOT_FOUND_AFTER_CREATION"
+                );
               }
-            );
+
+              createdBooking =
+                refreshedBooking;
+            }
+
+            return createdBooking;
         }
       );
 
@@ -2228,6 +3268,83 @@ export const recordPayment = async (
       success: false,
       message:
         "Unable to record payment",
+    });
+  }
+};
+
+export const cancelBooking = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const bookingId =
+      typeof req.params.id === "string"
+        ? req.params.id.trim()
+        : "";
+
+    if (!bookingId) {
+      return res.status(422).json({
+        success: false,
+        message: "Booking ID is required",
+      });
+    }
+
+    const booking = await prisma.booking.findFirst({
+      where: {
+        id: bookingId,
+        userId: req.user.id,
+        status: BookingStatus.REQUESTED,
+      },
+      include: {
+        payments: true,
+      },
+    });
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Booking not found or cannot be cancelled",
+      });
+    }
+
+    const hasCompletedPayments = booking.payments.some(
+      (p) => p.status === PaymentStatus.COMPLETED
+    );
+
+    if (hasCompletedPayments) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Cannot cancel a booking with completed payments",
+      });
+    }
+
+    await prisma.booking.delete({
+      where: { id: bookingId },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Booking cancelled successfully",
+    });
+  } catch (error) {
+    console.error(
+      "Cancel booking error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Unable to cancel booking",
     });
   }
 };

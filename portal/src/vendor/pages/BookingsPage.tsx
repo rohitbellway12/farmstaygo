@@ -9,6 +9,12 @@ export default function VendorBookingsPage() {
   const [enabledPaymentMethods, setEnabledPaymentMethods] =
     useState<string[]>(["ONLINE"]);
 
+  const [actionMessage, setActionMessage] =
+    useState<string>("");
+
+  const [refreshTrigger, setRefreshTrigger] =
+    useState(0);
+
   useEffect(() => {
     const loadPaymentMethods = async () => {
       try {
@@ -41,7 +47,13 @@ export default function VendorBookingsPage() {
       `/vendor/bookings/${bookingId}/accept`
     );
 
-    window.location.reload();
+    setActionMessage(
+      `Booking #${bookingId.slice(-8)} accepted successfully.`
+    );
+
+    setRefreshTrigger((prev) => prev + 1);
+
+    setTimeout(() => setActionMessage(""), 3000);
   };
 
   const handleReject = async (
@@ -56,7 +68,26 @@ export default function VendorBookingsPage() {
       { reason: reason || null }
     );
 
-    window.location.reload();
+    setActionMessage(
+      `Booking #${bookingId.slice(-8)} rejected successfully.`
+    );
+
+    setRefreshTrigger((prev) => prev + 1);
+
+    setTimeout(() => setActionMessage(""), 3000);
+  };
+
+  const handleBookingUpdated = (
+    _bookingId: string,
+    updates: { status?: string }
+  ): void => {
+    if (updates.status === "CONFIRMED") {
+      setActionMessage("Booking accepted successfully.");
+    } else if (updates.status === "REJECTED") {
+      setActionMessage("Booking rejected successfully.");
+    }
+
+    setTimeout(() => setActionMessage(""), 3000);
   };
 
   const handlePay = async (
@@ -88,6 +119,11 @@ export default function VendorBookingsPage() {
           </Link>
         </div>
       </section>
+      {actionMessage && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
+          {actionMessage}
+        </div>
+      )}
       <BookingsView
         endpoint="/vendor/bookings"
         title=""
@@ -99,6 +135,8 @@ export default function VendorBookingsPage() {
         onAccept={handleAccept}
         onReject={handleReject}
         onPay={handlePay}
+        onBookingUpdated={handleBookingUpdated}
+        refreshTrigger={refreshTrigger}
       />
     </div>
   );

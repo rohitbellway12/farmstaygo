@@ -25,6 +25,19 @@ interface BookingResponse {
   };
 }
 
+interface BookingQuoteResponse {
+  success: boolean;
+  message: string;
+  data: {
+    estimatedTotal: number;
+    reservationAmount: number | null;
+    currency: string;
+    totalNights: number;
+    roomTypeId?: string;
+    bookingMode: BookingMode;
+  };
+}
+
 interface RazorpayOrderResponse {
   success: boolean;
   sandbox: boolean;
@@ -171,7 +184,7 @@ export default function BookingRequestPanel({
       orderId: string;
       amount: number;
       currency: string;
-      bookingId: string;
+      bookingData: Record<string, unknown>;
     } | null>(null);
 
   const [enabledPaymentMethods, setEnabledPaymentMethods] =
@@ -446,32 +459,26 @@ export default function BookingRequestPanel({
   ]);
 
   const handleRazorpayCheckout = async (
-    bookingId: string,
-    amount: number
+    order: {
+      orderId: string;
+      amount: number;
+      currency: string;
+      keyId: string;
+      sandbox: boolean;
+    },
+    bookingData: Record<string, unknown>
   ) => {
     try {
       setRazorpayPaying(true);
       setMessage("");
       setSuccessMessage("");
 
-      const res = await apiFetch<RazorpayOrderResponse>(
-        `/bookings/${bookingId}/razorpay/order`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({ amount }),
-        }
-      );
-
-      if (res.sandbox) {
+      if (order.sandbox) {
         setSandboxOrderDetails({
-          orderId: res.data.orderId,
-          amount: res.data.amount,
-          currency: res.data.currency,
-          bookingId,
+          orderId: order.orderId,
+          amount: order.amount,
+          currency: order.currency,
+          bookingData,
         });
         setShowSandboxModal(true);
         setRazorpayPaying(false);
@@ -489,27 +496,21 @@ export default function BookingRequestPanel({
       }
 
       const options = {
-        key: res.data.keyId,
-        amount: res.data.amount,
-        currency: res.data.currency,
+        key: order.keyId,
+        amount: order.amount,
+        currency: order.currency,
         name: "FarmStayGo",
-        description: `Booking Reservation #${bookingId.slice(-6)}`,
-        order_id: res.data.orderId,
+        description: `Booking Reservation`,
+        order_id: order.orderId,
         handler: async (response: {
           razorpay_payment_id: string;
           razorpay_order_id: string;
           razorpay_signature: string;
         }) => {
           try {
-            const verifyRes =
-              await apiFetch<{
-                success: boolean;
-                message: string;
-                data: {
-                  confirmed: boolean;
-                };
-              }>(
-                `/bookings/${bookingId}/razorpay/verify`,
+            const createRes =
+              await apiFetch<BookingResponse>(
+                "/bookings",
                 {
                   method: "POST",
                   headers: {
@@ -517,19 +518,22 @@ export default function BookingRequestPanel({
                       "application/json",
                   },
                   body: JSON.stringify({
-                    razorpay_order_id:
-                      response.razorpay_order_id,
-                    razorpay_payment_id:
-                      response.razorpay_payment_id,
-                    razorpay_signature:
-                      response.razorpay_signature,
-                    amount,
+                    ...bookingData,
+                    paymentVerification: {
+                      razorpay_order_id:
+                        response.razorpay_order_id,
+                      razorpay_payment_id:
+                        response.razorpay_payment_id,
+                      razorpay_signature:
+                        response.razorpay_signature,
+                      amount: order.amount / 100,
+                    },
                   }),
                 }
               );
 
             setSuccessMessage(
-              verifyRes.message ||
+              createRes.message ||
                 "Payment completed successfully!"
             );
             setMessage("");
@@ -548,7 +552,7 @@ export default function BookingRequestPanel({
           }
         },
         modal: {
-          ondismiss: () => {
+          ondismiss: async () => {
             setRazorpayPaying(false);
           },
         },
@@ -575,14 +579,8 @@ export default function BookingRequestPanel({
       setRazorpayPaying(true);
       setShowSandboxModal(false);
 
-      const verifyRes = await apiFetch<{
-        success: boolean;
-        message: string;
-        data: {
-          confirmed: boolean;
-        };
-      }>(
-        `/bookings/${sandboxOrderDetails.bookingId}/razorpay/verify`,
+      const createRes = await apiFetch<BookingResponse>(
+        "/bookings",
         {
           method: "POST",
           headers: {
@@ -590,18 +588,24 @@ export default function BookingRequestPanel({
               "application/json",
           },
           body: JSON.stringify({
-            razorpay_order_id:
-              sandboxOrderDetails.orderId,
-            razorpay_payment_id: `pay_sandbox_${Date.now()}`,
-            razorpay_signature: "sandbox_signature",
-            amount: sandboxOrderDetails.amount / 100,
-            sandbox: true,
+            ...sandboxOrderDetails.bookingData,
+            paymentVerification: {
+              razorpay_order_id:
+                sandboxOrderDetails.orderId,
+              razorpay_payment_id: `pay_sandbox_${Date.now()}`,
+              razorpay_signature:
+                "sandbox_signature",
+              amount:
+                sandboxOrderDetails.amount /
+                100,
+              sandbox: true,
+            },
           }),
         }
       );
 
       setSuccessMessage(
-        verifyRes.message ||
+        createRes.message ||
           "Sandbox payment recorded successfully!"
       );
       setMessage("");
@@ -643,71 +647,144 @@ export default function BookingRequestPanel({
     try {
       setSubmitting(true);
 
-      const response =
-        await apiFetch<BookingResponse>(
-          "/bookings",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-            body: JSON.stringify({
-              propertyId:
-                property.publicId,
-              bookingMode,
-              roomTypeId:
-                bookingMode ===
-                "ROOM_WISE"
-                  ? roomTypeId
-                  : undefined,
-              checkIn,
-              checkOut,
-              guests: Number(guests),
-              rooms:
-                bookingMode ===
-                "ROOM_WISE"
-                  ? Number(rooms)
-                  : 1,
-              specialRequest,
-              paymentMethod:
-                selectedPaymentMethod,
-            }),
-          }
-        );
-
-      const depositAmount =
-        response.data.reservationAmount &&
-        Number(response.data.reservationAmount) > 0
-          ? Number(response.data.reservationAmount)
-          : null;
+      const bookingData = {
+        propertyId: property.publicId,
+        bookingMode,
+        roomTypeId:
+          bookingMode ===
+          "ROOM_WISE"
+            ? roomTypeId
+            : undefined,
+        checkIn,
+        checkOut,
+        guests: Number(guests),
+        rooms:
+          bookingMode ===
+          "ROOM_WISE"
+            ? Number(rooms)
+            : 1,
+        specialRequest,
+        paymentMethod:
+          selectedPaymentMethod,
+      };
 
       if (
-        depositAmount &&
         selectedPaymentMethod === "ONLINE"
       ) {
-        await handleRazorpayCheckout(
-          response.data.id,
-          depositAmount
-        );
-      } else if (
-        depositAmount &&
-        selectedPaymentMethod === "BANK_TRANSFER"
-      ) {
-        setPendingBookingId(response.data.id);
-        setBankTransferAmount(
-          String(depositAmount)
-        );
-        setBankTransferTransactionId("");
-        setBankTransferError("");
-        setBankTransferSuccess("");
-        void loadVendorBankDetails();
-        setShowBankTransferModal(true);
+        const quote =
+          await apiFetch<BookingQuoteResponse>(
+            "/bookings/calculate",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body: JSON.stringify(
+                bookingData
+              ),
+            }
+          );
+
+        const depositAmount =
+          quote.data.reservationAmount &&
+          Number(quote.data.reservationAmount) >
+            0
+            ? Number(quote.data.reservationAmount)
+            : null;
+
+        if (depositAmount) {
+          const order =
+            await apiFetch<RazorpayOrderResponse>(
+              "/bookings/payments/razorpay/order",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type":
+                    "application/json",
+                },
+                body: JSON.stringify({
+                  amount: depositAmount,
+                }),
+              }
+            );
+
+          await handleRazorpayCheckout(
+            {
+              orderId: order.data.orderId,
+              amount: order.data.amount,
+              currency: order.data.currency,
+              keyId: order.data.keyId,
+              sandbox: order.sandbox,
+            },
+            bookingData
+          );
+        } else {
+          const response =
+            await apiFetch<BookingResponse>(
+              "/bookings",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type":
+                    "application/json",
+                },
+                body: JSON.stringify(
+                  bookingData
+                ),
+              }
+            );
+
+          setSuccessMessage(
+            response.message ||
+              "Booking request submitted successfully."
+          );
+        }
       } else {
-        setSuccessMessage(
-          response.message ||
-            "Booking request submitted successfully."
-        );
+        const response =
+          await apiFetch<BookingResponse>(
+            "/bookings",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body: JSON.stringify(
+                bookingData
+              ),
+            }
+          );
+
+        const depositAmount =
+          response.data.reservationAmount &&
+          Number(response.data.reservationAmount) >
+            0
+            ? Number(response.data.reservationAmount)
+            : null;
+
+        if (
+          depositAmount &&
+          selectedPaymentMethod ===
+            "BANK_TRANSFER"
+        ) {
+          setPendingBookingId(
+            response.data.id
+          );
+          setBankTransferAmount(
+            String(depositAmount)
+          );
+          setBankTransferTransactionId("");
+          setBankTransferError("");
+          setBankTransferSuccess("");
+          void loadVendorBankDetails();
+          setShowBankTransferModal(true);
+        } else {
+          setSuccessMessage(
+            response.message ||
+              "Booking request submitted successfully."
+          );
+        }
       }
     } catch (error) {
       setMessage(

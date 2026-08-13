@@ -28,7 +28,7 @@ import type {
 let cachedRazorpayInstance: any = null;
 let cachedKeyId = "";
 
-const getRazorpaySettings = async (): Promise<{
+export const getRazorpaySettings = async (): Promise<{
   keyId: string;
   keySecret: string;
 }> => {
@@ -229,6 +229,110 @@ export const createRazorpayOrder = async (
     });
   }
 };
+
+/*
+|--------------------------------------------------------------------------
+| POST /payments/razorpay/order
+| Creates a standalone Razorpay order without an existing booking
+|--------------------------------------------------------------------------
+*/
+
+export const createStandaloneRazorpayOrder =
+  async (
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<Response> => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+      }
+
+      const body = req.body as {
+        amount?: unknown;
+      };
+
+      const amount =
+        typeof body.amount === "number"
+          ? body.amount
+          : Number(body.amount);
+
+      if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+      ) {
+        return res.status(422).json({
+          success: false,
+          message:
+            "A valid payment amount is required",
+        });
+      }
+
+      const amountInPaise = Math.round(
+        amount * 100
+      );
+      const currency = "INR";
+
+      const razorpayInstance =
+        await getRazorpayInstance();
+      const razorpayEnabled =
+        !!razorpayInstance;
+
+      if (!razorpayEnabled) {
+        return res.status(200).json({
+          success: true,
+          sandbox: true,
+          message:
+            "Razorpay is not configured — using sandbox mode",
+          data: {
+            orderId: `sandbox_order_${Date.now()}`,
+            amount: amountInPaise,
+            currency,
+            keyId: "",
+          },
+        });
+      }
+
+      const order =
+        await razorpayInstance.orders.create(
+          {
+            amount: amountInPaise,
+            currency,
+            receipt: `payment_${req.user.id}_${Date.now()}`,
+            notes: {
+              userId: String(req.user.id),
+            },
+          }
+        );
+
+      const { keyId } =
+        await getRazorpaySettings();
+
+      return res.status(200).json({
+        success: true,
+        sandbox: false,
+        data: {
+          orderId: order.id,
+          amount: Number(order.amount),
+          currency: order.currency,
+          keyId,
+        },
+      });
+    } catch (error) {
+      console.error(
+        "[createStandaloneRazorpayOrder]",
+        error
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Unable to create payment order. Please try again.",
+      });
+    }
+  };
 
 /*
 |--------------------------------------------------------------------------
