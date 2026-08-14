@@ -403,8 +403,10 @@ export default async function Home() {
                     key={item}
                     className="rounded-xl bg-white p-3 text-center shadow-sm ring-1 ring-ink-100"
                   >
-                    <span className="mx-auto grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand-700">
-                      ◇
+                    <span className="mx-auto flex h-9 w-9 items-center justify-center">
+                      <svg viewBox="0 0 24 24" className="h-5 w-5 text-brand-700" fill="currentColor">
+                        <path d="M12 2l10 10-10 10L2 12z" />
+                      </svg>
                     </span>
 
                     <strong className="mt-2 block text-[11px] text-ink-800">
