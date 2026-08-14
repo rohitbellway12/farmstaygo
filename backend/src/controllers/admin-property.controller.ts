@@ -644,6 +644,28 @@ export const getAdminPropertyById =
               },
             },
 
+            ruleAssignments: {
+              include: {
+                rule: {
+                  select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                    description: true,
+                    icon: true,
+                    isActive: true,
+                    sortOrder: true,
+                  },
+                },
+              },
+
+              orderBy: {
+                rule: {
+                  sortOrder: "asc",
+                },
+              },
+            },
+
             roomTypes: {
               orderBy: [
                 {

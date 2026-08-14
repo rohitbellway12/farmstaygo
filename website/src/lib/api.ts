@@ -20,7 +20,9 @@ export async function apiFetch<T>(
 
   const authData =
     typeof window !== "undefined"
-      ? localStorage.getItem("farmstaygo_customer_auth")
+      ? localStorage.getItem("farmstaygo_customer_auth") ||
+        localStorage.getItem("farmstaygo_vendor_auth") ||
+        localStorage.getItem("farmstaygo_admin_auth")
       : null;
   let authHeader: Record<string, string> = {};
   if (authData) {

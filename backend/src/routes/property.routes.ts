@@ -32,6 +32,7 @@ import {
   submitPropertyForApproval,
   updatePropertyAmenities,
   updatePropertyPricing,
+  updatePropertyRules,
 } from "../controllers/property-wizard.controller.js";
 
 import {
@@ -233,6 +234,17 @@ vendorPropertyRoutes.put(
 vendorPropertyRoutes.put(
   "/:id/amenities",
   updatePropertyAmenities
+);
+
+/*
+|--------------------------------------------------------------------------
+| Update Property Rules
+|--------------------------------------------------------------------------
+*/
+
+vendorPropertyRoutes.put(
+  "/:id/rules",
+  updatePropertyRules
 );
 
 /*

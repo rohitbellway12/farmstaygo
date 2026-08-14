@@ -565,6 +565,18 @@ export const getVendorPropertyById = async (
               },
             },
           },
+
+          ruleAssignments: {
+            include: {
+              rule: true,
+            },
+
+            orderBy: {
+              rule: {
+                sortOrder: "asc",
+              },
+            },
+          },
         },
       });
 

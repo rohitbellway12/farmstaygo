@@ -11,6 +11,7 @@ import AdminLoginPage from "../admin/pages/LoginPage";
 import AdminDashboardPage from "../admin/pages/DashboardPage";
 import AdminLayout from "../admin/layouts/AdminLayout";
 import PropertyCategoriesPage from "../admin/pages/PropertyCategoriesPage";
+import PropertyRulesPage from "../admin/pages/PropertyRulesPage";
 import AmenitiesPage from "../admin/pages/AmenitiesPage";
 import PropertyApprovalsPage from "../admin/pages/PropertyApprovalsPage";
 import PropertyApprovalReviewPage from "../admin/pages/PropertyApprovalReviewPage";
@@ -159,6 +160,11 @@ export default function AppRoutes() {
           <Route
   path="property-categories"
   element={<PropertyCategoriesPage />}
+/>
+
+          <Route
+  path="property-rules"
+  element={<PropertyRulesPage />}
 />
 
           <Route

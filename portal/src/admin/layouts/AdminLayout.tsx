@@ -164,6 +164,23 @@ const menuItems: MenuItem[] = [
 },
 
 {
+  label: "Property Rules",
+  path: "/admin/property-rules",
+  icon: (
+    <svg
+      viewBox="0 0 24 24"
+      className={iconClass}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <path d="M9 11l3 3L22 4" />
+      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+    </svg>
+  ),
+},
+
+{
   label: "Service Cities",
   path: "/admin/service-cities",
   icon: (
@@ -395,6 +412,7 @@ const pageTitles: Record<string, string> = {
   "/admin/vendors": "Vendors",
   "/admin/property-approvals": "Property Approvals",
   "/admin/property-categories": "Property Categories",
+  "/admin/property-rules": "Property Rules",
   "/admin/amenities": "Amenities",
   "/admin/service-cities": "Service Cities",
   "/admin/properties": "Properties",
@@ -428,6 +446,7 @@ const menuGroups = [
       "/admin/property-approvals",
       "/admin/properties",
       "/admin/property-categories",
+      "/admin/property-rules",
       "/admin/amenities",
       "/admin/service-cities",
     ],

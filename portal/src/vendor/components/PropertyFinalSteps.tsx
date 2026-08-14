@@ -57,6 +57,16 @@ interface PropertyAmenity {
   amenity: Amenity;
 }
 
+interface PropertyRule {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon: string | null;
+  isActive: boolean;
+  sortOrder: number;
+}
+
 interface PropertyDetails {
   id: string;
   title: string;
@@ -99,6 +109,7 @@ interface PropertyDetails {
 
   images: PropertyImage[];
   amenities: PropertyAmenity[];
+  rules: PropertyRule[];
 }
 
 interface PricingFormState {
@@ -154,13 +165,23 @@ interface SubmitErrorResponse {
   };
 }
 
+interface PropertyRule {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon: string | null;
+  isActive: boolean;
+  sortOrder: number;
+}
+
 interface PropertyFinalStepsProps {
   propertyId: string;
-  activeStep: 4 | 5 | 6;
+  activeStep: 4 | 5 | 6 | 7;
   editingBlocked: boolean;
 
   onChangeStep: (
-    step: 1 | 2 | 3 | 4 | 5 | 6
+    step: 1 | 2 | 3 | 4 | 5 | 6 | 7
   ) => void;
 
   onStatusChange: (
@@ -333,6 +354,13 @@ export default function PropertyFinalSteps({
   const [selectedAmenityIds, setSelectedAmenityIds] =
     useState<string[]>([]);
 
+  const [rules, setRules] = useState<
+    PropertyRule[]
+  >([]);
+
+  const [selectedRuleIds, setSelectedRuleIds] =
+    useState<string[]>([]);
+
   const [pricingForm, setPricingForm] =
     useState<PricingFormState>(
       emptyPricingForm
@@ -380,6 +408,7 @@ export default function PropertyFinalSteps({
       const [
         propertyResponse,
         amenityResponse,
+        ruleResponse,
       ] = await Promise.all([
         api.get<ApiResponse<PropertyDetails>>(
           `/vendor/properties/${propertyId}`
@@ -387,6 +416,10 @@ export default function PropertyFinalSteps({
 
         api.get<ApiResponse<Amenity[]>>(
           "/vendor/amenities"
+        ),
+
+        api.get<ApiResponse<PropertyRule[]>>(
+          "/vendor/property-rules"
         ),
       ]);
 
@@ -403,6 +436,14 @@ export default function PropertyFinalSteps({
         loadedProperty.amenities.map(
           (item) => item.amenityId
         )
+      );
+
+      setRules(ruleResponse.data.data);
+
+      setSelectedRuleIds(
+        loadedProperty.rules?.map(
+          (item) => item.id
+        ) || []
       );
 
       setPricingForm({
@@ -773,6 +814,60 @@ export default function PropertyFinalSteps({
     }
   };
 
+  const toggleRule = (ruleId: string) => {
+    setSelectedRuleIds((currentIds) =>
+      currentIds.includes(ruleId)
+        ? currentIds.filter((id) => id !== ruleId)
+        : [...currentIds, ruleId]
+    );
+
+    setPageError("");
+    setSuccessMessage("");
+  };
+
+  const handleRulesSubmit = async () => {
+    if (submitting || editingBlocked) {
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setPageError("");
+      setSuccessMessage("");
+
+      const response = await api.put<
+        ApiResponse<PropertyDetails>
+      >(
+        `/vendor/properties/${propertyId}/rules`,
+        {
+          ruleIds: selectedRuleIds,
+        }
+      );
+
+      setProperty((currentProperty) =>
+        currentProperty
+          ? {
+              ...currentProperty,
+              rules:
+                response.data.data.rules,
+            }
+          : currentProperty
+      );
+
+      setSuccessMessage(
+        "Rules saved successfully."
+      );
+
+      onChangeStep(7);
+    } catch (error) {
+      setPageError(
+        getErrorDetails(error).message
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const filteredAmenities =
     useMemo(() => {
       const searchText =
@@ -891,11 +986,18 @@ export default function PropertyFinalSteps({
           complete:
             selectedAmenityIds.length > 0,
         },
+        {
+          step: 6,
+          title: "Rules",
+          complete:
+            selectedRuleIds.length > 0,
+        },
       ];
     }, [
       property,
       roomTypes,
       selectedAmenityIds,
+      selectedRuleIds,
     ]);
 
   const completedSections =
@@ -1641,9 +1743,119 @@ export default function PropertyFinalSteps({
         </div>
       )}
 
-      {/* Step 6: Review */}
+      {/* Step 6: Rules */}
 
       {activeStep === 6 && (
+        <div className="space-y-5">
+          <section className="rounded-dashboard-large border border-border bg-surface p-5 shadow-dashboard sm:p-6">
+            <p className="text-sm font-bold uppercase tracking-[0.12em] text-primary-700">
+              Property Rules
+            </p>
+
+            <h2 className="mt-1 text-xl font-extrabold text-text-main">
+              Select Stay Policies
+            </h2>
+
+            <p className="mt-1 text-sm text-text-muted">
+              Choose the rules that apply to your property. Guests will see these policies before booking.
+            </p>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {rules.map((rule) => {
+                const selected =
+                  selectedRuleIds.includes(
+                    rule.id
+                  );
+
+                return (
+                  <button
+                    key={rule.id}
+                    type="button"
+                    disabled={editingBlocked}
+                    onClick={() =>
+                      toggleRule(rule.id)
+                    }
+                    className={`flex items-center gap-3 rounded-xl border p-4 text-left transition ${
+                      selected
+                        ? "border-primary-500 bg-primary-50 ring-2 ring-primary-100"
+                        : "border-border bg-surface hover:border-primary-300"
+                    }`}
+                  >
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-surface-soft text-primary-700">
+                      <span className="text-sm font-extrabold">
+                        {rule.name
+                          .split(/\s+/)
+                          .filter(Boolean)
+                          .slice(0, 2)
+                          .map((part) => part[0]?.toUpperCase())
+                          .join("")}
+                      </span>
+                    </span>
+
+                    <span className="min-w-0 flex-1">
+                      <strong className="block text-base text-text-main">
+                        {rule.name}
+                      </strong>
+
+                      {rule.description && (
+                        <span className="mt-1 line-clamp-2 block text-sm text-text-muted">
+                          {rule.description}
+                        </span>
+                      )}
+                    </span>
+
+                    <span
+                      className={`grid h-6 w-6 shrink-0 place-items-center rounded-full border ${
+                        selected
+                          ? "border-primary-700 bg-primary-700 text-white"
+                          : "border-border-strong"
+                      }`}
+                    >
+                      {selected && (
+                        <CheckIcon />
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="sticky bottom-4 z-10 rounded-dashboard-card border border-border bg-surface/95 p-4 shadow-dashboard-lg backdrop-blur">
+            <div className="flex justify-between gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  onChangeStep(5)
+                }
+                className="h-11 rounded-control border border-border px-5 text-sm font-bold"
+              >
+                Previous
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  void handleRulesSubmit()
+                }
+                disabled={
+                  submitting ||
+                  editingBlocked
+                }
+                className="h-11 rounded-control bg-primary-700 px-6 text-sm font-bold text-white disabled:opacity-60"
+              >
+                {submitting
+                  ? "Saving..."
+                  : "Save & Continue"}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* Step 7: Review */}
+
+      {activeStep === 7 && (
         <div className="space-y-5">
           <section className="rounded-dashboard-large border border-border bg-surface p-5 shadow-dashboard sm:p-6">
             <p className="text-sm font-bold uppercase tracking-[0.12em] text-primary-700">
@@ -1689,6 +1901,7 @@ export default function PropertyFinalSteps({
                           | 3
                           | 4
                           | 5
+                          | 6
                       )
                     }
                     className={`rounded-xl border p-4 text-left ${
@@ -1936,7 +2149,7 @@ export default function PropertyFinalSteps({
                 <button
                   type="button"
                   onClick={() =>
-                    onChangeStep(5)
+                    onChangeStep(6)
                   }
                   className="h-11 rounded-control border border-border px-5 text-sm font-bold"
                 >

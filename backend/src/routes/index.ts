@@ -31,6 +31,11 @@ import {
 } from "./amenity.routes.js";
 
 import {
+  adminPropertyRuleRoutes,
+  vendorPropertyRuleRoutes,
+} from "./property-rule.routes.js";
+
+import {
   vendorPropertyRoutes,
 } from "./property.routes.js";
 
@@ -235,6 +240,17 @@ router.use(
 
 /*
 |--------------------------------------------------------------------------
+| Admin Property Rule Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/admin/property-rules",
+  adminPropertyRuleRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
 | Admin Property Approval Routes
 |--------------------------------------------------------------------------
 */
@@ -362,6 +378,17 @@ router.use(
 router.use(
   "/vendor/amenities",
   vendorAmenityRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
+| Vendor Property Rule Routes
+|--------------------------------------------------------------------------
+*/
+
+router.use(
+  "/vendor/property-rules",
+  vendorPropertyRuleRoutes
 );
 
 /*

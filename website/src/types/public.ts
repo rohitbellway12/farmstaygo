@@ -108,6 +108,8 @@ export interface PublicPropertyCard {
   imageCount: number;
   amenityCount: number;
   roomTypeCount: number;
+  ruleCount: number;
+  rules: PublicPropertyRule[];
 
   availability: {
     checked: boolean;
@@ -218,6 +220,15 @@ export interface PublicAmenity {
   group: string;
 }
 
+export interface PublicPropertyRule {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon: string | null;
+  sortOrder: number;
+}
+
 export interface PublicRoomType {
   id: string;
   name: string;
@@ -290,6 +301,7 @@ export interface PublicPropertyDetail
 
   images: PublicImage[];
   amenities: PublicAmenity[];
+  rules: PublicPropertyRule[];
   roomTypes: PublicRoomType[];
 
   availability: PublicPropertyCard["availability"] & {

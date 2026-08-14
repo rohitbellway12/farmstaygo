@@ -434,6 +434,51 @@ export default async function PropertyDetailsPage({
             </div>
           </section>
 
+          {property.rules.length > 0 && (
+            <section>
+              <div className="flex flex-wrap items-end justify-between gap-3 border-b border-ink-100 pb-3">
+                <div>
+                  <h2 className="text-2xl font-extrabold text-ink-900">
+                    House Rules
+                  </h2>
+                  <p className="mt-1 text-sm text-ink-500">
+                    Policies and guidelines for this stay
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {property.rules.map((rule) => (
+                  <div
+                    key={rule.id}
+                    className="flex min-h-[76px] items-center gap-3 rounded-lg border border-ink-100 bg-white p-4 shadow-[0_8px_20px_rgba(27,58,39,0.05)]"
+                  >
+                    <DetailIcon>
+                      <span className="text-xs font-extrabold">
+                        {rule.name
+                          .split(/\s+/)
+                          .filter(Boolean)
+                          .slice(0, 2)
+                          .map((part) => part[0]?.toUpperCase())
+                          .join("")}
+                      </span>
+                    </DetailIcon>
+                    <div className="min-w-0">
+                      <span className="block truncate font-bold text-ink-800">
+                        {rule.name}
+                      </span>
+                      {rule.description && (
+                        <span className="mt-0.5 block text-xs font-semibold text-ink-500">
+                          {rule.description}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {property.roomTypes.length > 0 && (
             <section>
               <h2 className="text-2xl font-extrabold text-ink-900">

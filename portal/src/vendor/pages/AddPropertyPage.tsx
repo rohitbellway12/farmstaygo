@@ -327,6 +327,11 @@ const wizardSteps = [
   },
   {
     number: 6,
+    title: "Rules",
+    description: "Stay policies",
+  },
+  {
+    number: 7,
     title: "Review",
     description: "Submit for approval",
   },
@@ -850,7 +855,7 @@ setLocationSaved(
 */
 
 const changeStep = (
-  step: 1 | 2 | 3 | 4 | 5 | 6
+  step: 1 | 2 | 3 | 4 | 5 | 6 | 7
 ) => {
   if (step === 2 && !propertyId) {
     setPageError(
@@ -3733,10 +3738,10 @@ const handleMovePropertyImage =
 
 {resolvedPropertyId &&
 activeStep >= 4 &&
-activeStep <= 6 ? (
+activeStep <= 7 ? (
   <PropertyFinalSteps
     propertyId={resolvedPropertyId}
-    activeStep={activeStep as 4 | 5 | 6}
+    activeStep={activeStep as 4 | 5 | 6 | 7}
     editingBlocked={editingBlocked}
     onChangeStep={changeStep}
     onStatusChange={(status) => {

@@ -394,6 +394,8 @@ export const ModelName = {
   Amenity: 'Amenity',
   Property: 'Property',
   PropertyAmenity: 'PropertyAmenity',
+  PropertyRule: 'PropertyRule',
+  PropertyRuleAssignment: 'PropertyRuleAssignment',
   PropertyImage: 'PropertyImage',
   RoomType: 'RoomType',
   RoomAmenity: 'RoomAmenity',
@@ -424,7 +426,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "vendor" | "vendorCommission" | "propertyCategory" | "serviceCity" | "cmsPage" | "blogPost" | "amenity" | "property" | "propertyAmenity" | "propertyImage" | "roomType" | "roomAmenity" | "roomImage" | "propertyAvailabilityBlock" | "roomAvailabilityBlock" | "wishlist" | "booking" | "payment" | "notification" | "contactMessage" | "supportTicket" | "supportTicketReply" | "setting" | "socialLink"
+    modelProps: "user" | "vendor" | "vendorCommission" | "propertyCategory" | "serviceCity" | "cmsPage" | "blogPost" | "amenity" | "property" | "propertyAmenity" | "propertyRule" | "propertyRuleAssignment" | "propertyImage" | "roomType" | "roomAmenity" | "roomImage" | "propertyAvailabilityBlock" | "roomAvailabilityBlock" | "wishlist" | "booking" | "payment" | "notification" | "contactMessage" | "supportTicket" | "supportTicketReply" | "setting" | "socialLink"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1165,6 +1167,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.PropertyAmenityCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.PropertyAmenityCountAggregateOutputType> | number
+        }
+      }
+    }
+    PropertyRule: {
+      payload: Prisma.$PropertyRulePayload<ExtArgs>
+      fields: Prisma.PropertyRuleFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PropertyRuleFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRulePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PropertyRuleFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRulePayload>
+        }
+        findFirst: {
+          args: Prisma.PropertyRuleFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRulePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PropertyRuleFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRulePayload>
+        }
+        findMany: {
+          args: Prisma.PropertyRuleFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRulePayload>[]
+        }
+        create: {
+          args: Prisma.PropertyRuleCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRulePayload>
+        }
+        createMany: {
+          args: Prisma.PropertyRuleCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PropertyRuleCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRulePayload>[]
+        }
+        delete: {
+          args: Prisma.PropertyRuleDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRulePayload>
+        }
+        update: {
+          args: Prisma.PropertyRuleUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRulePayload>
+        }
+        deleteMany: {
+          args: Prisma.PropertyRuleDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PropertyRuleUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PropertyRuleUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRulePayload>[]
+        }
+        upsert: {
+          args: Prisma.PropertyRuleUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRulePayload>
+        }
+        aggregate: {
+          args: Prisma.PropertyRuleAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePropertyRule>
+        }
+        groupBy: {
+          args: Prisma.PropertyRuleGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PropertyRuleGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PropertyRuleCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PropertyRuleCountAggregateOutputType> | number
+        }
+      }
+    }
+    PropertyRuleAssignment: {
+      payload: Prisma.$PropertyRuleAssignmentPayload<ExtArgs>
+      fields: Prisma.PropertyRuleAssignmentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PropertyRuleAssignmentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRuleAssignmentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PropertyRuleAssignmentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRuleAssignmentPayload>
+        }
+        findFirst: {
+          args: Prisma.PropertyRuleAssignmentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRuleAssignmentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PropertyRuleAssignmentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRuleAssignmentPayload>
+        }
+        findMany: {
+          args: Prisma.PropertyRuleAssignmentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRuleAssignmentPayload>[]
+        }
+        create: {
+          args: Prisma.PropertyRuleAssignmentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRuleAssignmentPayload>
+        }
+        createMany: {
+          args: Prisma.PropertyRuleAssignmentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PropertyRuleAssignmentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRuleAssignmentPayload>[]
+        }
+        delete: {
+          args: Prisma.PropertyRuleAssignmentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRuleAssignmentPayload>
+        }
+        update: {
+          args: Prisma.PropertyRuleAssignmentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRuleAssignmentPayload>
+        }
+        deleteMany: {
+          args: Prisma.PropertyRuleAssignmentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PropertyRuleAssignmentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PropertyRuleAssignmentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRuleAssignmentPayload>[]
+        }
+        upsert: {
+          args: Prisma.PropertyRuleAssignmentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropertyRuleAssignmentPayload>
+        }
+        aggregate: {
+          args: Prisma.PropertyRuleAssignmentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePropertyRuleAssignment>
+        }
+        groupBy: {
+          args: Prisma.PropertyRuleAssignmentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PropertyRuleAssignmentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PropertyRuleAssignmentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PropertyRuleAssignmentCountAggregateOutputType> | number
         }
       }
     }
@@ -2522,6 +2672,30 @@ export const PropertyAmenityScalarFieldEnum = {
 export type PropertyAmenityScalarFieldEnum = (typeof PropertyAmenityScalarFieldEnum)[keyof typeof PropertyAmenityScalarFieldEnum]
 
 
+export const PropertyRuleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  description: 'description',
+  icon: 'icon',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PropertyRuleScalarFieldEnum = (typeof PropertyRuleScalarFieldEnum)[keyof typeof PropertyRuleScalarFieldEnum]
+
+
+export const PropertyRuleAssignmentScalarFieldEnum = {
+  propertyId: 'propertyId',
+  ruleId: 'ruleId',
+  createdAt: 'createdAt'
+} as const
+
+export type PropertyRuleAssignmentScalarFieldEnum = (typeof PropertyRuleAssignmentScalarFieldEnum)[keyof typeof PropertyRuleAssignmentScalarFieldEnum]
+
+
 export const PropertyImageScalarFieldEnum = {
   id: 'id',
   propertyId: 'propertyId',
@@ -3213,6 +3387,8 @@ export type GlobalOmitConfig = {
   amenity?: Prisma.AmenityOmit
   property?: Prisma.PropertyOmit
   propertyAmenity?: Prisma.PropertyAmenityOmit
+  propertyRule?: Prisma.PropertyRuleOmit
+  propertyRuleAssignment?: Prisma.PropertyRuleAssignmentOmit
   propertyImage?: Prisma.PropertyImageOmit
   roomType?: Prisma.RoomTypeOmit
   roomAmenity?: Prisma.RoomAmenityOmit

@@ -68,6 +68,16 @@ export type Property = Prisma.PropertyModel
  */
 export type PropertyAmenity = Prisma.PropertyAmenityModel
 /**
+ * Model PropertyRule
+ * 
+ */
+export type PropertyRule = Prisma.PropertyRuleModel
+/**
+ * Model PropertyRuleAssignment
+ * 
+ */
+export type PropertyRuleAssignment = Prisma.PropertyRuleAssignmentModel
+/**
  * Model PropertyImage
  * 
  */

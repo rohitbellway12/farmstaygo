@@ -32,6 +32,10 @@ interface PropertyAmenitiesBody {
   amenityIds?: unknown;
 }
 
+interface PropertyRulesBody {
+  ruleIds?: unknown;
+}
+
 interface MissingSection {
   step: number;
   title: string;
@@ -558,6 +562,215 @@ export const updatePropertyAmenities =
         success: false,
         message:
           "Unable to update property amenities",
+      });
+    }
+  };
+
+/*
+|--------------------------------------------------------------------------
+| Vendor: Update Property Rules
+|--------------------------------------------------------------------------
+*/
+
+export const updatePropertyRules =
+  async (
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<Response> => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+      }
+
+      const propertyId = String(
+        req.params.id || ""
+      ).trim();
+
+      if (!propertyId) {
+        return res.status(422).json({
+          success: false,
+          message:
+            "Property ID is required",
+        });
+      }
+
+      const property =
+        await getVendorOwnedProperty(
+          req.user.id,
+          propertyId
+        );
+
+      if (!property) {
+        return res.status(404).json({
+          success: false,
+          message: "Property not found",
+        });
+      }
+
+      if (
+        propertyEditingIsBlocked(
+          property.status
+        )
+      ) {
+        return res.status(409).json({
+          success: false,
+          message:
+            "This property cannot currently be edited",
+        });
+      }
+
+      const body =
+        req.body as PropertyRulesBody;
+
+      if (
+        !Array.isArray(body.ruleIds)
+      ) {
+        return res.status(422).json({
+          success: false,
+          message:
+            "Please select property rules",
+          errors: {
+            ruleIds:
+              "Rule IDs must be provided as an array.",
+          },
+        });
+      }
+
+      const ruleIds =
+        body.ruleIds
+          .filter(
+            (ruleId): ruleId is string =>
+              typeof ruleId ===
+                "string" &&
+              Boolean(ruleId.trim())
+          )
+          .map((ruleId) =>
+            ruleId.trim()
+          );
+
+      const uniqueRuleIds = [
+        ...new Set(ruleIds),
+      ];
+
+      if (
+        uniqueRuleIds.length !==
+        ruleIds.length
+      ) {
+        return res.status(422).json({
+          success: false,
+          message:
+            "Duplicate rules are not allowed",
+        });
+      }
+
+      const activeRules =
+        await prisma.propertyRule.findMany({
+          where: {
+            id: {
+              in: uniqueRuleIds,
+            },
+
+            isActive: true,
+          },
+
+          select: {
+            id: true,
+          },
+        });
+
+      if (
+        activeRules.length !==
+        uniqueRuleIds.length
+      ) {
+        return res.status(422).json({
+          success: false,
+          message:
+            "One or more selected rules are unavailable",
+          errors: {
+            ruleIds:
+              "Please select only active rules.",
+          },
+        });
+      }
+
+      const updatedProperty =
+        await prisma.$transaction(
+          async (transaction) => {
+            await transaction.propertyRuleAssignment.deleteMany(
+              {
+                where: {
+                  propertyId,
+                },
+              }
+            );
+
+            await transaction.propertyRuleAssignment.createMany(
+              {
+                data:
+                  uniqueRuleIds.map(
+                    (ruleId) => ({
+                      propertyId,
+                      ruleId,
+                    })
+                  ),
+              }
+            );
+
+            return transaction.property.findUnique(
+              {
+                where: {
+                  id: propertyId,
+                },
+
+                include: {
+                  amenities: {
+                    include: {
+                      amenity: true,
+                    },
+
+                    orderBy: {
+                      amenity: {
+                        sortOrder: "asc",
+                      },
+                    },
+                  },
+
+                  ruleAssignments: {
+                    include: {
+                      rule: true,
+                    },
+
+                    orderBy: {
+                      rule: {
+                        sortOrder: "asc",
+                      },
+                    },
+                  },
+                },
+              }
+            );
+          }
+        );
+
+      return res.status(200).json({
+        success: true,
+        message:
+          "Property rules saved successfully",
+        data: updatedProperty,
+      });
+    } catch (error) {
+      console.error(
+        "Update property rules error:",
+        error
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Unable to update property rules",
       });
     }
   };

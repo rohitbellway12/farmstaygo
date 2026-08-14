@@ -131,6 +131,33 @@ const publicPropertyInclude = {
     },
   },
 
+  ruleAssignments: {
+    where: {
+      rule: {
+        isActive: true,
+      },
+    },
+
+    orderBy: {
+      rule: {
+        sortOrder: "asc",
+      },
+    },
+
+    include: {
+      rule: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          icon: true,
+          sortOrder: true,
+        },
+      },
+    },
+  },
+
   roomTypes: {
     where: {
       isActive: true,
@@ -2236,10 +2263,18 @@ const mapPublicPropertyCard = (
     amenityCount:
       property.amenities.length,
 
+    ruleCount:
+      property.ruleAssignments.length,
+
     roomTypeCount:
       property.roomTypes.filter(
         roomIsPublicReady
       ).length,
+
+    rules:
+      property.ruleAssignments.map(
+        (assignment) => assignment.rule
+      ),
 
     availability,
 
@@ -2406,6 +2441,11 @@ const mapPublicPropertyDetail = (
     amenities:
       property.amenities.map(
         mapAmenity
+      ),
+
+    rules:
+      property.ruleAssignments.map(
+        (assignment) => assignment.rule
       ),
 
     roomTypes:

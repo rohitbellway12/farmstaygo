@@ -61,6 +61,8 @@ export const ModelName = {
   Amenity: 'Amenity',
   Property: 'Property',
   PropertyAmenity: 'PropertyAmenity',
+  PropertyRule: 'PropertyRule',
+  PropertyRuleAssignment: 'PropertyRuleAssignment',
   PropertyImage: 'PropertyImage',
   RoomType: 'RoomType',
   RoomAmenity: 'RoomAmenity',
@@ -297,6 +299,30 @@ export const PropertyAmenityScalarFieldEnum = {
 } as const
 
 export type PropertyAmenityScalarFieldEnum = (typeof PropertyAmenityScalarFieldEnum)[keyof typeof PropertyAmenityScalarFieldEnum]
+
+
+export const PropertyRuleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  description: 'description',
+  icon: 'icon',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PropertyRuleScalarFieldEnum = (typeof PropertyRuleScalarFieldEnum)[keyof typeof PropertyRuleScalarFieldEnum]
+
+
+export const PropertyRuleAssignmentScalarFieldEnum = {
+  propertyId: 'propertyId',
+  ruleId: 'ruleId',
+  createdAt: 'createdAt'
+} as const
+
+export type PropertyRuleAssignmentScalarFieldEnum = (typeof PropertyRuleAssignmentScalarFieldEnum)[keyof typeof PropertyRuleAssignmentScalarFieldEnum]
 
 
 export const PropertyImageScalarFieldEnum = {

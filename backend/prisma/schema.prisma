@@ -395,6 +395,7 @@ model Property {
   availabilityBlocks PropertyAvailabilityBlock[]
   bookings           Booking[]
   wishlists          Wishlist[]
+  ruleAssignments    PropertyRuleAssignment[]
 
   @@index([vendorId, status])
   @@index([categoryId, status])
@@ -421,6 +422,44 @@ model PropertyAmenity {
 
   @@id([propertyId, amenityId])
   @@index([amenityId])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Property Rules
+ * |--------------------------------------------------------------------------
+ * |
+ * | Property rules are predefined policies set by the admin that vendors
+ * | can enable per property (e.g. couples allowed, pets allowed, etc.).
+ * |
+ */
+
+model PropertyRule {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  icon        String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assignments PropertyRuleAssignment[]
+
+  @@index([isActive, sortOrder])
+}
+
+model PropertyRuleAssignment {
+  propertyId String
+  ruleId     String
+  createdAt  DateTime @default(now())
+
+  property Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  rule     PropertyRule @relation(fields: [ruleId], references: [id], onDelete: Restrict)
+
+  @@id([propertyId, ruleId])
+  @@index([ruleId])
 }
 
 /**
