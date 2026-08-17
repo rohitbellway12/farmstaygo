@@ -14,6 +14,7 @@ const navigation = [
   { label: "Stays", href: "/properties" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
+  { label: "About", href: "/about" },
   { label: "Support", href: "/support" },
 ];
 

@@ -261,7 +261,7 @@ export default async function Home() {
           </div>
 
           {categories.length > 0 ? (
-            <div className="mt-9 grid grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7">
+            <div className="mt-9 flex flex-wrap justify-center gap-4 sm:gap-5">
               {categories
                 .slice(0, 7)
                 .map((category) => {
@@ -274,7 +274,7 @@ export default async function Home() {
                     <Link
                       key={category.id}
                       href={`/properties?category=${category.slug}`}
-                      className="group text-center"
+                      className="group w-[48%] text-center sm:w-[30%] lg:w-[19%] xl:w-[13%]"
                     >
                       <span className="mx-auto grid h-20 w-20 place-items-center overflow-hidden rounded-full bg-brand-50 text-brand-700 ring-1 ring-brand-100 transition group-hover:-translate-y-1 group-hover:bg-brand-100">
                         {imageUrl ? (
