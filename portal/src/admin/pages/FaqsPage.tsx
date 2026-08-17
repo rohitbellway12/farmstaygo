@@ -4,7 +4,6 @@ import {
   useEffect,
   useMemo,
   useState,
-  type ChangeEvent,
   type FormEvent,
 } from "react";
 
@@ -42,7 +41,7 @@ interface ApiErrorResponse {
 interface FaqFormState {
   question: string;
   answer: string;
-  category: string;
+  category: string | null;
   isActive: boolean;
   sortOrder: string;
 }
@@ -110,23 +109,6 @@ const getApiErrorMessage = (
 | Icons
 |--------------------------------------------------------------------------
 */
-
-function FaqPageIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-6 w-6"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <path d="M9 9h.01" />
-      <path d="M15 9h.01" />
-      <path d="M8 14a4 4 0 0 0 8 0" />
-      <path d="M12 18h.01" />
-    </svg>
-  );
-}
 
 function SearchIcon() {
   return (
@@ -235,8 +217,16 @@ const getFaqs = async (): Promise<Faq[]> => {
   return response.data.data;
 };
 
+interface FaqPayload {
+  question: string;
+  answer: string;
+  category: string | null;
+  isActive: boolean;
+  sortOrder: number;
+}
+
 const createFaq = async (
-  payload: FaqFormState
+  payload: FaqPayload
 ): Promise<Faq> => {
   const response = await api.post<{
     success: boolean;
@@ -247,7 +237,7 @@ const createFaq = async (
 
 const updateFaq = async (
   id: string,
-  payload: FaqFormState
+  payload: FaqPayload
 ): Promise<Faq> => {
   const response = await api.put<{
     success: boolean;
@@ -421,7 +411,9 @@ export default function FaqsPage() {
       const payload = {
         question: form.question.trim(),
         answer: form.answer.trim(),
-        category: form.category.trim() || null,
+        category: form.category
+          ? form.category.trim()
+          : null,
         isActive: form.isActive,
         sortOrder: Number(form.sortOrder) || 0,
       };
@@ -630,7 +622,7 @@ export default function FaqsPage() {
               </label>
               <input
                 type="text"
-                value={form.category}
+                value={form.category ?? ""}
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,

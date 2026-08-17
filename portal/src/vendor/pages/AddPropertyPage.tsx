@@ -598,9 +598,6 @@ const activeStep:
     mapApiKey: null,
   });
 
-  const [mapSettingsLoading, setMapSettingsLoading] =
-    useState(true);
-
 const [propertyImages, setPropertyImages] =
   useState<PropertyImage[]>([]);
 
@@ -865,7 +862,6 @@ setLocationSaved(
 
     const loadMapSettings = async () => {
       try {
-        setMapSettingsLoading(true);
         const response = await api.get<{
           success: boolean;
           data: {
@@ -888,10 +884,6 @@ setLocationSaved(
             mapProvider: "OPENSTREETMAP",
             mapApiKey: null,
           });
-        }
-      } finally {
-        if (!cancelled) {
-          setMapSettingsLoading(false);
         }
       }
     };

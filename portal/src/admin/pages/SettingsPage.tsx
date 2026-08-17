@@ -1141,7 +1141,7 @@ export default function SettingsPage() {
                 Map API Key
                 <input
                   type="text"
-                  value={mapForm.mapApiKey}
+                  value={mapForm.mapApiKey ?? ""}
                   onChange={(e) =>
                     setMapForm(
                       (current) => ({
