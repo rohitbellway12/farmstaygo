@@ -22,6 +22,7 @@ import UsersPage from "../admin/pages/UsersPage";
 import AdminPaymentsPage from "../admin/pages/PaymentsPage";
 import AdminCommissionsPage from "../admin/pages/CommissionsPage";
 import ContactMessagesPage from "../admin/pages/ContactMessagesPage";
+import FaqsPage from "../admin/pages/FaqsPage";
 import SupportTicketsPage from "../admin/pages/SupportTicketsPage";
 import SettingsPage from "../admin/pages/SettingsPage";
 import ServiceCitiesPage from "../admin/pages/ServiceCitiesPage";
@@ -201,6 +202,11 @@ export default function AppRoutes() {
           <Route
             path="contact-messages"
             element={<ContactMessagesPage />}
+          />
+
+          <Route
+            path="faqs"
+            element={<FaqsPage />}
           />
 
           <Route

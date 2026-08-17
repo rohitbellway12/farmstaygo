@@ -6,9 +6,14 @@ import {
   apiFetch,
   ApiRequestError,
 } from "@/lib/api";
+import { getAssetUrl } from "@/lib/assets";
 import type {
   PublicContactInfo,
   PublicContactInfoResponse,
+  PublicFaq,
+  PublicFaqsResponse,
+  PublicServiceCity,
+  PublicServiceCitiesResponse,
   ContactMessageResponse,
 } from "@/types/public";
 
@@ -87,6 +92,32 @@ async function getContactInfo(): Promise<PublicContactInfo> {
   }
 }
 
+async function getFaqs(): Promise<PublicFaq[]> {
+  try {
+    const response =
+      await apiFetch<PublicFaqsResponse>(
+        "/public/faqs"
+      );
+
+    return response.data;
+  } catch {
+    return [];
+  }
+}
+
+async function getServiceCities(): Promise<PublicServiceCity[]> {
+  try {
+    const response =
+      await apiFetch<PublicServiceCitiesResponse>(
+        "/public/service-cities"
+      );
+
+    return response.data;
+  } catch {
+    return [];
+  }
+}
+
 interface FormState {
   name: string;
   email: string;
@@ -110,6 +141,13 @@ export default function ContactPage() {
       phone: null,
       socialLinks: [],
     });
+  const [faqs, setFaqs] = useState<PublicFaq[]>([]);
+  const [openFaqId, setOpenFaqId] = useState<
+    string | null
+  >(null);
+  const [serviceCities, setServiceCities] = useState<
+    PublicServiceCity[]
+  >([]);
   const [form, setForm] = useState<FormState>({
     name: "",
     email: "",
@@ -135,7 +173,25 @@ export default function ContactPage() {
       }
     };
 
+    const loadFaqs = async () => {
+      const data = await getFaqs();
+
+      if (!cancelled) {
+        setFaqs(data);
+      }
+    };
+
+    const loadServiceCities = async () => {
+      const cities = await getServiceCities();
+
+      if (!cancelled) {
+        setServiceCities(cities);
+      }
+    };
+
     void loadContactInfo();
+    void loadFaqs();
+    void loadServiceCities();
 
     return () => {
       cancelled = true;
@@ -169,6 +225,12 @@ export default function ContactPage() {
     }
 
     return newErrors;
+  };
+
+  const toggleFaq = (id: string) => {
+    setOpenFaqId((current) =>
+      current === id ? null : id
+    );
   };
 
   const handleSubmit = async (
@@ -224,92 +286,127 @@ export default function ContactPage() {
 
   return (
     <div className="section-spacing">
-      <div className="site-container">
-        <div className="mx-auto max-w-5xl">
-          <div className="text-center">
-            <h1 className="text-3xl font-extrabold tracking-[-0.035em] text-ink-900 sm:text-4xl">
-              Contact Us
-            </h1>
-
-            <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-ink-500 sm:text-base">
-              Have a question, feedback, or need
-              assistance? Fill out the form below and
-              our team will get back to you as soon as
-              possible.
-            </p>
+      <section className="bg-brand-700">
+        <div className="site-container py-10 text-center text-white sm:py-14">
+          <h1 className="text-3xl font-extrabold tracking-[-0.035em] sm:text-4xl lg:text-5xl">
+            Contact FarmStayGo
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/80 sm:text-base">
+            Let&apos;s plan your perfect getaway
+          </p>
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-white/90 sm:text-base">
+            Have a question, need help choosing a stay,
+            or want to list your property with
+            FarmStayGo? We&apos;re here to help.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <a
+              href="#contact-form"
+              className="inline-flex h-12 items-center justify-center rounded-lg bg-white px-8 text-sm font-extrabold text-brand-700 transition hover:bg-brand-50"
+            >
+              Send Message
+            </a>
+            <a
+              href="#faq-section"
+              className="inline-flex h-12 items-center justify-center rounded-lg border border-white/40 px-8 text-sm font-extrabold text-white transition hover:bg-white/10"
+            >
+              Read FAQs
+            </a>
           </div>
+        </div>
+      </section>
 
-          <div className="mt-12 grid gap-10 lg:grid-cols-3">
-            <div className="lg:col-span-1 space-y-8">
-              {contactInfo.email && (
-                <div className="flex gap-4">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
-                    <MailIcon />
-                  </span>
-                  <div>
-                    <h3 className="text-xs font-extrabold uppercase tracking-[0.16em] text-ink-500">
-                      Email
-                    </h3>
-                    <p className="mt-1 text-sm font-semibold text-ink-800">
-                      {contactInfo.email}
-                    </p>
-                  </div>
+      <div className="site-container">
+        <div className="mt-12 grid gap-10 lg:grid-cols-3">
+            <div className="lg:col-span-1">
+              <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
+                <h2 className="text-lg font-extrabold text-ink-900">
+                  Contact Information
+                </h2>
+                <p className="mt-1 text-sm text-ink-500">
+                  Reach us directly through any of these channels.
+                </p>
+
+                <div className="mt-6 space-y-5">
+                  {contactInfo.email && (
+                    <div className="flex gap-4">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
+                        <MailIcon />
+                      </span>
+                      <div>
+                        <h3 className="text-xs font-extrabold uppercase tracking-[0.16em] text-ink-500">
+                          Email
+                        </h3>
+                        <p className="mt-1 text-sm font-semibold text-ink-800">
+                          {contactInfo.email}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {contactInfo.phone && (
+                    <div className="flex gap-4">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
+                        <PhoneIcon />
+                      </span>
+                      <div>
+                        <h3 className="text-xs font-extrabold uppercase tracking-[0.16em] text-ink-500">
+                          Phone
+                        </h3>
+                        <p className="mt-1 text-sm font-semibold text-ink-800">
+                          {contactInfo.phone}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {contactInfo.socialLinks &&
+                    contactInfo.socialLinks.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-extrabold uppercase tracking-[0.16em] text-ink-500">
+                        Follow Us
+                      </h3>
+
+                      <div className="mt-3 flex flex-wrap gap-3">
+                        {contactInfo.socialLinks.map(
+                          (link) => {
+                            const Icon =
+                              socialIcons[
+                                link.platform
+                                  .toLowerCase()
+                              ] || socialIcons.other;
+
+                            return (
+                              <a
+                                key={link.id}
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="grid h-10 w-10 place-items-center rounded-full bg-brand-50 text-brand-700 transition hover:bg-brand-100"
+                                title={link.platform}
+                              >
+                                <Icon />
+                              </a>
+                            );
+                          }
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-
-              {contactInfo.phone && (
-                <div className="flex gap-4">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
-                    <PhoneIcon />
-                  </span>
-                  <div>
-                    <h3 className="text-xs font-extrabold uppercase tracking-[0.16em] text-ink-500">
-                      Phone
-                    </h3>
-                    <p className="mt-1 text-sm font-semibold text-ink-800">
-                      {contactInfo.phone}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {contactInfo.socialLinks &&
-                contactInfo.socialLinks.length > 0 && (
-                <div>
-                  <h3 className="text-xs font-extrabold uppercase tracking-[0.16em] text-ink-500">
-                    Follow Us
-                  </h3>
-
-                  <div className="mt-3 flex flex-wrap gap-3">
-                    {contactInfo.socialLinks.map(
-                      (link) => {
-                        const Icon =
-                          socialIcons[
-                            link.platform
-                              .toLowerCase()
-                          ] || socialIcons.other;
-
-                        return (
-                          <a
-                            key={link.id}
-                            href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="grid h-10 w-10 place-items-center rounded-full bg-brand-50 text-brand-700 transition hover:bg-brand-100"
-                            title={link.platform}
-                          >
-                            <Icon />
-                          </a>
-                        );
-                      }
-                    )}
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
 
             <div className="lg:col-span-2">
-              <div className="rounded-2xl border border-ink-100 bg-ink-50 p-8 shadow-sm">
+              <div id="contact-form" className="rounded-2xl border border-ink-100 bg-white p-8 shadow-sm">
+                <div className="mb-6">
+                  <h2 className="text-lg font-extrabold text-ink-900">
+                    Send us a Message
+                  </h2>
+                  <p className="mt-1 text-sm text-ink-500">
+                    Fill out the form below and our team will get back to you within 24 hours.
+                  </p>
+                </div>
                 {submitStatus === "success" ? (
                   <div className="text-center">
                     <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-success-soft text-success">
@@ -355,7 +452,7 @@ export default function ContactPage() {
                               name: e.target.value,
                             })
                           }
-                          className={`mt-1 h-12 w-full rounded-lg border bg-white px-4 text-sm text-ink-900 outline-none placeholder:text-ink-400 ${
+                          className={`mt-1 h-12 w-full rounded-lg border bg-surface px-4 text-sm text-ink-900 outline-none placeholder:text-ink-400 ${
                             errors.name
                               ? "border-danger focus:border-danger focus:ring-4 focus:ring-danger/10"
                               : "border-ink-200 focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
@@ -382,7 +479,7 @@ export default function ContactPage() {
                               email: e.target.value,
                             })
                           }
-                          className={`mt-1 h-12 w-full rounded-lg border bg-white px-4 text-sm text-ink-900 outline-none placeholder:text-ink-400 ${
+                          className={`mt-1 h-12 w-full rounded-lg border bg-surface px-4 text-sm text-ink-900 outline-none placeholder:text-ink-400 ${
                             errors.email
                               ? "border-danger focus:border-danger focus:ring-4 focus:ring-danger/10"
                               : "border-ink-200 focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
@@ -409,7 +506,7 @@ export default function ContactPage() {
                               phone: e.target.value,
                             })
                           }
-                          className={`mt-1 h-12 w-full rounded-lg border bg-white px-4 text-sm text-ink-900 outline-none placeholder:text-ink-400 ${
+                          className={`mt-1 h-12 w-full rounded-lg border bg-surface px-4 text-sm text-ink-900 outline-none placeholder:text-ink-400 ${
                             errors.phone
                               ? "border-danger focus:border-danger focus:ring-4 focus:ring-danger/10"
                               : "border-ink-200 focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
@@ -436,7 +533,7 @@ export default function ContactPage() {
                               subject: e.target.value,
                             })
                           }
-                          className={`mt-1 h-12 w-full rounded-lg border bg-white px-4 text-sm text-ink-900 outline-none placeholder:text-ink-400 ${
+                          className={`mt-1 h-12 w-full rounded-lg border bg-surface px-4 text-sm text-ink-900 outline-none placeholder:text-ink-400 ${
                             errors.subject
                               ? "border-danger focus:border-danger focus:ring-4 focus:ring-danger/10"
                               : "border-ink-200 focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
@@ -463,7 +560,7 @@ export default function ContactPage() {
                             })
                           }
                           rows={5}
-                          className={`mt-1 w-full rounded-lg border bg-white px-4 py-3 text-sm text-ink-900 outline-none placeholder:text-ink-400 ${
+                          className={`mt-1 w-full rounded-lg border bg-surface px-4 py-3 text-sm text-ink-900 outline-none placeholder:text-ink-400 ${
                             errors.message
                               ? "border-danger focus:border-danger focus:ring-4 focus:ring-danger/10"
                               : "border-ink-200 focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
@@ -500,8 +597,101 @@ export default function ContactPage() {
               </div>
             </div>
           </div>
+
+          <section className="mt-12 rounded-2xl border border-ink-100 bg-white p-6 shadow-sm sm:p-8">
+            <div className="grid gap-6 lg:grid-cols-2 lg:items-center">
+              <div>
+                <h2 className="text-2xl font-extrabold text-ink-900 sm:text-3xl">
+                  For Property Owners
+                </h2>
+                <p className="mt-3 text-sm leading-7 text-ink-600 sm:text-base">
+                  Have a farmstay or villa? Turn your property
+                  into your next source of income. List your
+                  farmhouse or villa on FarmStayGo and connect
+                  with guests looking for memorable stays and
+                  experiences around{" "}
+                  {serviceCities[0]?.name || "Indore"}.
+                </p>
+                <div className="mt-6">
+                  <a
+                    href="/vendor/register"
+                    className="inline-flex h-12 items-center justify-center rounded-lg bg-brand-700 px-8 text-sm font-extrabold text-white transition hover:bg-brand-800"
+                  >
+                    List Your Property
+                  </a>
+                </div>
+              </div>
+
+              <div className="relative aspect-video overflow-hidden rounded-xl bg-brand-50">
+                <img
+                  src={getAssetUrl("/storage/hero.png")}
+                  alt="FarmStay property"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            </div>
+          </section>
+
+          {faqs.length > 0 && (
+            <section id="faq-section" className="mt-16">
+              <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm sm:p-8">
+                <div className="text-center">
+                  <h2 className="text-2xl font-extrabold text-ink-900 sm:text-3xl">
+                    Frequently Asked Questions
+                  </h2>
+                  <p className="mt-2 text-sm text-ink-500 sm:text-base">
+                    Quick answers to common questions about FarmStayGo
+                  </p>
+                </div>
+
+                <div className="mt-8 space-y-3">
+                  {faqs.map((faq) => {
+                    const isOpen = openFaqId === faq.id;
+
+                    return (
+                      <div
+                        key={faq.id}
+                        className="rounded-xl border border-ink-100 bg-surface-soft transition hover:border-ink-200"
+                      >
+                        <button
+                          type="button"
+                          onClick={() =>
+                            toggleFaq(faq.id)
+                          }
+                          className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6 sm:py-5"
+                        >
+                          <span className="text-sm font-extrabold text-ink-900 sm:text-base">
+                            {faq.question}
+                          </span>
+                          <svg
+                            viewBox="0 0 24 24"
+                            className={`h-5 w-5 shrink-0 text-ink-500 transition-transform ${
+                              isOpen
+                                ? "rotate-180"
+                                : ""
+                            }`}
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M6 9l6 6 6-6" />
+                          </svg>
+                        </button>
+                        {isOpen && (
+                          <div className="border-t border-ink-100 px-5 py-5 sm:px-6">
+                            <p className="text-sm leading-7 text-ink-600 sm:text-base">
+                              {faq.answer}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          )}
         </div>
       </div>
-    </div>
   );
 }

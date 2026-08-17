@@ -119,6 +119,11 @@ import {
   supportTicketRoutes,
 } from "./support-ticket.routes.js";
 
+import {
+  adminFaqRoutes,
+  publicFaqRoutes,
+} from "./faq.routes.js";
+
 const router = Router();
 
 /*
@@ -524,6 +529,16 @@ router.use(
 router.use(
   "/admin",
   adminContactRoutes
+);
+
+router.use(
+  "/public/faqs",
+  publicFaqRoutes
+);
+
+router.use(
+  "/admin/faqs",
+  adminFaqRoutes
 );
 
 router.use(

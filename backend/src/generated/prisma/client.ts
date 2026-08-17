@@ -176,3 +176,8 @@ export type Setting = Prisma.SettingModel
  * 
  */
 export type SocialLink = Prisma.SocialLinkModel
+/**
+ * Model Faq
+ * 
+ */
+export type Faq = Prisma.FaqModel

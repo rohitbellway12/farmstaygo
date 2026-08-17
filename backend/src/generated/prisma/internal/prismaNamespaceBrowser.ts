@@ -77,7 +77,8 @@ export const ModelName = {
   SupportTicket: 'SupportTicket',
   SupportTicketReply: 'SupportTicketReply',
   Setting: 'Setting',
-  SocialLink: 'SocialLink'
+  SocialLink: 'SocialLink',
+  Faq: 'Faq'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -564,6 +565,20 @@ export const SocialLinkScalarFieldEnum = {
 } as const
 
 export type SocialLinkScalarFieldEnum = (typeof SocialLinkScalarFieldEnum)[keyof typeof SocialLinkScalarFieldEnum]
+
+
+export const FaqScalarFieldEnum = {
+  id: 'id',
+  question: 'question',
+  answer: 'answer',
+  category: 'category',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FaqScalarFieldEnum = (typeof FaqScalarFieldEnum)[keyof typeof FaqScalarFieldEnum]
 
 
 export const SortOrder = {

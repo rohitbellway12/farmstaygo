@@ -385,3 +385,17 @@ export interface MapSettingsResponse {
   message: string;
   data: MapSettings;
 }
+
+export interface PublicFaq {
+  id: string;
+  question: string;
+  answer: string;
+  category: string | null;
+  sortOrder: number;
+}
+
+export interface PublicFaqsResponse {
+  success: boolean;
+  message: string;
+  data: PublicFaq[];
+}

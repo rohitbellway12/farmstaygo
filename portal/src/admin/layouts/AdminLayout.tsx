@@ -287,6 +287,24 @@ const menuItems: MenuItem[] = [
     ),
   },
   {
+    label: "FAQs",
+    path: "/admin/faqs",
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        className={iconClass}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      >
+        <path d="M9 9h.01" />
+        <path d="M15 9h.01" />
+        <path d="M8 14a4 4 0 0 0 8 0" />
+        <path d="M12 18h.01" />
+      </svg>
+    ),
+  },
+  {
     label: "CMS",
     path: "/admin/cms",
     icon: (
@@ -420,6 +438,7 @@ const pageTitles: Record<string, string> = {
   "/admin/payments": "Payments",
   "/admin/commissions": "Commissions",
   "/admin/contact-messages": "Contact Messages",
+  "/admin/faqs": "FAQs",
   "/admin/cms": "CMS",
   "/admin/cms/new": "Create CMS Page",
   "/admin/blog": "Blog",
@@ -462,7 +481,7 @@ const menuGroups = [
   },
   {
     title: "Content",
-    paths: ["/admin/cms", "/admin/blog", "/admin/notifications"],
+    paths: ["/admin/cms", "/admin/blog", "/admin/notifications", "/admin/faqs"],
   },
   {
     title: "Insights",
