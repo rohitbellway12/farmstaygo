@@ -87,6 +87,8 @@ export interface PublicPropertyCard {
     city: string | null;
     state: string | null;
     country: string;
+    latitude: number | null;
+    longitude: number | null;
   };
 
   capacity: {
@@ -208,6 +210,12 @@ export interface PublicPropertiesResponse {
     hasPreviousPage: boolean;
     hasNextPage: boolean;
   };
+}
+
+export interface PublicRelatedPropertiesResponse {
+  success: boolean;
+  message: string;
+  data: PublicPropertyCard[];
 }
 
 export interface PublicAmenity {
@@ -365,4 +373,15 @@ export interface ContactMessageResponse {
     createdAt: string;
     updatedAt: string;
   };
+}
+
+export interface MapSettings {
+  mapProvider: string;
+  mapApiKey: string | null;
+}
+
+export interface MapSettingsResponse {
+  success: boolean;
+  message: string;
+  data: MapSettings;
 }

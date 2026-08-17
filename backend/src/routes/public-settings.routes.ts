@@ -4,6 +4,7 @@ import {
   getPublicPaymentSettings,
   getPublicPlatformSettings,
   getPublicVendorBankDetails,
+  getPublicMapSettings,
 } from "../controllers/public-settings.controller.js";
 
 const publicSettingsRoutes = Router();
@@ -16,6 +17,11 @@ publicSettingsRoutes.get(
 publicSettingsRoutes.get(
   "/platform",
   getPublicPlatformSettings
+);
+
+publicSettingsRoutes.get(
+  "/map",
+  getPublicMapSettings
 );
 
 publicSettingsRoutes.get(

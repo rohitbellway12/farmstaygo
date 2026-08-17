@@ -2216,6 +2216,16 @@ const mapPublicPropertyCard = (
 
       country:
         property.country,
+
+      latitude:
+        property.latitude
+          ? Number(property.latitude)
+          : null,
+
+      longitude:
+        property.longitude
+          ? Number(property.longitude)
+          : null,
     },
 
     capacity: {
@@ -2342,8 +2352,6 @@ const mapPublicPropertyDetail = (
     | addressLine2
     | landmark
     | postalCode
-    | latitude
-    | longitude
     | vendor contact information
     |
     */
@@ -2360,6 +2368,16 @@ const mapPublicPropertyDetail = (
 
       country:
         property.country,
+
+      latitude:
+        property.latitude
+          ? Number(property.latitude)
+          : null,
+
+      longitude:
+        property.longitude
+          ? Number(property.longitude)
+          : null,
 
       exactLocationProtected:
         true,
@@ -2473,7 +2491,7 @@ const mapPublicPropertyDetail = (
         true,
 
       mapCoordinatesProtected:
-        true,
+        false,
 
       vendorContactProtected:
         true,
@@ -2995,6 +3013,148 @@ export const getPublicPropertyDetails =
         success: false,
         message:
           "Unable to fetch property details",
+      });
+    }
+  };
+
+/*
+|--------------------------------------------------------------------------
+| Public: Related Properties
+|--------------------------------------------------------------------------
+|
+| GET /api/public/properties/:identifier/related
+|
+| identifier is the public Property ID.
+|
+*/
+
+export const getRelatedProperties =
+  async (
+    req: Request,
+    res: Response
+  ): Promise<Response> => {
+    try {
+      const publicId =
+        String(
+          req.params.identifier ||
+            ""
+        ).trim();
+
+      if (!publicId) {
+        return res.status(422).json({
+          success: false,
+          message:
+            "Property identifier is required",
+        });
+      }
+
+      const property =
+        await findPublicPropertyById(
+          publicId
+        );
+
+      if (!property) {
+        return res.status(404).json({
+          success: false,
+          message:
+            "Property not found or unavailable",
+        });
+      }
+
+      const parsedContext =
+        parseSearchContext(req);
+
+      if (
+        !parsedContext.success
+      ) {
+        return res.status(422).json({
+          success: false,
+          message:
+            parsedContext.message,
+          errors:
+            parsedContext.errors,
+        });
+      }
+
+      const context =
+        parsedContext.value;
+
+      const related =
+        await prisma.property.findMany({
+          where: {
+            AND: [
+              {
+                id: {
+                  not: property.id,
+                },
+              },
+              {
+                status: "APPROVED",
+              },
+              {
+                approvedAt: {
+                  not: null,
+                },
+              },
+              ...(property.city
+                ? [
+                    {
+                      city: property.city,
+                    },
+                  ]
+                : []),
+            ],
+          },
+
+          orderBy: [
+            {
+              isFeatured: "desc",
+            },
+            {
+              approvedAt: "desc",
+            },
+            {
+              createdAt: "desc",
+            },
+          ],
+
+          take: 6,
+
+          include:
+            publicPropertyInclude,
+        });
+
+      const availabilityMaps =
+        await fetchAvailabilityMaps(
+          related,
+          context.dateRange
+        );
+
+      const data = related.map(
+        (item) =>
+          mapPublicPropertyCard(
+            item,
+            context,
+            availabilityMaps
+          )
+      );
+
+      return res.status(200).json({
+        success: true,
+        message:
+          "Related properties fetched successfully",
+        data,
+      });
+    } catch (error) {
+      console.error(
+        "Get related properties error:",
+        error
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Unable to fetch related properties",
       });
     }
   };

@@ -11,11 +11,14 @@ import {
   fetchContactSettings,
   fetchPaymentSettings,
   fetchPlatformSettings,
+  fetchMapSettings,
   updateContactSettings,
   updatePaymentSettings,
   updatePlatformSettings,
+  updateMapSettings,
   type ContactSettings,
   type SocialLink,
+  type MapSettings,
 } from "../../shared/api/contactApi";
 
 interface ApiErrorResponse {
@@ -23,7 +26,7 @@ interface ApiErrorResponse {
   errors?: Record<string, string[] | string>;
 }
 
-type Tab = "contact" | "platform" | "payment" | "service-cities";
+type Tab = "contact" | "platform" | "payment" | "map" | "service-cities";
 
 const inputClass =
   "h-11 w-full rounded-control border border-border bg-surface px-3.5 text-sm text-text-main outline-none transition placeholder:text-text-soft focus:border-primary-400 focus:ring-4 focus:ring-primary-100";
@@ -75,11 +78,13 @@ export default function SettingsPage() {
   const [loadingContact, setLoadingContact] = useState(true);
   const [loadingPlatform, setLoadingPlatform] = useState(true);
   const [loadingPayment, setLoadingPayment] = useState(true);
+  const [loadingMap, setLoadingMap] = useState(true);
   const [loadingCities, setLoadingCities] = useState(true);
 
   const [savingContact, setSavingContact] = useState(false);
   const [savingPlatform, setSavingPlatform] = useState(false);
   const [savingPayment, setSavingPayment] = useState(false);
+  const [savingMap, setSavingMap] = useState(false);
   const [togglingCityId, setTogglingCityId] = useState<
     string | null
   >(null);
@@ -112,6 +117,11 @@ export default function SettingsPage() {
     razorpayKeyId: "",
     razorpayKeySecret: "",
     razorpayWebhookUrl: "",
+  });
+
+  const [mapForm, setMapForm] = useState<MapSettings>({
+    mapProvider: "OPENSTREETMAP",
+    mapApiKey: "",
   });
 
   useEffect(() => {
@@ -201,6 +211,28 @@ export default function SettingsPage() {
     }
   }, []);
 
+  const loadMapSettings = useCallback(async () => {
+    try {
+      setLoadingMap(true);
+      setPageError("");
+      const response = await fetchMapSettings();
+      const data = response.data;
+      setMapForm({
+        mapProvider: data.mapProvider,
+        mapApiKey: data.mapApiKey || "",
+      });
+    } catch (error) {
+      setPageError(
+        getApiErrorMessage(
+          error,
+          "Unable to load map settings."
+        )
+      );
+    } finally {
+      setLoadingMap(false);
+    }
+  }, []);
+
   const loadServiceCities = useCallback(async () => {
     try {
       setLoadingCities(true);
@@ -240,6 +272,12 @@ export default function SettingsPage() {
   useEffect(() => {
     void loadPaymentSettings();
   }, [loadPaymentSettings]);
+
+  useEffect(() => {
+    if (activeTab === "map") {
+      void loadMapSettings();
+    }
+  }, [activeTab, loadMapSettings]);
 
   useEffect(() => {
     if (activeTab === "service-cities") {
@@ -413,6 +451,39 @@ export default function SettingsPage() {
     }
   };
 
+  const handleSaveMap = async () => {
+    setSavingMap(true);
+    setPageError("");
+
+    try {
+      await updateMapSettings({
+        mapProvider: mapForm.mapProvider,
+        mapApiKey: mapForm.mapApiKey || null,
+      });
+      setToast({
+        type: "success",
+        message:
+          "Map settings updated successfully.",
+      });
+    } catch (error) {
+      setPageError(
+        getApiErrorMessage(
+          error,
+          "Unable to save map settings."
+        )
+      );
+      setToast({
+        type: "error",
+        message: getApiErrorMessage(
+          error,
+          "Unable to save map settings."
+        ),
+      });
+    } finally {
+      setSavingMap(false);
+    }
+  };
+
   const togglePaymentMethod = (method: string) => {
     setPaymentForm((current) => ({
       ...current,
@@ -463,6 +534,7 @@ export default function SettingsPage() {
     { key: "contact", label: "Contact" },
     { key: "platform", label: "Platform" },
     { key: "payment", label: "Payment" },
+    { key: "map", label: "Map" },
     {
       key: "service-cities",
       label: "Service Cities",
@@ -1011,6 +1083,101 @@ export default function SettingsPage() {
               {savingPayment
                 ? "Saving..."
                 : "Save Payment Settings"}
+            </button>
+          </div>
+        </section>
+      )}
+
+      {activeTab === "map" && (
+        <section className="space-y-6 rounded-dashboard-card border border-border bg-surface p-6 shadow-dashboard-card">
+          <div>
+            <h2 className="text-lg font-extrabold text-text-main">
+              Map Settings
+            </h2>
+            <p className="mt-1 text-sm text-text-muted">
+              Configure the map provider and API key
+              used for property location selection and
+              public maps.
+            </p>
+          </div>
+
+          {loadingMap ? (
+            <div className="text-sm font-bold text-text-muted">
+              Loading map settings...
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="sm:col-span-2 grid gap-1.5 text-xs font-extrabold text-text-secondary">
+                Map Provider
+                <select
+                  value={mapForm.mapProvider}
+                  onChange={(e) =>
+                    setMapForm(
+                      (current) => ({
+                        ...current,
+                        mapProvider: e.target.value,
+                      })
+                    )
+                  }
+                  className={inputClass}
+                >
+                  <option value="OPENSTREETMAP">
+                    OpenStreetMap
+                  </option>
+                  <option value="GOOGLE">
+                    Google Maps
+                  </option>
+                  <option value="MAPBOX">
+                    Mapbox
+                  </option>
+                </select>
+                <p className="text-[11px] text-text-soft">
+                  Choose the map provider. OpenStreetMap
+                  does not require an API key.
+                </p>
+              </label>
+
+              <label className="sm:col-span-2 grid gap-1.5 text-xs font-extrabold text-text-secondary">
+                Map API Key
+                <input
+                  type="text"
+                  value={mapForm.mapApiKey}
+                  onChange={(e) =>
+                    setMapForm(
+                      (current) => ({
+                        ...current,
+                        mapApiKey: e.target.value,
+                      })
+                    )
+                  }
+                  placeholder={
+                    mapForm.mapProvider ===
+                    "OPENSTREETMAP"
+                      ? "Not required for OpenStreetMap"
+                      : "Enter your map API key"
+                  }
+                  className={inputClass}
+                />
+                <p className="text-[11px] text-text-soft">
+                  {mapForm.mapProvider ===
+                  "OPENSTREETMAP"
+                    ? "Leave blank when using OpenStreetMap."
+                    : "Required for Google Maps and Mapbox."}
+                </p>
+              </label>
+            </div>
+          )}
+
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleSaveMap}
+              disabled={savingMap}
+              className="h-11 rounded-control bg-primary-700 px-6 text-sm font-bold text-white hover:bg-primary-800 disabled:opacity-60"
+            >
+              {savingMap
+                ? "Saving..."
+                : "Save Map Settings"}
             </button>
           </div>
         </section>

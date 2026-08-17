@@ -5,10 +5,13 @@ import { ApiRequestError, apiFetch } from "@/lib/api";
 import { getAssetUrl } from "@/lib/assets";
 import AvailabilityCalendarClient from "@/components/property/AvailabilityCalendarClient";
 import BookingRequestPanel from "@/components/property/BookingRequestPanel";
+import PropertyMapClient from "@/components/property/PropertyMapClient";
 import type {
   PublicImage,
+  PublicPropertyCard,
   PublicPropertyDetail,
   PublicPropertyDetailResponse,
+  PublicRelatedPropertiesResponse,
 } from "@/types/public";
 
 type PageProps = {
@@ -198,6 +201,21 @@ async function getProperty(
   }
 }
 
+async function getRelatedProperties(
+  publicId: string
+): Promise<PublicPropertyCard[]> {
+  try {
+    const response =
+      await apiFetch<PublicRelatedPropertiesResponse>(
+        `/public/properties/${publicId}/related`
+      );
+
+    return response.data;
+  } catch {
+    return [];
+  }
+}
+
 export default async function PropertyDetailsPage({
   params,
   searchParams,
@@ -209,6 +227,8 @@ export default async function PropertyDetailsPage({
     resolvedSearchParams
   );
   const property = await getProperty(publicId, query);
+  const relatedProperties =
+    await getRelatedProperties(publicId);
 
   const coverImage =
     property.images.find((image) => image.isCover) ||
@@ -262,9 +282,8 @@ export default async function PropertyDetailsPage({
                 {property.displayTitle}
               </h1>
 
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-600 md:text-base">
-                {location ||
-                  "Exact location is protected until booking is confirmed."}
+              <p className="mt-3 flex flex-wrap items-center gap-3 text-sm leading-6 text-ink-600 md:text-base">
+                <span>{location}</span>
               </p>
             </div>
 
@@ -549,11 +568,89 @@ export default async function PropertyDetailsPage({
             bookingType={property.bookingType}
             initialCheckIn={
               typeof resolvedSearchParams.checkIn ===
-              "string"
-                ? resolvedSearchParams.checkIn
-                : undefined
+                "string"
+                  ? resolvedSearchParams.checkIn
+                  : undefined
             }
           />
+
+          <PropertyMapClient
+            latitude={property.location.latitude}
+            longitude={property.location.longitude}
+            area={property.location.area}
+            city={property.location.city}
+            state={property.location.state}
+            country={property.location.country}
+          />
+
+          {relatedProperties.length > 0 && (
+            <section>
+              <h2 className="text-2xl font-extrabold text-ink-900">
+                Similar properties near{" "}
+                {property.location.city || "you"}
+              </h2>
+              <p className="mt-1 text-sm text-ink-500">
+                More stays in the same city
+              </p>
+              <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {relatedProperties.map(
+                  (related) => (
+                    <Link
+                      key={related.publicId}
+                      href={`/properties/${related.publicId}`}
+                      className="group overflow-hidden rounded-xl border border-ink-100 bg-white transition hover:shadow-lg"
+                    >
+                      <div className="aspect-[16/10] bg-brand-50">
+                        {related.coverImage ? (
+                          <img
+                            src={getAssetUrl(
+                              related.coverImage.image
+                            )}
+                            alt={
+                              related.coverImage.altText ||
+                              related.displayTitle
+                            }
+                            className="h-full w-full object-cover transition group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-xs font-bold text-brand-700">
+                            No image
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-4">
+                        <h3 className="text-sm font-extrabold text-ink-900 line-clamp-1">
+                          {related.displayTitle}
+                        </h3>
+                        <p className="mt-1 text-xs text-ink-500 line-clamp-1">
+                          {[
+                            related.location.area,
+                            related.location.city,
+                            related.location.state,
+                          ]
+                            .filter(Boolean)
+                            .join(", ") ||
+                            "Location not specified"}
+                        </p>
+                        <div className="mt-3 flex items-center justify-between gap-3">
+                          <span className="text-sm font-extrabold text-ink-900">
+                            {formatPrice(
+                              related.pricing.startingPrice
+                            )}
+                          </span>
+                          <span className="text-xs text-ink-500">
+                            {related.pricing.unit === "PER_NIGHT"
+                              ? "per night"
+                              : "per room / night"}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  )
+                )}
+              </div>
+            </section>
+          )}
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">

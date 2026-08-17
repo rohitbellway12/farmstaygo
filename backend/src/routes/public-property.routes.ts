@@ -6,6 +6,7 @@ import {
   checkPublicPropertyAvailability,
   getPublicProperties,
   getPublicPropertyDetails,
+  getRelatedProperties,
 } from "../controllers/public-property.controller.js";
 
 const publicPropertyRoutes =
@@ -53,6 +54,20 @@ publicPropertyRoutes.get(
 publicPropertyRoutes.get(
   "/:identifier",
   getPublicPropertyDetails
+);
+
+/*
+|--------------------------------------------------------------------------
+| Public Related Properties
+|--------------------------------------------------------------------------
+|
+| GET /api/public/properties/:identifier/related
+|
+*/
+
+publicPropertyRoutes.get(
+  "/:identifier/related",
+  getRelatedProperties
 );
 
 export default publicPropertyRoutes;

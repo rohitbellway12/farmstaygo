@@ -87,6 +87,17 @@ export interface PaymentSettingsResponse {
   data: PaymentSettings;
 }
 
+export interface MapSettings {
+  mapProvider: string;
+  mapApiKey: string | null;
+}
+
+export interface MapSettingsResponse {
+  success: boolean;
+  message: string;
+  data: MapSettings;
+}
+
 export async function fetchContactMessages(params?: {
   page?: number;
   limit?: number;
@@ -224,6 +235,25 @@ export async function updatePaymentSettings(
 ): Promise<PaymentSettingsResponse> {
   const response = await api.put<PaymentSettingsResponse>(
     "/admin/settings/payment",
+    settings
+  );
+
+  return response.data;
+}
+
+export async function fetchMapSettings(): Promise<MapSettingsResponse> {
+  const response = await api.get<MapSettingsResponse>(
+    "/admin/settings/map"
+  );
+
+  return response.data;
+}
+
+export async function updateMapSettings(
+  settings: Partial<MapSettings>
+): Promise<MapSettingsResponse> {
+  const response = await api.put<MapSettingsResponse>(
+    "/admin/settings/map",
     settings
   );
 

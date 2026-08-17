@@ -524,16 +524,18 @@ const activeStep:
   | 3
   | 4
   | 5
-  | 6 =
+  | 6
+  | 7 =
   requestedStep >= 1 &&
-  requestedStep <= 6
+  requestedStep <= 7
     ? (requestedStep as
         | 1
         | 2
         | 3
         | 4
         | 5
-        | 6)
+        | 6
+        | 7)
     : 1;
 
    const isEditing = Boolean(propertyId);
@@ -579,8 +581,25 @@ const activeStep:
   const [mapSearchError, setMapSearchError] =
     useState("");
 
+  const [fetchingCurrentLocation, setFetchingCurrentLocation] =
+    useState(false);
+
+  const [currentLocationError, setCurrentLocationError] =
+    useState("");
+
   const [locationSaved, setLocationSaved] =
-  useState(false);
+    useState(false);
+
+  const [mapSettings, setMapSettings] = useState<{
+    mapProvider: string;
+    mapApiKey: string | null;
+  }>({
+    mapProvider: "OPENSTREETMAP",
+    mapApiKey: null,
+  });
+
+  const [mapSettingsLoading, setMapSettingsLoading] =
+    useState(true);
 
 const [propertyImages, setPropertyImages] =
   useState<PropertyImage[]>([]);
@@ -841,6 +860,49 @@ setLocationSaved(
     void loadPageData();
   }, [loadPageData]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadMapSettings = async () => {
+      try {
+        setMapSettingsLoading(true);
+        const response = await api.get<{
+          success: boolean;
+          data: {
+            mapProvider: string;
+            mapApiKey: string | null;
+          };
+        }>("/public/settings/map");
+
+        if (!cancelled) {
+          setMapSettings({
+            mapProvider:
+              response.data.data.mapProvider ||
+              "OPENSTREETMAP",
+            mapApiKey: response.data.data.mapApiKey,
+          });
+        }
+      } catch {
+        if (!cancelled) {
+          setMapSettings({
+            mapProvider: "OPENSTREETMAP",
+            mapApiKey: null,
+          });
+        }
+      } finally {
+        if (!cancelled) {
+          setMapSettingsLoading(false);
+        }
+      }
+    };
+
+    void loadMapSettings();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
 
   /*
 |--------------------------------------------------------------------------
@@ -1074,72 +1136,116 @@ const syncMapFromTypedCoordinates = () => {
   );
 };
 
-const handleMapSearch = async () => {
-  if (editingBlocked) {
-    return;
-  }
-
-  const queryParts = [
-    mapSearch.trim(),
-    locationForm.city,
-    locationForm.state,
-    locationForm.country,
-  ].filter(Boolean);
-
-  if (!mapSearch.trim()) {
-    setMapSearchError(
-      "Please enter a place, road, landmark or area."
-    );
-    setMapSearchResults([]);
-    return;
-  }
-
-  try {
-    setMapSearching(true);
-    setMapSearchError("");
-    setMapSearchResults([]);
-
-    const params = new URLSearchParams({
-      q: queryParts.join(", "),
-      format: "jsonv2",
-      limit: "5",
-      addressdetails: "1",
-    });
-
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?${params.toString()}`,
-      {
-        headers: {
-          Accept: "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        "Location search failed."
-      );
+  const handleMapSearch = async () => {
+    if (editingBlocked) {
+      return;
     }
 
-    const results =
-      (await response.json()) as MapSearchResult[];
+    const queryParts = [
+      mapSearch.trim(),
+      locationForm.city,
+      locationForm.state,
+      locationForm.country,
+    ].filter(Boolean);
 
-    if (results.length === 0) {
+    if (!mapSearch.trim()) {
       setMapSearchError(
-        "No matching location found. Try a nearby landmark or area name."
+        "Please enter a place, road, landmark or area."
+      );
+      setMapSearchResults([]);
+      return;
+    }
+
+    try {
+      setMapSearching(true);
+      setMapSearchError("");
+      setMapSearchResults([]);
+
+      const params = new URLSearchParams({
+        q: queryParts.join(", "),
+        format: "jsonv2",
+        limit: "5",
+        addressdetails: "1",
+      });
+
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?${params.toString()}`,
+        {
+          headers: {
+            Accept: "application/json",
+            "User-Agent": "FarmStay Property Manager",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Location search failed."
+        );
+      }
+
+      const results =
+        (await response.json()) as MapSearchResult[];
+
+      if (results.length === 0) {
+        setMapSearchError(
+          "No matching location found. Try a nearby landmark or area name."
+        );
+        return;
+      }
+
+      setMapSearchResults(results);
+    } catch {
+      setMapSearchError(
+        "Unable to search the map right now."
+      );
+    } finally {
+      setMapSearching(false);
+    }
+  };
+
+  const handleGetCurrentLocation = () => {
+    if (editingBlocked || fetchingCurrentLocation) {
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      setCurrentLocationError(
+        "Geolocation is not supported by your browser."
       );
       return;
     }
 
-    setMapSearchResults(results);
-  } catch {
-    setMapSearchError(
-      "Unable to search the map right now."
+    setFetchingCurrentLocation(true);
+    setCurrentLocationError("");
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+
+        setMapCoordinates(latitude, longitude);
+        setMapSearch(
+          `Current Location (${latitude.toFixed(6)}, ${longitude.toFixed(6)})`
+        );
+        setMapSearchResults([]);
+        setMapSearchError("");
+        setFetchingCurrentLocation(false);
+      },
+      (error) => {
+        setCurrentLocationError(
+          error.message ||
+            "Unable to fetch current location."
+        );
+        setFetchingCurrentLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0,
+      }
     );
-  } finally {
-    setMapSearching(false);
-  }
-};
+  };
 
 const selectMapSearchResult = (
   result: MapSearchResult
@@ -1223,8 +1329,7 @@ useEffect(() => {
   if (
     activeStep !== 2 ||
     !leafletLoaded ||
-    !mapContainerRef.current ||
-    leafletMapRef.current
+    !mapContainerRef.current
   ) {
     return;
   }
@@ -1237,6 +1342,13 @@ useEffect(() => {
   if (!leaflet) {
     return;
   }
+
+  if (leafletMapRef.current) {
+    leafletMapRef.current.remove();
+    leafletMapRef.current = null;
+  }
+
+  leafletMarkerRef.current = null;
 
   const initialCenter: [number, number] = [
     isValidLatitude(locationForm.latitude)
@@ -1256,16 +1368,42 @@ useEffect(() => {
     }
   );
 
-  leaflet
-    .tileLayer(
-      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  const tileConfig = (() => {
+    switch (mapSettings.mapProvider) {
+      case "GOOGLE":
+        return {
+          url:
+            mapSettings.mapApiKey &&
+            `https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${mapSettings.mapApiKey}`,
+          attribution:
+            '&copy; <a href="https://maps.google.com">Google Maps</a>',
+        };
+      case "MAPBOX":
+        return {
+          url:
+            mapSettings.mapApiKey &&
+            `https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=${mapSettings.mapApiKey}`,
+          attribution:
+            '&copy; <a href="https://www.mapbox.com/">Mapbox</a>',
+        };
+      default:
+        return {
+          url:
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        };
+    }
+  })();
+
+  if (tileConfig.url) {
+    leaflet
+      .tileLayer(tileConfig.url, {
+        attribution: tileConfig.attribution,
         maxZoom: 19,
-      }
-    )
-    .addTo(map);
+      })
+      .addTo(map);
+  }
 
   leafletMapRef.current = map;
 
@@ -1292,6 +1430,12 @@ useEffect(() => {
   window.setTimeout(() => {
     map.invalidateSize();
   }, 100);
+
+  return () => {
+    map.remove();
+    leafletMapRef.current = null;
+    leafletMarkerRef.current = null;
+  };
 }, [
   activeStep,
   editingBlocked,
@@ -1300,6 +1444,8 @@ useEffect(() => {
   locationForm.longitude,
   mapCenter.latitude,
   mapCenter.longitude,
+  mapSettings.mapProvider,
+  mapSettings.mapApiKey,
 ]);
 
   /*
@@ -2218,7 +2364,7 @@ const handleMovePropertyImage =
             )}
 
             <span className="rounded-full bg-primary-50 px-4 py-2 text-sm font-bold text-primary-700">
-  Step {activeStep} of 6
+  Step {activeStep} of 7
 </span>
           </div>
         </div>
@@ -2227,7 +2373,7 @@ const handleMovePropertyImage =
       {/* Wizard Steps */}
 
       <section className="overflow-x-auto rounded-dashboard-card border border-border bg-surface p-4 shadow-dashboard">
-        <div className="grid min-w-[900px] grid-cols-6 gap-3">
+        <div className="grid min-w-[900px] grid-cols-7 gap-3">
          {wizardSteps.map((step) => {
   /*
   |--------------------------------------------------------------------------
@@ -2258,20 +2404,21 @@ const handleMovePropertyImage =
       type="button"
       disabled={!isAvailable}
       onClick={() => {
-       if (
-  step.number >= 1 &&
-  step.number <= 6
-) {
-  changeStep(
-    step.number as
-      | 1
-      | 2
-      | 3
-      | 4
-      | 5
-      | 6
-  );
-}
+        if (
+          step.number >= 1 &&
+          step.number <= 7
+        ) {
+          changeStep(
+            step.number as
+              | 1
+              | 2
+              | 3
+              | 4
+              | 5
+              | 6
+              | 7
+          );
+        }
       }}
       className={`rounded-xl border p-3 text-left transition ${
         isActive
@@ -3140,12 +3287,14 @@ const handleMovePropertyImage =
                   event.target.value
                 );
                 setMapSearchError("");
+                setMapSearchResults([]);
               }}
               placeholder="Search landmark, road, farm name or area"
               className="h-12 w-full rounded-control border border-border bg-surface px-4 text-base text-text-main outline-none transition placeholder:text-text-soft focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
             />
           </label>
 
+          <div className="flex flex-col gap-3 sm:flex-row">
           <button
             type="button"
             onClick={() => void handleMapSearch()}
@@ -3153,13 +3302,35 @@ const handleMovePropertyImage =
               editingBlocked ||
               mapSearching
             }
-            className="mt-auto inline-flex h-12 items-center justify-center rounded-control bg-primary-700 px-5 text-sm font-bold text-white transition hover:bg-primary-800 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-12 items-center justify-center rounded-control bg-primary-700 px-5 text-sm font-bold text-white transition hover:bg-primary-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {mapSearching
               ? "Searching..."
               : "Search"}
           </button>
+
+          <button
+            type="button"
+            onClick={handleGetCurrentLocation}
+            disabled={
+              editingBlocked ||
+              fetchingCurrentLocation
+            }
+            className="inline-flex h-12 items-center justify-center rounded-control border border-border bg-surface px-4 text-sm font-bold text-text-secondary transition hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-60"
+            title="Use your current location"
+          >
+            {fetchingCurrentLocation
+              ? "Locating..."
+              : "Use current location"}
+          </button>
+          </div>
         </div>
+
+        {currentLocationError && (
+          <p className="mt-2 text-sm font-semibold text-red-600">
+            {currentLocationError}
+          </p>
+        )}
 
         {mapSearchError && (
           <p className="mt-2 text-sm font-semibold text-red-600">

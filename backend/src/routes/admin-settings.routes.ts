@@ -3,8 +3,10 @@ import { Router } from "express";
 import {
   getPlatformSettings,
   getPaymentSettings,
+  getMapSettings,
   updatePaymentSettings,
   updatePlatformSettings,
+  updateMapSettings,
 } from "../controllers/settings.controller.js";
 
 import { authenticate } from "../middleware/auth.middleware.js";
@@ -46,6 +48,16 @@ adminSettingsRoutes.get(
 adminSettingsRoutes.put(
   "/payment",
   updatePaymentSettings
+);
+
+adminSettingsRoutes.get(
+  "/map",
+  getMapSettings
+);
+
+adminSettingsRoutes.put(
+  "/map",
+  updateMapSettings
 );
 
 export { adminSettingsRoutes };

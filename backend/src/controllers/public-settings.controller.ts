@@ -141,6 +141,8 @@ export const getPublicPlatformSettings = async (
       siteFaviconUrl,
       defaultCurrency,
       timezone,
+      mapProvider,
+      mapApiKey,
     ] = await Promise.all([
       prisma.setting.findUnique({
         where: { key: "site_name" },
@@ -160,6 +162,14 @@ export const getPublicPlatformSettings = async (
       }),
       prisma.setting.findUnique({
         where: { key: "timezone" },
+        select: { value: true },
+      }),
+      prisma.setting.findUnique({
+        where: { key: "map_provider" },
+        select: { value: true },
+      }),
+      prisma.setting.findUnique({
+        where: { key: "map_api_key" },
         select: { value: true },
       }),
     ]);
@@ -189,6 +199,8 @@ export const getPublicPlatformSettings = async (
         siteFaviconUrl: resolveUrl(siteFaviconUrl?.value),
         defaultCurrency: defaultCurrency?.value || "INR",
         timezone: timezone?.value || "Asia/Kolkata",
+        mapProvider: mapProvider?.value || "OPENSTREETMAP",
+        mapApiKey: mapApiKey?.value || null,
       },
     });
   } catch (error) {
@@ -201,6 +213,45 @@ export const getPublicPlatformSettings = async (
       success: false,
       message:
         "Unable to fetch platform settings",
+    });
+  }
+};
+
+export const getPublicMapSettings = async (
+  _req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const [mapProvider, mapApiKey] =
+      await Promise.all([
+        prisma.setting.findUnique({
+          where: { key: "map_provider" },
+          select: { value: true },
+        }),
+        prisma.setting.findUnique({
+          where: { key: "map_api_key" },
+          select: { value: true },
+        }),
+      ]);
+
+    return res.status(200).json({
+      success: true,
+      message: "Public map settings fetched successfully",
+      data: {
+        mapProvider: mapProvider?.value || "OPENSTREETMAP",
+        mapApiKey: mapApiKey?.value || null,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Get public map settings error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Unable to fetch map settings",
     });
   }
 };

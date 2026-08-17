@@ -27,6 +27,11 @@ interface PaymentSettings {
   razorpayWebhookUrl: string | null;
 }
 
+interface MapSettings {
+  mapProvider: string;
+  mapApiKey: string | null;
+}
+
 const getSetting = async (key: string): Promise<string | null> => {
   const setting = await prisma.setting.findUnique({
     where: { key },
@@ -295,7 +300,6 @@ export const updatePlatformSettings = async (
     });
   }
 };
-
 export const getPaymentSettings = async (
   _req: AuthenticatedRequest,
   res: Response
@@ -335,7 +339,103 @@ export const getPaymentSettings = async (
 
     return res.status(500).json({
       success: false,
-      message: "Unable to fetch payment settings",
+      message:
+        "Unable to fetch payment settings",
+    });
+  }
+};
+
+export const getMapSettings = async (
+  _req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    const [mapProvider, mapApiKey] =
+      await Promise.all([
+        getSetting("map_provider"),
+        getSetting("map_api_key"),
+      ]);
+
+    const settings: MapSettings = {
+      mapProvider: mapProvider || "OPENSTREETMAP",
+      mapApiKey: mapApiKey,
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: "Map settings fetched successfully",
+      data: settings,
+    });
+  } catch (error) {
+    console.error(
+      "Get map settings error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to fetch map settings",
+    });
+  }
+};
+
+export const updateMapSettings = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    const body = req.body as Partial<MapSettings> &
+      Record<string, unknown>;
+
+    const mapProvider =
+      typeof body.mapProvider === "string"
+        ? body.mapProvider.trim().toUpperCase() ||
+          "OPENSTREETMAP"
+        : "OPENSTREETMAP";
+    const mapApiKey =
+      typeof body.mapApiKey === "string"
+        ? body.mapApiKey.trim() || null
+        : null;
+
+    await prisma.$transaction(async (tx) => {
+      await tx.setting.upsert({
+        where: { key: "map_provider" },
+        update: { value: mapProvider },
+        create: {
+          key: "map_provider",
+          value: mapProvider,
+        },
+      });
+
+      await tx.setting.upsert({
+        where: { key: "map_api_key" },
+        update: { value: mapApiKey || "" },
+        create: {
+          key: "map_api_key",
+          value: mapApiKey || "",
+        },
+      });
+    });
+
+    const settings: MapSettings = {
+      mapProvider,
+      mapApiKey,
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: "Map settings updated successfully",
+      data: settings,
+    });
+  } catch (error) {
+    console.error(
+      "Update map settings error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to update map settings",
     });
   }
 };
