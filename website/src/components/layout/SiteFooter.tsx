@@ -97,8 +97,8 @@ export default async function SiteFooter() {
 
   return (
     <footer className="bg-[#132916] text-white">
-      <div className="site-container py-24">
-        <div className="grid grid-cols-1 gap-14 lg:grid-cols-[420px_180px_180px_320px]">
+      <div className="site-container py-16">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1.2fr] xl:grid-cols-[420px_180px_180px_320px]">
           <div>
             <div className="mb-8">
               <BrandLogo
@@ -188,22 +188,30 @@ export default async function SiteFooter() {
               )}
             </div>
 
-            <div className="mt-10">
+            <div className="mt-8 lg:mt-10">
               <p className="mb-4 text-[15px] text-white/55">
                 Get new stays & offers in your inbox
               </p>
 
-              <div className="flex overflow-hidden rounded-xl border border-white/10 bg-[#1a341d]">
+              <form
+                action="/api/newsletter"
+                method="POST"
+                className="flex w-full max-w-full flex-col gap-2 sm:flex-row"
+              >
                 <input
                   type="email"
+                  name="email"
                   placeholder="Your email address"
-                  className="w-full bg-transparent px-5 py-4 text-[15px] text-white placeholder:text-white/40 focus:outline-none"
+                  className="w-full max-w-full rounded-xl border border-white/10 bg-[#1a341d] px-4 py-3 text-[15px] text-white placeholder:text-white/40 focus:border-brand-400 focus:outline-none sm:flex-1"
                 />
 
-                <button className="bg-[#d7a63a] px-8 py-4 text-[15px] font-semibold text-black transition hover:opacity-90">
+                <button
+                  type="submit"
+                  className="w-full max-w-full rounded-xl bg-[#d7a63a] px-6 py-3 text-base font-bold text-black transition hover:opacity-90 sm:w-auto sm:flex-shrink-0"
+                >
                   Join
                 </button>
-              </div>
+              </form>
             </div>
           </div>
         </div>
