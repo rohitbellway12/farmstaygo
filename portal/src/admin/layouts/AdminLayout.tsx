@@ -841,30 +841,7 @@ const currentTitle = useMemo(() => {
             </button>
           </div>
 
-          <div className="relative ml-2 hidden w-full max-w-[480px] md:block">
-            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-soft">
-              <svg
-                viewBox="0 0 24 24"
-                className="h-[17px] w-[17px]"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="m20 20-3.5-3.5" />
-              </svg>
-            </span>
 
-            <input
-              type="search"
-              placeholder="Search users, bookings, properties, vendors..."
-              className="h-10 w-full rounded-control border border-border bg-surface px-10 pr-12 text-[11px] text-text-main outline-none placeholder:text-text-soft focus:border-primary-300 focus:ring-4 focus:ring-primary-100"
-            />
-
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md border border-border bg-surface-muted px-1.5 py-0.5 text-[9px] font-bold text-text-soft">
-              ⌘ K
-            </span>
-          </div>
 
           <span className="truncate text-sm font-bold text-text-main md:hidden">
             {currentTitle}
