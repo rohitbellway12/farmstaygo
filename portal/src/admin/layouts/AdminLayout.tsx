@@ -67,6 +67,7 @@ const menuItems: MenuItem[] = [
   {
     label: "Users",
     path: "/admin/users",
+    end: true,
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -85,6 +86,7 @@ const menuItems: MenuItem[] = [
   {
     label: "Vendors",
     path: "/admin/vendors",
+    end: true,
     badgeKey: "vendors",
     badgeType: "success",
     icon: (
@@ -123,6 +125,7 @@ const menuItems: MenuItem[] = [
   {
   label: "Property Categories",
   path: "/admin/property-categories",
+  end: true,
   icon: (
     <svg
       viewBox="0 0 24 24"
@@ -138,10 +141,11 @@ const menuItems: MenuItem[] = [
     </svg>
   ),
 },
-
+ 
 {
   label: "Amenities",
   path: "/admin/amenities",
+  end: true,
   icon: (
     <svg
       viewBox="0 0 24 24"
@@ -163,9 +167,10 @@ const menuItems: MenuItem[] = [
   ),
 },
 
-{
+  {
   label: "Property Rules",
   path: "/admin/property-rules",
+  end: true,
   icon: (
     <svg
       viewBox="0 0 24 24"
@@ -180,9 +185,10 @@ const menuItems: MenuItem[] = [
   ),
 },
 
-{
+  {
   label: "Service Cities",
   path: "/admin/service-cities",
+  end: true,
   icon: (
     <svg
       viewBox="0 0 24 24"
@@ -200,6 +206,7 @@ const menuItems: MenuItem[] = [
   {
     label: "Properties",
     path: "/admin/properties",
+    end: true,
     badgeKey: "properties",
     badgeType: "success",
     icon: (
@@ -219,6 +226,7 @@ const menuItems: MenuItem[] = [
   {
     label: "Bookings",
     path: "/admin/bookings",
+    end: true,
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -237,6 +245,7 @@ const menuItems: MenuItem[] = [
   {
     label: "Payments",
     path: "/admin/payments",
+    end: true,
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -254,6 +263,7 @@ const menuItems: MenuItem[] = [
   {
     label: "Commissions",
     path: "/admin/commissions",
+    end: true,
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -271,6 +281,7 @@ const menuItems: MenuItem[] = [
   {
     label: "Contact Messages",
     path: "/admin/contact-messages",
+    end: true,
     badgeKey: "contactMessages",
     badgeType: "danger",
     icon: (
@@ -289,6 +300,7 @@ const menuItems: MenuItem[] = [
   {
     label: "FAQs",
     path: "/admin/faqs",
+    end: true,
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -341,6 +353,7 @@ const menuItems: MenuItem[] = [
     {
       label: "Reports",
       path: "/admin/reports",
+      end: true,
       icon: (
         <svg
           viewBox="0 0 24 24"
@@ -359,6 +372,7 @@ const menuItems: MenuItem[] = [
   {
     label: "Analytics",
     path: "/admin/analytics",
+    end: true,
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -375,6 +389,7 @@ const menuItems: MenuItem[] = [
   {
     label: "Notifications",
     path: "/admin/notifications",
+    end: true,
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -391,6 +406,7 @@ const menuItems: MenuItem[] = [
   {
     label: "Support Tickets",
     path: "/admin/support",
+    end: true,
     badgeKey: "supportTickets",
     badgeType: "danger",
     icon: (
@@ -408,6 +424,7 @@ const menuItems: MenuItem[] = [
   {
     label: "Settings",
     path: "/admin/settings",
+    end: true,
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -606,19 +623,23 @@ export default function AdminLayout() {
         });
       } catch {
         if (!cancelled) {
-          setSidebarCounts({
-            vendors: 0,
-            propertyApprovals: 0,
-            properties: 0,
-            contactMessages: 0,
-            supportTickets: 0,
-          });
+          setSidebarCounts((prev) => ({
+            vendors: prev.vendors,
+            propertyApprovals: prev.propertyApprovals,
+            properties: prev.properties,
+            contactMessages: prev.contactMessages,
+            supportTickets: prev.supportTickets,
+          }));
         }
       }
     };
 
     void loadSidebarCounts();
-  }, [location.pathname]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -840,8 +861,6 @@ const currentTitle = useMemo(() => {
               </svg>
             </button>
           </div>
-
-
 
           <span className="truncate text-sm font-bold text-text-main md:hidden">
             {currentTitle}
