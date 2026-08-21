@@ -333,15 +333,16 @@ export default function PropertyRulesPage() {
     try {
       setSubmitting(true);
       setFormErrors({});
-      const formData = new FormData();
-      formData.append("name", form.name.trim());
-      if (form.slug.trim()) formData.append("slug", slugify(form.slug));
-      formData.append("description", form.description.trim());
-      formData.append("icon", form.icon.trim());
-      formData.append("isActive", String(form.isActive));
-      formData.append("sortOrder", String(Number(form.sortOrder)));
-      if (editingRule) await api.put(`/admin/property-rules/${editingRule.id}`, formData);
-      else await api.post("/admin/property-rules", formData);
+      const payload = {
+        name: form.name.trim(),
+        slug: form.slug.trim() ? slugify(form.slug) : undefined,
+        description: form.description.trim(),
+        icon: form.icon.trim(),
+        isActive: form.isActive,
+        sortOrder: Number(form.sortOrder),
+      };
+      if (editingRule) await api.put(`/admin/property-rules/${editingRule.id}`, payload);
+      else await api.post("/admin/property-rules", payload);
       setToast({ type: "success", message: editingRule ? "Property rule updated successfully." : "Property rule created successfully." });
       setModalOpen(false);
       setEditingRule(null);
