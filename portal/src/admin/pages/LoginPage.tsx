@@ -31,9 +31,6 @@ const adminRoles: UserRole[] = [
   "SUPPORT",
 ];
 
-const TEST_EMAIL = "admin@farmstaygo.com";
-const TEST_PASSWORD = "Admin@123";
-
 export default function AdminLoginPage() {
   const navigate = useNavigate();
 
@@ -45,10 +42,6 @@ export default function AdminLoginPage() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const [copiedField, setCopiedField] = useState<
-    "email" | "password" | null
-  >(null);
 
   useEffect(() => {
     const auth = getAuth();
@@ -115,29 +108,6 @@ export default function AdminLoginPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const copyValue = async (
-    value: string,
-    field: "email" | "password"
-  ) => {
-    try {
-      await navigator.clipboard.writeText(value);
-
-      setCopiedField(field);
-
-      window.setTimeout(() => {
-        setCopiedField(null);
-      }, 1500);
-    } catch {
-      setError("Unable to copy the value.");
-    }
-  };
-
-  const fillTestCredentials = () => {
-    setEmail(TEST_EMAIL);
-    setPassword(TEST_PASSWORD);
-    setError("");
   };
 
   return (
@@ -426,12 +396,12 @@ export default function AdminLoginPage() {
                     Password
                   </label>
 
-                  <button
+                  {/* <button
                     type="button"
                     className="text-xs font-bold text-blue-700 transition hover:text-blue-900"
                   >
                     Forgot password?
-                  </button>
+                  </button> */}
                 </div>
 
                 <div className="relative">
@@ -514,91 +484,12 @@ export default function AdminLoginPage() {
               </button>
             </form>
 
-            {/* Testing Credentials */}
-            <div className="mt-7 rounded-2xl border border-dashed border-blue-200 bg-blue-50/70 p-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div>
-                  <span className="block text-xs font-extrabold uppercase tracking-[0.14em] text-blue-800">
-                    Testing Access
-                  </span>
-
-                  <p className="mt-1 text-xs text-blue-700/65">
-                    Remove this section before production.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={fillTestCredentials}
-                  className="shrink-0 rounded-lg bg-blue-700 px-3 py-2 text-xs font-bold text-white transition hover:bg-blue-800"
-                >
-                  Fill Credentials
-                </button>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between gap-3 rounded-xl border border-blue-100 bg-white px-3 py-2.5">
-                  <div className="min-w-0">
-                    <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Email
-                    </span>
-
-                    <code className="block truncate text-xs font-semibold text-slate-700">
-                      {TEST_EMAIL}
-                    </code>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      copyValue(
-                        TEST_EMAIL,
-                        "email"
-                      )
-                    }
-                    className="shrink-0 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-                  >
-                    {copiedField === "email"
-                      ? "Copied"
-                      : "Copy"}
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between gap-3 rounded-xl border border-blue-100 bg-white px-3 py-2.5">
-                  <div className="min-w-0">
-                    <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Password
-                    </span>
-
-                    <code className="block truncate text-xs font-semibold text-slate-700">
-                      {TEST_PASSWORD}
-                    </code>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      copyValue(
-                        TEST_PASSWORD,
-                        "password"
-                      )
-                    }
-                    className="shrink-0 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-                  >
-                    {copiedField === "password"
-                      ? "Copied"
-                      : "Copy"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <p className="mt-6 text-center text-xs leading-5 text-slate-400">
             Protected administration portal. Unauthorized
             access is restricted.
           </p>
         </div>
+      </div>
       </section>
     </main>
   );

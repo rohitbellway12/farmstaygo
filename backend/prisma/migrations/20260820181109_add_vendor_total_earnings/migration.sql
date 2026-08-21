@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "vendors" ADD COLUMN IF NOT EXISTS "total_earnings" DECIMAL(12,2) NOT NULL DEFAULT 0;

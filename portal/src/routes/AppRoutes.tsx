@@ -84,7 +84,7 @@ export default function AppRoutes() {
         path="/"
         element={
           <Navigate
-            to="/admin/login"
+            to="/vendor/login"
             replace
           />
         }

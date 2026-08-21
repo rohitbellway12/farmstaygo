@@ -177,6 +177,15 @@ function StatCard({ title, value, change, iconClass, icon, trend }: { title: str
 
 function DonutChart({ segments, size = 120 }: { segments: Array<{ label: string; value: number; color: string }>; size?: number }) {
   const total = segments.reduce((sum, s) => sum + s.value, 0);
+
+  if (total === 0) {
+    return (
+      <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+        <span className="text-xs text-text-muted">No data</span>
+      </div>
+    );
+  }
+
   const radius = size / 2 - 8;
   const circumference = 2 * Math.PI * radius;
   let offset = 0;
