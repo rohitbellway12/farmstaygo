@@ -49,7 +49,7 @@ const seedAdmin = async (): Promise<void> => {
   console.log("Admin account ready:");
   console.table(admin);
 };
-
+//  admin adata 
 seedAdmin()
   .catch((error) => {
     console.error("Admin seeding failed:", error);
