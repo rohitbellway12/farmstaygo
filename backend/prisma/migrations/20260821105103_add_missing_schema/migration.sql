@@ -20,7 +20,9 @@ EXCEPTION
 END $$;
 
 -- CreateTable Property Rules
-CREATE TABLE IF NOT EXISTS "PropertyRule" (
+DROP TABLE IF EXISTS "PropertyRuleAssignment" CASCADE;
+DROP TABLE IF EXISTS "PropertyRule" CASCADE;
+CREATE TABLE "PropertyRule" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
@@ -34,12 +36,10 @@ CREATE TABLE IF NOT EXISTS "PropertyRule" (
     CONSTRAINT "PropertyRule_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX IF NOT EXISTS "PropertyRule_slug_key" ON "PropertyRule"("slug");
-CREATE INDEX IF NOT EXISTS "PropertyRule_isActive_sortOrder_idx" ON "PropertyRule"("isActive", "sortOrder");
+CREATE UNIQUE INDEX "PropertyRule_slug_key" ON "PropertyRule"("slug");
+CREATE INDEX "PropertyRule_isActive_sortOrder_idx" ON "PropertyRule"("isActive", "sortOrder");
 
--- CreateTable Property Rule Assignments
-CREATE TABLE IF NOT EXISTS "PropertyRuleAssignment" (
+CREATE TABLE "PropertyRuleAssignment" (
     "propertyId" TEXT NOT NULL,
     "ruleId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -47,31 +47,16 @@ CREATE TABLE IF NOT EXISTS "PropertyRuleAssignment" (
     CONSTRAINT "PropertyRuleAssignment_pkey" PRIMARY KEY ("propertyId", "ruleId")
 );
 
--- CreateIndex
-CREATE INDEX IF NOT EXISTS "PropertyRuleAssignment_ruleId_idx" ON "PropertyRuleAssignment"("ruleId");
+CREATE INDEX "PropertyRuleAssignment_ruleId_idx" ON "PropertyRuleAssignment"("ruleId");
 
--- AddForeignKey
-DO $$ BEGIN
-    ALTER TABLE "PropertyRuleAssignment"
-    ADD CONSTRAINT "PropertyRuleAssignment_propertyId_fkey"
-    FOREIGN KEY ("propertyId") REFERENCES "Property"("id")
-    ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
+ALTER TABLE "PropertyRuleAssignment" ADD CONSTRAINT "PropertyRuleAssignment_propertyId_fkey"
+  FOREIGN KEY ("propertyId") REFERENCES "Property"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "PropertyRuleAssignment" ADD CONSTRAINT "PropertyRuleAssignment_ruleId_fkey"
+  FOREIGN KEY ("ruleId") REFERENCES "PropertyRule"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- AddForeignKey
-DO $$ BEGIN
-    ALTER TABLE "PropertyRuleAssignment"
-    ADD CONSTRAINT "PropertyRuleAssignment_ruleId_fkey"
-    FOREIGN KEY ("ruleId") REFERENCES "PropertyRule"("id")
-    ON DELETE RESTRICT ON UPDATE CASCADE;
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
-
--- CreateTable Blog Posts (mapped to blog_posts)
-CREATE TABLE IF NOT EXISTS "blog_posts" (
+-- CreateTable Blog Posts
+DROP TABLE IF EXISTS "blog_posts" CASCADE;
+CREATE TABLE "blog_posts" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
@@ -91,12 +76,13 @@ CREATE TABLE IF NOT EXISTS "blog_posts" (
     CONSTRAINT "blog_posts_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX IF NOT EXISTS "blog_posts_slug_key" ON "blog_posts"("slug");
-CREATE INDEX IF NOT EXISTS "blog_posts_is_published_sort_order_idx" ON "blog_posts"("is_published", "sort_order");
+CREATE UNIQUE INDEX "blog_posts_slug_key" ON "blog_posts"("slug");
+CREATE INDEX "blog_posts_is_published_sort_order_idx" ON "blog_posts"("is_published", "sort_order");
 
 -- CreateTable Wishlists
-CREATE TABLE IF NOT EXISTS "Wishlist" (
+DROP TABLE IF EXISTS "Wishlist" CASCADE;
+DROP TABLE IF EXISTS "wishlists" CASCADE;
+CREATE TABLE "Wishlist" (
     "id" TEXT NOT NULL,
     "userId" INTEGER NOT NULL,
     "propertyId" TEXT NOT NULL,
@@ -105,30 +91,14 @@ CREATE TABLE IF NOT EXISTS "Wishlist" (
     CONSTRAINT "Wishlist_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX IF NOT EXISTS "Wishlist_userId_propertyId_key" ON "Wishlist"("userId", "propertyId");
-CREATE INDEX IF NOT EXISTS "Wishlist_userId_idx" ON "Wishlist"("userId");
-CREATE INDEX IF NOT EXISTS "Wishlist_propertyId_idx" ON "Wishlist"("propertyId");
+CREATE UNIQUE INDEX "Wishlist_userId_propertyId_key" ON "Wishlist"("userId", "propertyId");
+CREATE INDEX "Wishlist_userId_idx" ON "Wishlist"("userId");
+CREATE INDEX "Wishlist_propertyId_idx" ON "Wishlist"("propertyId");
 
--- AddForeignKey
-DO $$ BEGIN
-    ALTER TABLE "Wishlist"
-    ADD CONSTRAINT "Wishlist_userId_fkey"
-    FOREIGN KEY ("userId") REFERENCES "users"("id")
-    ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
-
--- AddForeignKey
-DO $$ BEGIN
-    ALTER TABLE "Wishlist"
-    ADD CONSTRAINT "Wishlist_propertyId_fkey"
-    FOREIGN KEY ("propertyId") REFERENCES "Property"("id")
-    ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
+ALTER TABLE "Wishlist" ADD CONSTRAINT "Wishlist_userId_fkey"
+  FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Wishlist" ADD CONSTRAINT "Wishlist_propertyId_fkey"
+  FOREIGN KEY ("propertyId") REFERENCES "Property"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AlterTable: Add missing vendor columns
 ALTER TABLE "vendors"
