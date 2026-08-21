@@ -76,6 +76,14 @@ const emptyForm = {
 const inputClass =
   "h-11 w-full rounded-control border border-border bg-surface px-3.5 text-sm text-text-main outline-none focus:border-primary-400 focus:ring-4 focus:ring-primary-100";
 
+const slugify = (value: string): string => {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
+
 const getErrorMessage = (error: unknown) => {
   if (axios.isAxiosError<ApiErrorResponse>(error)) {
     return (
@@ -472,12 +480,13 @@ export function CmsPageFormPage() {
               Page title
               <input
                 value={form.title}
-                onChange={(event) =>
-                  updateForm(
-                    "title",
-                    event.target.value
-                  )
-                }
+                onChange={(event) => {
+                  const titleValue = event.target.value;
+                  updateForm("title", titleValue);
+                  if (!isEditing) {
+                    updateForm("slug", slugify(titleValue));
+                  }
+                }}
                 className={inputClass}
               />
             </label>
