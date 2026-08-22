@@ -501,7 +501,7 @@ const parseDateOnly = (
 
 // A freshly created booking request acts as a short automatic hold so a
 // second user cannot book the same slot. Expires after this window.
-const BOOKING_HOLD_MINUTES = 15;
+const BOOKING_HOLD_MINUTES = 5;
 
 const getActiveAvailabilityBookingWhere =
   (): Prisma.BookingWhereInput => {

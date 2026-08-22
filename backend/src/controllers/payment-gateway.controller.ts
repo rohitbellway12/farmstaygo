@@ -13,6 +13,9 @@ import {
 
 import prisma from "../config/database.js";
 
+// Must match the hold window used for availability checks elsewhere.
+const BOOKING_HOLD_MINUTES = 5;
+
 import {
   sendBookingConfirmationEmail,
 } from "../services/email.js";
@@ -273,7 +276,7 @@ export const createRazorpayOrder = async (
     // may have been taken since the booking request (hold) was created —
     // if so, do not let the user pay for an unavailable slot.
     const conflictCutoff = new Date(
-      Date.now() - 15 * 60 * 1000
+      Date.now() - BOOKING_HOLD_MINUTES * 60 * 1000
     );
 
     const conflictingCount =
@@ -738,7 +741,7 @@ export const verifyRazorpayPayment = async (
         // holds this slot, abort before recording the payment so the
         // captured money can be refunded instead of being lost.
         const holdCutoff = new Date(
-          Date.now() - 15 * 60 * 1000
+          Date.now() - BOOKING_HOLD_MINUTES * 60 * 1000
         );
 
         const conflictWhere: Prisma.BookingWhereInput = {

@@ -97,7 +97,7 @@ const millisecondsPerDay =
 // A freshly created booking request acts as a short automatic hold so
 // that a second user cannot open Razorpay for the same slot. The hold
 // expires after this window, freeing the slot if payment is never made.
-const BOOKING_HOLD_MINUTES = 15;
+export const BOOKING_HOLD_MINUTES = 5;
 
 const getActiveAvailabilityBookingWhere =
   (): Prisma.BookingWhereInput => {
@@ -155,6 +155,43 @@ export const UNPAID_HOLD_EXCLUSION: Prisma.BookingWhereInput = {
       none: {},
     },
   },
+};
+
+// Deletes unpaid ONLINE deposit "holds" that have exceeded the hold window.
+// These are temporary slot reservations; once the window passes without
+// payment they should be removed so they don't linger as dead rows.
+export const cleanupExpiredHolds = async (): Promise<number> => {
+  try {
+    const cutoff = new Date(
+      Date.now() - BOOKING_HOLD_MINUTES * 60 * 1000
+    );
+
+    const result = await prisma.booking.deleteMany({
+      where: {
+        status: BookingStatus.REQUESTED,
+        paymentStatus: "PENDING",
+        paymentMethod: "ONLINE",
+        reservationAmount: {
+          gt: 0,
+        },
+        payments: {
+          none: {},
+        },
+        createdAt: {
+          lt: cutoff,
+        },
+      },
+    });
+
+    return result.count;
+  } catch (error) {
+    console.error(
+      "[cleanupExpiredHolds] failed:",
+      error
+    );
+
+    return 0;
+  }
 };
 
 const parseDateOnly = (
