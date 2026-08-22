@@ -20,6 +20,8 @@ import prisma from "../config/database.js";
 
 import {
   getRazorpaySettings,
+  isRazorpayPaymentAlreadyUsed,
+  refundRazorpayPayment,
 } from "../controllers/payment-gateway.controller.js";
 
 import {
@@ -92,31 +94,49 @@ const dateOnlyPattern =
 const millisecondsPerDay =
   24 * 60 * 60 * 1000;
 
-const activeAvailabilityBookingWhere = {
-  OR: [
-    {
-      status: BookingStatus.CONFIRMED,
-    },
-    {
-      status: BookingStatus.REQUESTED,
+// A freshly created booking request acts as a short automatic hold so
+// that a second user cannot open Razorpay for the same slot. The hold
+// expires after this window, freeing the slot if payment is never made.
+const BOOKING_HOLD_MINUTES = 15;
+
+const getActiveAvailabilityBookingWhere =
+  (): Prisma.BookingWhereInput => {
+    const holdCutoff = new Date(
+      Date.now() - BOOKING_HOLD_MINUTES * 60 * 1000
+    );
+
+    return {
       OR: [
         {
-          reservationAmount: null,
+          status: BookingStatus.CONFIRMED,
         },
         {
-          reservationAmount: {
-            lte: 0,
-          },
-        },
-        {
-          paymentStatus: {
-            not: "PENDING",
-          },
+          status: BookingStatus.REQUESTED,
+          OR: [
+            {
+              reservationAmount: null,
+            },
+            {
+              reservationAmount: {
+                lte: 0,
+              },
+            },
+            {
+              paymentStatus: {
+                not: "PENDING",
+              },
+            },
+            {
+              // Recent request = temporary hold on the slot.
+              createdAt: {
+                gte: holdCutoff,
+              },
+            },
+          ],
         },
       ],
-    },
-  ],
-} satisfies Prisma.BookingWhereInput;
+    } satisfies Prisma.BookingWhereInput;
+  };
 
 const parseDateOnly = (
   value: unknown
@@ -425,7 +445,8 @@ const validateBookingInput = (
 };
 
 const getBookingQuote = async (
-  input: BookingQuoteInput
+  input: BookingQuoteInput,
+  excludeUserId?: number
 ): Promise<BookingQuoteResult> => {
   const {
     propertyId,
@@ -502,7 +523,10 @@ const getBookingQuote = async (
 
       const activeOverlapWhere = {
         propertyId,
-        ...activeAvailabilityBookingWhere,
+        ...(excludeUserId
+          ? { userId: { not: excludeUserId } }
+          : {}),
+        ...getActiveAvailabilityBookingWhere(),
         ...nightsOverlapWhere(
           checkIn,
           checkOut
@@ -688,14 +712,17 @@ const getBookingQuote = async (
       const roomBookings =
         await transaction.booking.findMany(
           {
-            where: {
-              roomTypeId,
-              ...activeAvailabilityBookingWhere,
-              ...nightsOverlapWhere(
-                checkIn,
-                checkOut
-              ),
-            },
+              where: {
+                roomTypeId,
+                ...(excludeUserId
+                  ? { userId: { not: excludeUserId } }
+                  : {}),
+                ...getActiveAvailabilityBookingWhere(),
+                ...nightsOverlapWhere(
+                  checkIn,
+                  checkOut
+                ),
+              },
             select: {
               checkIn: true,
               checkOut: true,
@@ -1159,7 +1186,7 @@ export const calculateBookingPrice =
 
       try {
         const quote =
-          await getBookingQuote(input);
+          await getBookingQuote(input, req.user.id);
 
         return res.json({
           success: true,
@@ -1209,6 +1236,10 @@ export const createBookingRequest =
     req: AuthenticatedRequest,
     res: Response
   ): Promise<Response> => {
+    let verifiedPaymentAmount = 0;
+    let verifiedPaymentId: string | null = null;
+    let isSandboxPayment = false;
+
     try {
       if (!req.user) {
         return res.status(401).json({
@@ -1397,11 +1428,6 @@ export const createBookingRequest =
         });
       }
 
-      let verifiedPaymentAmount = 0;
-      let verifiedPaymentId: string | null =
-        null;
-      let isSandboxPayment = false;
-
       if (paymentVerification) {
         const razorpayOrderId =
           typeof paymentVerification
@@ -1503,6 +1529,22 @@ export const createBookingRequest =
           razorpayPaymentId;
       }
 
+      // Idempotency — never apply the same captured Razorpay payment
+      // to more than one booking (guards against double submission).
+      if (
+        verifiedPaymentId &&
+        !isSandboxPayment &&
+        (await isRazorpayPaymentAlreadyUsed(
+          verifiedPaymentId
+        ))
+      ) {
+        return res.status(409).json({
+          success: false,
+          message:
+            "This payment has already been applied to a booking.",
+        });
+      }
+
       const booking =
         await prisma.$transaction(
           async (transaction) => {
@@ -1569,7 +1611,10 @@ export const createBookingRequest =
 
           const activeOverlapWhere = {
             propertyId,
-            ...activeAvailabilityBookingWhere,
+            userId: {
+              not: customer.id,
+            },
+            ...getActiveAvailabilityBookingWhere(),
             ...nightsOverlapWhere(
               checkIn,
               checkOut
@@ -1844,14 +1889,17 @@ export const createBookingRequest =
           const roomBookings =
             await transaction.booking.findMany(
               {
-                where: {
-                  roomTypeId,
-                  ...activeAvailabilityBookingWhere,
-                  ...nightsOverlapWhere(
-                    checkIn,
-                    checkOut
-                  ),
-                },
+            where: {
+              roomTypeId,
+              userId: {
+                not: customer.id,
+              },
+              ...getActiveAvailabilityBookingWhere(),
+              ...nightsOverlapWhere(
+                checkIn,
+                checkOut
+              ),
+            },
                 select: {
                   checkIn: true,
                   checkOut: true,
@@ -2125,10 +2173,31 @@ export const createBookingRequest =
       };
 
       if (conflictMessages[message]) {
+        // Money was already captured by Razorpay before the locked
+        // booking transaction ran. If the slot is gone, refund it so
+        // the customer never loses money for a booking that failed.
+        let refundNote = "";
+        const realPaymentCaptured =
+          !isSandboxPayment &&
+          !!verifiedPaymentId &&
+          verifiedPaymentAmount > 0;
+
+        if (realPaymentCaptured) {
+          const refund = await refundRazorpayPayment(
+            verifiedPaymentId!,
+            verifiedPaymentAmount,
+            ""
+          );
+
+          refundNote = refund.refunded
+            ? " Your payment has been automatically refunded."
+            : " We could not auto-refund your payment — please contact support.";
+        }
+
         return res.status(409).json({
           success: false,
           message:
-            conflictMessages[message],
+            conflictMessages[message] + refundNote,
         });
       }
 

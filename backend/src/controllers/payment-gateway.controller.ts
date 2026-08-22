@@ -6,6 +6,9 @@ import {
   CommissionStatus,
   NotificationRecipientType,
   NotificationType,
+  PaymentMethod,
+  PaymentStatus,
+  PaymentType,
 } from "../generated/prisma/client.js";
 
 import prisma from "../config/database.js";
@@ -82,6 +85,103 @@ const getRazorpayInstance = async (): Promise<any> => {
     );
 
     return null;
+  }
+};
+
+/*
+|--------------------------------------------------------------------------
+| Refund helpers
+|--------------------------------------------------------------------------
+*/
+
+export const isRazorpayPaymentAlreadyUsed = async (
+  razorpayPaymentId: string
+): Promise<boolean> => {
+  if (!razorpayPaymentId) {
+    return false;
+  }
+
+  const existing = await prisma.payment.findFirst({
+    where: {
+      transactionId: razorpayPaymentId,
+      paymentType: {
+        not: "REFUND" as PaymentType,
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  return Boolean(existing);
+};
+
+export const refundRazorpayPayment = async (
+  razorpayPaymentId: string,
+  amount: number,
+  bookingId: string
+): Promise<{
+  refunded: boolean;
+  reason?: string;
+}> => {
+  if (!razorpayPaymentId) {
+    return {
+      refunded: false,
+      reason: "missing_payment_id",
+    };
+  }
+
+  try {
+    const razorpayInstance = await getRazorpayInstance();
+
+    // Sandbox mode — no real money was captured, nothing to refund.
+    if (!razorpayInstance) {
+      return {
+        refunded: true,
+        reason: "sandbox",
+      };
+    }
+
+    const amountInPaise = Math.round(amount * 100);
+
+    await razorpayInstance.payments.refund(razorpayPaymentId, {
+      amount: amountInPaise,
+    });
+
+    // Best-effort audit row. The booking may not exist (e.g. booking
+    // creation failed after capture), so ignore FK errors here.
+    try {
+      await prisma.payment.create({
+        data: {
+          bookingId,
+          amount: new Prisma.Decimal(amount),
+          paymentMethod: "ONLINE" as PaymentMethod,
+          paymentType: "REFUND" as PaymentType,
+          status: "COMPLETED" as PaymentStatus,
+          transactionId: `refund_${razorpayPaymentId}`,
+          notes: `Auto-refund for unsuccessful booking (Razorpay payment ${razorpayPaymentId})`,
+        },
+      });
+    } catch {
+      // ignore — refund at Razorpay already succeeded
+    }
+
+    return {
+      refunded: true,
+    };
+  } catch (error) {
+    console.error(
+      "[refundRazorpayPayment] failed:",
+      error
+    );
+
+    return {
+      refunded: false,
+      reason:
+        error instanceof Error
+          ? error.message
+          : "refund_failed",
+    };
   }
 };
 
@@ -456,6 +556,11 @@ export const verifyRazorpayPayment = async (
         reservationAmount: true,
         estimatedTotal: true,
         paymentStatus: true,
+        propertyId: true,
+        roomTypeId: true,
+        bookingMode: true,
+        checkIn: true,
+        checkOut: true,
         payments: {
           select: {
             amount: true,
@@ -479,6 +584,18 @@ export const verifyRazorpayPayment = async (
       return res.status(409).json({
         success: false,
         message: "This booking is no longer payable",
+      });
+    }
+
+    // Idempotency — never apply the same Razorpay payment twice.
+    if (
+      !isSandbox &&
+      (await isRazorpayPaymentAlreadyUsed(razorpayPaymentId))
+    ) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "This payment has already been applied to a booking.",
       });
     }
 
@@ -521,20 +638,111 @@ export const verifyRazorpayPayment = async (
       newPaymentStatus = "PARTIAL";
     }
 
-    await prisma.$transaction(async (tx) => {
-      await tx.payment.create({
-        data: {
-          bookingId,
-          amount,
-          paymentMethod: "ONLINE",
-          paymentType: "RESERVATION",
-          status: "COMPLETED",
-          transactionId,
-          notes: isSandbox
-            ? "Sandbox payment (Razorpay not configured)"
-            : `Razorpay order: ${razorpayOrderId}`,
-        },
-      });
+    try {
+      await prisma.$transaction(async (tx) => {
+        // Serialize concurrent payments for the same property.
+        await tx.$executeRaw`
+          SELECT pg_advisory_xact_lock(hashtext(${booking.propertyId}))
+        `;
+
+        // In-transaction idempotency: a concurrent duplicate verify for
+        // the same Razorpay payment must not create a second charge.
+        if (razorpayPaymentId) {
+          const alreadyApplied =
+            await tx.payment.findFirst({
+              where: {
+                transactionId: razorpayPaymentId,
+                paymentType: {
+                  not: "REFUND",
+                },
+              },
+              select: {
+                id: true,
+              },
+            });
+
+          if (alreadyApplied) {
+            throw new Error("PAYMENT_ALREADY_APPLIED");
+          }
+        }
+
+        // Re-check availability atomically. If another booking already
+        // holds this slot, abort before recording the payment so the
+        // captured money can be refunded instead of being lost.
+        const holdCutoff = new Date(
+          Date.now() - 15 * 60 * 1000
+        );
+
+        const conflictWhere: Prisma.BookingWhereInput = {
+          id: {
+            not: bookingId,
+          },
+          propertyId: booking.propertyId,
+          OR: [
+            {
+              status: "CONFIRMED",
+            },
+            {
+              status: "REQUESTED",
+              OR: [
+                {
+                  reservationAmount: null,
+                },
+                {
+                  reservationAmount: {
+                    lte: 0,
+                  },
+                },
+                {
+                  paymentStatus: {
+                    not: "PENDING",
+                  },
+                },
+                {
+                  createdAt: {
+                    gte: holdCutoff,
+                  },
+                },
+              ],
+            },
+          ],
+          checkIn: {
+            lt: booking.checkOut,
+          },
+          checkOut: {
+            gt: booking.checkIn,
+          },
+        };
+
+        if (
+          booking.bookingMode !== "ENTIRE_PROPERTY" &&
+          booking.roomTypeId
+        ) {
+          conflictWhere.roomTypeId = booking.roomTypeId;
+        }
+
+        const conflictingBookings =
+          await tx.booking.count({
+            where: conflictWhere,
+          });
+
+        if (conflictingBookings > 0) {
+          throw new Error("BOOKING_CONFLICT_REFUND");
+        }
+
+        await tx.payment.create({
+          data: {
+            bookingId,
+            amount,
+            paymentMethod: "ONLINE",
+            paymentType: "RESERVATION",
+            status: "COMPLETED",
+            transactionId,
+            notes: isSandbox
+              ? "Sandbox payment (Razorpay not configured)"
+              : `Razorpay order: ${razorpayOrderId}`,
+          },
+        });
 
       if (shouldConfirm) {
         await tx.booking.update({
@@ -628,6 +836,38 @@ export const verifyRazorpayPayment = async (
         });
       }
     });
+
+    } catch (txError) {
+      if (
+        txError instanceof Error &&
+        (txError.message === "BOOKING_CONFLICT_REFUND" ||
+          txError.message === "PAYMENT_ALREADY_APPLIED")
+      ) {
+        if (txError.message === "PAYMENT_ALREADY_APPLIED") {
+          return res.status(409).json({
+            success: false,
+            message:
+              "This payment has already been applied to a booking.",
+          });
+        }
+
+        const refund = await refundRazorpayPayment(
+          razorpayPaymentId,
+          amount,
+          bookingId
+        );
+
+        return res.status(409).json({
+          success: false,
+          message: refund.refunded
+            ? "Sorry, this slot was just booked by someone else. Your payment has been refunded."
+            : "Sorry, this slot was just booked by someone else. We could not auto-refund your payment — please contact support.",
+          data: { refunded: refund.refunded },
+        });
+      }
+
+      throw txError;
+    }
 
     try {
       await prisma.notification.create({

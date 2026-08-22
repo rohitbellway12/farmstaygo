@@ -499,31 +499,47 @@ const parseDateOnly = (
     : null;
 };
 
-const activeAvailabilityBookingWhere = {
-  OR: [
-    {
-      status: BookingStatus.CONFIRMED,
-    },
-    {
-      status: BookingStatus.REQUESTED,
+// A freshly created booking request acts as a short automatic hold so a
+// second user cannot book the same slot. Expires after this window.
+const BOOKING_HOLD_MINUTES = 15;
+
+const getActiveAvailabilityBookingWhere =
+  (): Prisma.BookingWhereInput => {
+    const holdCutoff = new Date(
+      Date.now() - BOOKING_HOLD_MINUTES * 60 * 1000
+    );
+
+    return {
       OR: [
         {
-          reservationAmount: null,
+          status: BookingStatus.CONFIRMED,
         },
         {
-          reservationAmount: {
-            lte: 0,
-          },
-        },
-        {
-          paymentStatus: {
-            not: "PENDING",
-          },
+          status: BookingStatus.REQUESTED,
+          OR: [
+            {
+              reservationAmount: null,
+            },
+            {
+              reservationAmount: {
+                lte: 0,
+              },
+            },
+            {
+              paymentStatus: {
+                not: "PENDING",
+              },
+            },
+            {
+              createdAt: {
+                gte: holdCutoff,
+              },
+            },
+          ],
         },
       ],
-    },
-  ],
-} satisfies Prisma.BookingWhereInput;
+    } satisfies Prisma.BookingWhereInput;
+  };
 
 const getTodayDateOnly =
   (): Date => {
@@ -1418,7 +1434,7 @@ const fetchAvailabilityMaps =
           propertyId: {
             in: propertyIds,
           },
-          ...activeAvailabilityBookingWhere,
+          ...getActiveAvailabilityBookingWhere(),
           checkIn: {
             lt: dateRange.checkOut,
           },
