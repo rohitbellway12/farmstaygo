@@ -139,14 +139,15 @@ const getActiveAvailabilityBookingWhere =
   };
 
 // An unpaid deposit "hold" is a temporary slot reservation created before
-// the customer pays. It must NOT appear in any booking list (user, vendor
-// or admin) — only once it is actually paid does it become a real booking.
-// Genuine booking requests (no deposit / pending bank-transfer approval)
-// still remain visible to the vendor for action.
+// the customer pays online. It must NOT appear in any booking list (user,
+// vendor or admin) — only once it is actually paid does it become a real
+// booking. This only applies to ONLINE holds; CASH and BANK_TRANSFER
+// bookings are real requests and must stay visible to the vendor.
 export const UNPAID_HOLD_EXCLUSION: Prisma.BookingWhereInput = {
   NOT: {
     status: BookingStatus.REQUESTED,
     paymentStatus: "PENDING",
+    paymentMethod: "ONLINE",
     reservationAmount: {
       gt: 0,
     },
