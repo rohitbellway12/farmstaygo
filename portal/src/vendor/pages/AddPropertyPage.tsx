@@ -1153,8 +1153,73 @@ const syncMapFromTypedCoordinates = () => {
       setMapSearchError("");
       setMapSearchResults([]);
 
+      const query = queryParts.join(", ");
+
+      if (
+        mapSettings.mapProvider === "GOOGLE" &&
+        mapSettings.mapApiKey
+      ) {
+        // Real Google Places search — comprehensive results, like
+        // Google Maps. Needs a Google API key with Places API enabled.
+        const url =
+          `https://maps.googleapis.com/maps/api/place/textsearch/json` +
+          `?query=${encodeURIComponent(query)}` +
+          `&key=${encodeURIComponent(mapSettings.mapApiKey)}`;
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(
+            "Location search failed."
+          );
+        }
+
+        const data = (await response.json()) as {
+          results?: Array<{
+            place_id?: string | number;
+            name?: string;
+            formatted_address?: string;
+            geometry?: {
+              location?: {
+                lat?: number;
+                lng?: number;
+              };
+            };
+          }>;
+        };
+
+        const places = data.results ?? [];
+
+        const normalized = places
+          .filter(
+            (p) =>
+              p.geometry?.location?.lat != null &&
+              p.geometry?.location?.lng != null
+          )
+          .map((p) => ({
+            place_id:
+              typeof p.place_id === "string"
+                ? Number(p.place_id) || 0
+                : p.place_id ?? 0,
+            display_name: p.formatted_address || p.name || "",
+            lat: String(p.geometry!.location!.lat),
+            lon: String(p.geometry!.location!.lng),
+          }));
+
+        if (normalized.length === 0) {
+          setMapSearchError(
+            "No matching location found. Try a nearby landmark or area name."
+          );
+          return;
+        }
+
+        setMapSearchResults(normalized);
+        return;
+      }
+
+      // Fallback: OpenStreetMap Nominatim.
       const params = new URLSearchParams({
-        q: queryParts.join(", "),
+        q: query,
         format: "jsonv2",
         limit: "5",
         addressdetails: "1",
@@ -1365,8 +1430,10 @@ useEffect(() => {
       case "GOOGLE":
         return {
           url:
-            mapSettings.mapApiKey &&
-            `https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${mapSettings.mapApiKey}`,
+            `https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}` +
+            (mapSettings.mapApiKey
+              ? `&key=${mapSettings.mapApiKey}`
+              : ""),
           attribution:
             '&copy; <a href="https://maps.google.com">Google Maps</a>',
         };
