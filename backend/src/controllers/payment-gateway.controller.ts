@@ -244,6 +244,11 @@ export const createRazorpayOrder = async (
         status: true,
         reservationAmount: true,
         currency: true,
+        propertyId: true,
+        roomTypeId: true,
+        bookingMode: true,
+        checkIn: true,
+        checkOut: true,
       },
     });
 
@@ -261,6 +266,69 @@ export const createRazorpayOrder = async (
       return res.status(409).json({
         success: false,
         message: "This booking is no longer payable",
+      });
+    }
+
+    // Re-check availability before opening the payment gateway. The slot
+    // may have been taken since the booking request (hold) was created —
+    // if so, do not let the user pay for an unavailable slot.
+    const conflictCutoff = new Date(
+      Date.now() - 15 * 60 * 1000
+    );
+
+    const conflictingCount =
+      await prisma.booking.count({
+        where: {
+          id: {
+            not: booking.id,
+          },
+          propertyId: booking.propertyId,
+          OR: [
+            {
+              status: "CONFIRMED",
+            },
+            {
+              status: "REQUESTED",
+              OR: [
+                {
+                  reservationAmount: null,
+                },
+                {
+                  reservationAmount: {
+                    lte: 0,
+                  },
+                },
+                {
+                  paymentStatus: {
+                    not: "PENDING",
+                  },
+                },
+                {
+                  createdAt: {
+                    gte: conflictCutoff,
+                  },
+                },
+              ],
+            },
+          ],
+          checkIn: {
+            lt: booking.checkOut,
+          },
+          checkOut: {
+            gt: booking.checkIn,
+          },
+          ...(booking.bookingMode !== "ENTIRE_PROPERTY" &&
+          booking.roomTypeId
+            ? { roomTypeId: booking.roomTypeId }
+            : {}),
+        },
+      });
+
+    if (conflictingCount > 0) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Sorry, this slot was just booked by someone else. Please choose different dates.",
       });
     }
 

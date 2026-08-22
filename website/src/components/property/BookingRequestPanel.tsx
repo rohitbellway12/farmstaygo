@@ -184,6 +184,7 @@ export default function BookingRequestPanel({
       orderId: string;
       amount: number;
       currency: string;
+      bookingId: string;
       bookingData: Record<string, unknown>;
     } | null>(null);
 
@@ -466,6 +467,7 @@ export default function BookingRequestPanel({
       keyId: string;
       sandbox: boolean;
     },
+    bookingId: string,
     bookingData: Record<string, unknown>
   ) => {
     try {
@@ -478,6 +480,7 @@ export default function BookingRequestPanel({
           orderId: order.orderId,
           amount: order.amount,
           currency: order.currency,
+          bookingId,
           bookingData,
         });
         setShowSandboxModal(true);
@@ -508,9 +511,9 @@ export default function BookingRequestPanel({
           razorpay_signature: string;
         }) => {
           try {
-            const createRes =
+            const verifyRes =
               await apiFetch<BookingResponse>(
-                "/bookings",
+                `/bookings/${bookingId}/razorpay/verify`,
                 {
                   method: "POST",
                   headers: {
@@ -518,22 +521,19 @@ export default function BookingRequestPanel({
                       "application/json",
                   },
                   body: JSON.stringify({
-                    ...bookingData,
-                    paymentVerification: {
-                      razorpay_order_id:
-                        response.razorpay_order_id,
-                      razorpay_payment_id:
-                        response.razorpay_payment_id,
-                      razorpay_signature:
-                        response.razorpay_signature,
-                      amount: order.amount / 100,
-                    },
+                    razorpay_order_id:
+                      response.razorpay_order_id,
+                    razorpay_payment_id:
+                      response.razorpay_payment_id,
+                    razorpay_signature:
+                      response.razorpay_signature,
+                    amount: order.amount / 100,
                   }),
                 }
               );
 
             setSuccessMessage(
-              createRes.message ||
+              verifyRes.message ||
                 "Payment completed successfully!"
             );
             setMessage("");
@@ -579,8 +579,8 @@ export default function BookingRequestPanel({
       setRazorpayPaying(true);
       setShowSandboxModal(false);
 
-      const createRes = await apiFetch<BookingResponse>(
-        "/bookings",
+      const verifyRes = await apiFetch<BookingResponse>(
+        `/bookings/${sandboxOrderDetails.bookingId}/razorpay/verify`,
         {
           method: "POST",
           headers: {
@@ -588,24 +588,21 @@ export default function BookingRequestPanel({
               "application/json",
           },
           body: JSON.stringify({
-            ...sandboxOrderDetails.bookingData,
-            paymentVerification: {
-              razorpay_order_id:
-                sandboxOrderDetails.orderId,
-              razorpay_payment_id: `pay_sandbox_${Date.now()}`,
-              razorpay_signature:
-                "sandbox_signature",
-              amount:
-                sandboxOrderDetails.amount /
-                100,
-              sandbox: true,
-            },
+            razorpay_order_id:
+              sandboxOrderDetails.orderId,
+            razorpay_payment_id: `pay_sandbox_${Date.now()}`,
+            razorpay_signature:
+              "sandbox_signature",
+            amount:
+              sandboxOrderDetails.amount /
+              100,
+            sandbox: true,
           }),
         }
       );
 
       setSuccessMessage(
-        createRes.message ||
+        verifyRes.message ||
           "Sandbox payment recorded successfully!"
       );
       setMessage("");
@@ -694,9 +691,39 @@ export default function BookingRequestPanel({
             : null;
 
         if (depositAmount) {
+          // Reserve the slot first (creates a short hold) so a second
+          // user cannot open payment for the same dates.
+          let created: BookingResponse;
+
+          try {
+            created = await apiFetch<BookingResponse>(
+              "/bookings",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type":
+                    "application/json",
+                },
+                body: JSON.stringify(
+                  bookingData
+                ),
+              }
+            );
+          } catch (createErr) {
+            setMessage(
+              createErr instanceof Error
+                ? createErr.message
+                : "Sorry, this slot was just booked by someone else. Please choose different dates."
+            );
+            setSuccessMessage("");
+            return;
+          }
+
+          const newBookingId = created.data.id;
+
           const order =
             await apiFetch<RazorpayOrderResponse>(
-              "/bookings/payments/razorpay/order",
+              `/bookings/${newBookingId}/razorpay/order`,
               {
                 method: "POST",
                 headers: {
@@ -717,6 +744,7 @@ export default function BookingRequestPanel({
               keyId: order.data.keyId,
               sandbox: order.sandbox,
             },
+            newBookingId,
             bookingData
           );
         } else {
