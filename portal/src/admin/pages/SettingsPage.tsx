@@ -120,7 +120,7 @@ export default function SettingsPage() {
   });
 
   const [mapForm, setMapForm] = useState<MapSettings>({
-    mapProvider: "OPENSTREETMAP",
+    mapProvider: "GOOGLE",
     mapApiKey: "",
   });
 
@@ -1121,24 +1121,17 @@ export default function SettingsPage() {
                   }
                   className={inputClass}
                 >
-                  <option value="OPENSTREETMAP">
-                    OpenStreetMap
-                  </option>
                   <option value="GOOGLE">
                     Google Maps
                   </option>
-                  <option value="MAPBOX">
-                    Mapbox
-                  </option>
                 </select>
                 <p className="text-[11px] text-text-soft">
-                  Choose the map provider. OpenStreetMap
-                  does not require an API key.
+                  Google Maps is the only supported map provider. A valid Google Maps API key with Places and Maps APIs enabled is required.
                 </p>
               </label>
 
               <label className="sm:col-span-2 grid gap-1.5 text-xs font-extrabold text-text-secondary">
-                Map API Key
+                Google Maps API Key
                 <input
                   type="text"
                   value={mapForm.mapApiKey ?? ""}
@@ -1150,19 +1143,11 @@ export default function SettingsPage() {
                       })
                     )
                   }
-                  placeholder={
-                    mapForm.mapProvider ===
-                    "OPENSTREETMAP"
-                      ? "Not required for OpenStreetMap"
-                      : "Enter your map API key"
-                  }
+                  placeholder="Enter your Google Maps API key"
                   className={inputClass}
                 />
                 <p className="text-[11px] text-text-soft">
-                  {mapForm.mapProvider ===
-                  "OPENSTREETMAP"
-                    ? "Leave blank when using OpenStreetMap."
-                    : "Required for Google Maps and Mapbox."}
+                  Required for Google Maps. Enable Maps JavaScript API, Places API, and Directions API in your Google Cloud Console.
                 </p>
               </label>
             </div>

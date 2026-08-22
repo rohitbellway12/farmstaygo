@@ -357,7 +357,7 @@ export const getMapSettings = async (
       ]);
 
     const settings: MapSettings = {
-      mapProvider: mapProvider || "OPENSTREETMAP",
+      mapProvider: mapProvider || "GOOGLE",
       mapApiKey: mapApiKey,
     };
 
@@ -390,8 +390,8 @@ export const updateMapSettings = async (
     const mapProvider =
       typeof body.mapProvider === "string"
         ? body.mapProvider.trim().toUpperCase() ||
-          "OPENSTREETMAP"
-        : "OPENSTREETMAP";
+          "GOOGLE"
+        : "GOOGLE";
     const mapApiKey =
       typeof body.mapApiKey === "string"
         ? body.mapApiKey.trim() || null

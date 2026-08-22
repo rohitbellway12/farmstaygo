@@ -12,53 +12,57 @@ interface PropertyMapProps {
   country: string;
 }
 
-type MapProvider = "OPENSTREETMAP" | "GOOGLE" | "MAPBOX";
+type MapProvider = "GOOGLE";
 
-type LeafletMap = {
-  remove: () => void;
-  invalidateSize: () => void;
-  fitBounds: (
-    bounds: [[number, number], [number, number]],
-    options?: Record<string, unknown>
-  ) => void;
-};
+interface MapSettings {
+  mapProvider: MapProvider;
+  mapApiKey: string | null;
+}
 
-type LeafletTileLayer = {
-  addTo: (map: LeafletMap) => void;
-};
-
-type LeafletMarker = {
-  addTo: (map: LeafletMap) => LeafletMarker;
-  bindPopup: (content: string) => LeafletMarker;
-};
-
-type LeafletPolyline = {
-  addTo: (map: LeafletMap) => LeafletPolyline;
-  remove: () => void;
-};
-
-type LeafletApi = {
-  map: (
-    container: string | HTMLElement,
-    options: Record<string, unknown>
-  ) => LeafletMap;
-  tileLayer: (
-    url: string,
-    options: Record<string, unknown>
-  ) => LeafletTileLayer;
-  marker: (
-    latlng: [number, number],
-    options?: Record<string, unknown>
-  ) => LeafletMarker;
-  polyline: (
-    latlngs: [number, number][],
-    options: Record<string, unknown>
-  ) => LeafletPolyline;
-  control: {
-    zoom: () => {
-      addTo: (map: LeafletMap) => void;
+const loadGoogleMaps = (apiKey: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    const w = window as unknown as {
+      google?: { maps?: unknown };
     };
-  };
+    if (w.google?.maps) {
+      resolve();
+      return;
+    }
+
+    const existing = document.getElementById(
+      "google-maps-script"
+    );
+
+    if (existing) {
+      const interval = window.setInterval(() => {
+        if (w.google?.maps) {
+          window.clearInterval(interval);
+          resolve();
+        }
+      }, 100);
+      window.setTimeout(() => {
+        window.clearInterval(interval);
+        resolve();
+      }, 10000);
+      return;
+    }
+
+    const callbackName = "__fsgMapsCallback";
+    (window as unknown as Record<string, () => void>)[
+      callbackName
+    ] = () => resolve();
+
+    const script = document.createElement("script");
+    script.id = "google-maps-script";
+    script.src =
+      `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(
+        apiKey
+      )}&libraries=places,geometry&loading=async&callback=${callbackName}`;
+    script.async = true;
+    script.onerror = () =>
+      reject(new Error("Failed to load Google Maps"));
+    document.head.appendChild(script);
+  });
 };
 
 export default function PropertyMap({
@@ -69,25 +73,23 @@ export default function PropertyMap({
   state,
   country,
 }: PropertyMapProps) {
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef =
-    useRef<LeafletMap | null>(null);
-  const markerRef =
-    useRef<LeafletMarker | null>(null);
-  const routeLayerRef =
-    useRef<LeafletPolyline | null>(null);
-  const [leafletLoaded, setLeafletLoaded] =
+  const mapContainerRef =
+    useRef<HTMLDivElement>(null);
+  const googleMapRef =
+    useRef<unknown>(null);
+  const googleDirectionsRef =
+    useRef<unknown>(null);
+  const [googleReady, setGoogleReady] =
     useState(false);
   const [mapSettings, setMapSettings] =
-    useState<{
-      mapProvider: MapProvider;
-      mapApiKey: string | null;
-    }>({
-      mapProvider: "OPENSTREETMAP",
+    useState<MapSettings>({
+      mapProvider: "GOOGLE",
       mapApiKey: null,
     });
   const [userLocation, setUserLocation] =
-    useState<{ lat: number; lng: number } | null>(null);
+    useState<{ lat: number; lng: number } | null>(
+      null
+    );
   const [locationError, setLocationError] =
     useState<string | null>(null);
   const [routeLoading, setRouteLoading] =
@@ -108,15 +110,14 @@ export default function PropertyMap({
 
         if (!cancelled) {
           setMapSettings({
-            mapProvider: (data.data.mapProvider ||
-              "OPENSTREETMAP") as MapProvider,
+            mapProvider: "GOOGLE",
             mapApiKey: data.data.mapApiKey,
           });
         }
       } catch {
         if (!cancelled) {
           setMapSettings({
-            mapProvider: "OPENSTREETMAP",
+            mapProvider: "GOOGLE",
             mapApiKey: null,
           });
         }
@@ -131,328 +132,226 @@ export default function PropertyMap({
   }, []);
 
   useEffect(() => {
-    const existingLeaflet = (window as unknown as {
-      L?: LeafletApi;
-    }).L;
-
-    if (existingLeaflet) {
-      setLeafletLoaded(true);
+    if (!mapSettings.mapApiKey) {
       return;
     }
 
-    const stylesheetId = "leaflet-map-styles-website";
-    const scriptId = "leaflet-map-script-website";
+    let cancelled = false;
 
-    if (
-      !document.getElementById(stylesheetId)
-    ) {
-      const link = document.createElement("link");
-      link.id = stylesheetId;
-      link.rel = "stylesheet";
-      link.href =
-        "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-      document.head.appendChild(link);
-    }
-
-    const existingScript = document.getElementById(
-      scriptId
-    ) as HTMLScriptElement | null;
-
-    if (existingScript) {
-      existingScript.addEventListener(
-        "load",
-        () => setLeafletLoaded(true),
-        { once: true }
-      );
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.id = scriptId;
-    script.src =
-      "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-    script.async = true;
-    script.addEventListener(
-      "load",
-      () => setLeafletLoaded(true),
-      { once: true }
-    );
-    document.body.appendChild(script);
-  }, []);
-
-  useEffect(() => {
-    if (
-      !leafletLoaded ||
-      !mapContainerRef.current ||
-      !latitude ||
-      !longitude
-    ) {
-      return;
-    }
-
-    const leaflet = (window as unknown as {
-      L?: LeafletApi;
-    }).L;
-
-    if (!leaflet) {
-      return;
-    }
-
-    if (mapRef.current) {
-      mapRef.current.remove();
-      mapRef.current = null;
-    }
-
-    markerRef.current = null;
-    if (routeLayerRef.current) {
-      routeLayerRef.current.remove();
-      routeLayerRef.current = null;
-    }
-
-    const map = leaflet.map(
-      mapContainerRef.current,
-      {
-        center: [latitude, longitude] as [
-          number,
-          number,
-        ],
-        zoom: 15,
-        scrollWheelZoom: false,
-      }
-    );
-
-    leaflet.control.zoom().addTo(map);
-
-    const tileConfig = (() => {
-      switch (mapSettings.mapProvider) {
-        case "GOOGLE":
-          return {
-            url:
-              `https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}` +
-              (mapSettings.mapApiKey
-                ? `&key=${mapSettings.mapApiKey}`
-                : ""),
-            attribution:
-              '&copy; <a href="https://maps.google.com">Google Maps</a>',
-          };
-        case "MAPBOX":
-          return {
-            url:
-              mapSettings.mapApiKey &&
-              `https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=${mapSettings.mapApiKey}`,
-            attribution:
-              '&copy; <a href="https://www.mapbox.com/">Mapbox</a>',
-          };
-        default:
-          return {
-            url:
-              "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            attribution:
-              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          };
-      }
-    })();
-
-    if (tileConfig.url) {
-      leaflet
-        .tileLayer(tileConfig.url, {
-          attribution: tileConfig.attribution,
-          maxZoom: 19,
-        })
-        .addTo(map);
-    }
-
-    const marker = leaflet
-      .marker([latitude, longitude] as [
-        number,
-        number,
-      ])
-      .addTo(map);
-
-    const locationStr = [
-      area,
-      city,
-      state,
-      country,
-    ]
-      .filter(Boolean)
-      .join(", ");
-
-    marker.bindPopup(
-      locationStr || "Property location"
-    );
-
-    mapRef.current = map;
-    markerRef.current = marker;
-
-    window.setTimeout(() => {
-      map.invalidateSize();
-    }, 100);
+    loadGoogleMaps(mapSettings.mapApiKey)
+      .then(() => {
+        if (!cancelled) setGoogleReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) setGoogleReady(false);
+      });
 
     return () => {
-      mapRef.current?.remove();
-      mapRef.current = null;
-      markerRef.current = null;
-      routeLayerRef.current?.remove();
-      routeLayerRef.current = null;
+      cancelled = true;
     };
+  }, [mapSettings.mapApiKey]);
+
+  useEffect(() => {
+    if (!mapContainerRef.current || !latitude || !longitude) {
+      return;
+    }
+
+    if (!googleReady || !mapSettings.mapApiKey) {
+      return;
+    }
+
+    renderGoogleMap();
+    return () => cleanupGoogleMap();
   }, [
-    leafletLoaded,
+    googleReady,
     latitude,
     longitude,
     area,
     city,
     state,
     country,
-    mapSettings.mapProvider,
     mapSettings.mapApiKey,
   ]);
 
-  const handleGetDirections = () => {
-    if (!latitude || !longitude) return;
+  const renderGoogleMap = () => {
+    const w = window as unknown as {
+      google?: {
+        maps?: {
+          Map: new (
+            el: HTMLElement,
+            opts: Record<string, unknown>
+          ) => unknown;
+          Marker: new (
+            opts: Record<string, unknown>
+          ) => unknown;
+          InfoWindow: new (
+            opts: Record<string, unknown>
+          ) => {
+            open: (
+              m: unknown,
+              anchor?: unknown
+            ) => void;
+          };
+          DirectionsService: new () => {
+            route: (
+              req: Record<string, unknown>,
+              cb: (
+                res: unknown,
+                status: string
+              ) => void
+            ) => void;
+          };
+          DirectionsRenderer: new (
+            opts?: Record<string, unknown>
+          ) => {
+            setMap: (m: unknown) => void;
+            setDirections: (d: unknown) => void;
+          };
+          TravelMode: { DRIVING: string };
+          LatLng: new (
+            lat: number,
+            lng: number
+          ) => unknown;
+        };
+      };
+    };
 
-    if (navigator.geolocation) {
-      setLocationError(null);
-      setRouteLoading(true);
+    const maps = w.google?.maps;
+    if (!maps || !mapContainerRef.current) return;
 
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userLat = position.coords.latitude;
-          const userLng = position.coords.longitude;
-          setUserLocation({
-            lat: userLat,
-            lng: userLng,
-          });
+    const map = new maps.Map(mapContainerRef.current, {
+      center: { lat: latitude, lng: longitude },
+      zoom: 15,
+      mapTypeControl: false,
+    });
 
-          drawRoute(userLat, userLng, latitude, longitude);
-          setRouteLoading(false);
-        },
-        (error) => {
-          const insecure =
-            !window.isSecureContext ||
-            /secure origin/i.test(error.message || "");
-          setLocationError(
-            insecure
-              ? "Location access needs HTTPS or localhost. Please open the site over a secure (https) connection."
-              : (error.message ||
-                "Unable to get your location")
-          );
-          setRouteLoading(false);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0,
-        }
-      );
-    } else {
-      setLocationError(
-        "Geolocation is not supported by your browser"
-      );
-    }
+    const marker = new maps.Marker({
+      position: { lat: latitude, lng: longitude },
+      map,
+    });
+
+    const locationStr = [area, city, state, country]
+      .filter(Boolean)
+      .join(", ");
+
+    const infoWindow = new maps.InfoWindow({
+      content: locationStr || "Property location",
+    });
+    infoWindow.open(map, marker);
+
+    googleMapRef.current = map;
+    googleDirectionsRef.current = null;
   };
 
-  const drawRoute = async (
-    originLat: number,
-    originLng: number,
-    destLat: number,
-    destLng: number
-  ) => {
-    const leaflet = (window as unknown as {
-      L?: LeafletApi;
-    }).L;
+  const cleanupGoogleMap = () => {
+    googleMapRef.current = null;
+    googleDirectionsRef.current = null;
+  };
 
-    if (!leaflet || !mapRef.current) {
+  const handleGetDirections = () => {
+    if (!latitude || !longitude) return;
+    startGoogleDirections();
+  };
+
+  const startGoogleDirections = () => {
+    if (!latitude || !longitude) return;
+    const w = window as unknown as {
+      google?: {
+        maps?: {
+          DirectionsService: new () => {
+            route: (
+              req: Record<string, unknown>,
+              cb: (
+                res: unknown,
+                status: string
+              ) => void
+            ) => void;
+          };
+          DirectionsRenderer: new (
+            opts?: Record<string, unknown>
+          ) => {
+            setMap: (m: unknown) => void;
+            setDirections: (d: unknown) => void;
+          };
+          TravelMode: { DRIVING: string };
+          LatLng: new (
+            lat: number,
+            lng: number
+          ) => unknown;
+        };
+      };
+    };
+
+    const maps = w.google?.maps;
+    const map = googleMapRef.current as
+      | (Record<string, unknown> | null)
+      | null;
+    if (!maps || !map) return;
+
+    setLocationError(null);
+    setRouteLoading(true);
+
+    const service = new maps.DirectionsService();
+    const renderer = new maps.DirectionsRenderer();
+    renderer.setMap(map);
+    googleDirectionsRef.current = renderer;
+
+    if (!window.isSecureContext || !navigator.geolocation) {
+      setLocationError(
+        "Location access needs HTTPS or localhost. Please open the site over a secure (https) connection."
+      );
+      setRouteLoading(false);
       return;
     }
 
-    if (routeLayerRef.current) {
-      routeLayerRef.current.remove();
-      routeLayerRef.current = null;
-    }
-
-    try {
-      const response = await fetch(
-        `https://router.project-osrm.org/route/v1/driving/${originLng},${originLat};${destLng},${destLat}?overview=full&geometries=geojson`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch route");
-      }
-
-      const data = (await response.json()) as {
-        routes?: Array<{
-          geometry: {
-            coordinates: [number, number][];
-          };
-        }>;
-      };
-
-      if (data.routes && data.routes[0]) {
-        const coordinates =
-          data.routes[0].geometry.coordinates.map(
-            (coord) => [coord[1], coord[0]] as [
-              number,
-              number
-            ]
-          );
-
-        const routeLine = leaflet.polyline(
-          coordinates,
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        service.route(
           {
-            color: "#2563eb",
-            weight: 5,
-            opacity: 0.8,
+            origin: new maps.LatLng(
+              position.coords.latitude,
+              position.coords.longitude
+            ),
+            destination: new maps.LatLng(latitude, longitude),
+            travelMode: maps.TravelMode.DRIVING,
+          },
+          (res: unknown, status: string) => {
+            if (status === "OK") {
+              renderer.setDirections(res);
+              setUserLocation({
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+              });
+            } else {
+              setLocationError(
+                "Unable to calculate route."
+              );
+            }
+            setRouteLoading(false);
           }
         );
-
-        routeLine.addTo(mapRef.current);
-        routeLayerRef.current = routeLine;
-
-        const bounds = coordinates.reduce(
-          (bounds: [[number, number], [number, number]], coord) => {
-            bounds[0][0] = Math.min(
-              bounds[0][0],
-              coord[0]
-            );
-            bounds[0][1] = Math.min(
-              bounds[0][1],
-              coord[1]
-            );
-            bounds[1][0] = Math.max(
-              bounds[1][0],
-              coord[0]
-            );
-            bounds[1][1] = Math.max(
-              bounds[1][1],
-              coord[1]
-            );
-            return bounds;
-          },
-          [
-            [coordinates[0][0], coordinates[0][1]],
-            [coordinates[0][0], coordinates[0][1]],
-          ]
+      },
+      (error) => {
+        const insecure =
+          !window.isSecureContext ||
+          /secure origin/i.test(error.message || "");
+        setLocationError(
+          insecure
+            ? "Location access needs HTTPS or localhost. Please open the site over a secure (https) connection."
+            : (error.message ||
+              "Unable to get your location")
         );
-
-        mapRef.current.fitBounds(
-          bounds,
-          { padding: [50, 50] }
-        );
+        setRouteLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
       }
-    } catch {
-      setLocationError(
-        "Unable to calculate route. Please try again."
-      );
-    }
+    );
   };
 
-  const locationText = [
-    area,
-    city,
-    state,
-    country,
-  ]
+  const locationText = [area, city, state, country]
     .filter(Boolean)
     .join(", ");
 
@@ -468,6 +367,17 @@ export default function PropertyMap({
         <p className="text-sm text-text-muted">
           Exact location map is not available for this
           property.
+        </p>
+      </div>
+    );
+  }
+
+  if (!mapSettings.mapApiKey) {
+    return (
+      <div className="rounded-xl border border-border bg-surface-soft p-6 text-center">
+        <p className="text-sm text-text-muted">
+          Google Maps API key is not configured. Please
+          contact the administrator.
         </p>
       </div>
     );

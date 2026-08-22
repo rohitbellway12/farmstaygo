@@ -199,7 +199,7 @@ export const getPublicPlatformSettings = async (
         siteFaviconUrl: resolveUrl(siteFaviconUrl?.value),
         defaultCurrency: defaultCurrency?.value || "INR",
         timezone: timezone?.value || "Asia/Kolkata",
-        mapProvider: mapProvider?.value || "OPENSTREETMAP",
+        mapProvider: mapProvider?.value || "GOOGLE",
         mapApiKey: mapApiKey?.value || null,
       },
     });
@@ -238,7 +238,7 @@ export const getPublicMapSettings = async (
       success: true,
       message: "Public map settings fetched successfully",
       data: {
-        mapProvider: mapProvider?.value || "OPENSTREETMAP",
+        mapProvider: mapProvider?.value || "GOOGLE",
         mapApiKey: mapApiKey?.value || null,
       },
     });

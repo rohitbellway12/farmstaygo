@@ -210,52 +210,18 @@ interface MapSearchResult {
   lon: string;
 }
 
-interface LeafletMap {
-  setView: (
-    coordinates: [number, number],
-    zoom?: number
-  ) => LeafletMap;
-  on: (
-    eventName: "click",
-    callback: (event: {
-      latlng: {
-        lat: number;
-        lng: number;
-      };
-    }) => void
-  ) => LeafletMap;
-  remove: () => void;
-  invalidateSize: () => void;
+interface GoogleMap {
+  setCenter: (latlng: { lat: number; lng: number }) => void;
+  setZoom: (zoom: number) => void;
+  panTo: (latlng: { lat: number; lng: number }) => void;
+  addListener: (
+    eventName: string,
+    handler: (...args: any[]) => void
+  ) => { remove: () => void };
 }
 
-interface LeafletMarker {
-  addTo: (map: LeafletMap) => LeafletMarker;
-  setLatLng: (
-    coordinates: [number, number]
-  ) => LeafletMarker;
-}
-
-interface LeafletApi {
-  map: (
-    element: HTMLElement,
-    options: {
-      center: [number, number];
-      zoom: number;
-      scrollWheelZoom: boolean;
-    }
-  ) => LeafletMap;
-  tileLayer: (
-    url: string,
-    options: {
-      attribution: string;
-      maxZoom: number;
-    }
-  ) => {
-    addTo: (map: LeafletMap) => void;
-  };
-  marker: (
-    coordinates: [number, number]
-  ) => LeafletMarker;
+interface GoogleMarker {
+  setPosition: (latlng: { lat: number; lng: number }) => void;
 }
 
 const defaultMapCenter: MapCenter = {
@@ -554,19 +520,19 @@ const activeStep:
     emptyLocationForm
   );
 
-  const [mapCenter, setMapCenter] =
+  const [_mapCenter, setMapCenter] =
     useState<MapCenter>(defaultMapCenter);
 
   const mapContainerRef =
     useRef<HTMLDivElement | null>(null);
 
-  const leafletMapRef =
-    useRef<LeafletMap | null>(null);
+  const googleMapRef =
+    useRef<GoogleMap | null>(null);
 
-  const leafletMarkerRef =
-    useRef<LeafletMarker | null>(null);
+  const googleMarkerRef =
+    useRef<GoogleMarker | null>(null);
 
-  const [leafletLoaded, setLeafletLoaded] =
+  const [googleReady, setGoogleReady] =
     useState(false);
 
   const [mapSearch, setMapSearch] =
@@ -590,11 +556,14 @@ const activeStep:
   const [locationSaved, setLocationSaved] =
     useState(false);
 
+  const [mapContainerReady, setMapContainerReady] =
+    useState(false);
+
   const [mapSettings, setMapSettings] = useState<{
     mapProvider: string;
     mapApiKey: string | null;
   }>({
-    mapProvider: "OPENSTREETMAP",
+    mapProvider: "GOOGLE",
     mapApiKey: null,
   });
 
@@ -872,16 +841,14 @@ setLocationSaved(
 
         if (!cancelled) {
           setMapSettings({
-            mapProvider:
-              response.data.data.mapProvider ||
-              "OPENSTREETMAP",
+            mapProvider: "GOOGLE",
             mapApiKey: response.data.data.mapApiKey,
           });
         }
       } catch {
         if (!cancelled) {
           setMapSettings({
-            mapProvider: "OPENSTREETMAP",
+            mapProvider: "GOOGLE",
             mapApiKey: null,
           });
         }
@@ -1080,33 +1047,17 @@ const setMapCoordinates = (
     longitude: nextLongitude,
   });
 
-  const coordinates: [number, number] = [
-    nextLatitude,
-    nextLongitude,
-  ];
+  if (googleMapRef.current) {
+    googleMapRef.current.panTo({
+      lat: nextLatitude,
+      lng: nextLongitude,
+    });
 
-  if (leafletMapRef.current) {
-    leafletMapRef.current.setView(
-      coordinates,
-      16
-    );
-
-    if (leafletMarkerRef.current) {
-      leafletMarkerRef.current.setLatLng(
-        coordinates
-      );
-    } else {
-      const leaflet =
-        (window as unknown as {
-          L?: LeafletApi;
-        }).L;
-
-      if (leaflet) {
-        leafletMarkerRef.current =
-          leaflet
-            .marker(coordinates)
-            .addTo(leafletMapRef.current);
-      }
+    if (googleMarkerRef.current) {
+      googleMarkerRef.current.setPosition({
+        lat: nextLatitude,
+        lng: nextLongitude,
+      });
     }
   }
 
@@ -1155,103 +1106,114 @@ const syncMapFromTypedCoordinates = () => {
 
       const query = queryParts.join(", ");
 
-      if (
-        mapSettings.mapProvider === "GOOGLE" &&
-        mapSettings.mapApiKey
-      ) {
-        // Real Google Places search — comprehensive results, like
-        // Google Maps. Needs a Google API key with Places API enabled.
-        const url =
-          `https://maps.googleapis.com/maps/api/place/textsearch/json` +
-          `?query=${encodeURIComponent(query)}` +
-          `&key=${encodeURIComponent(mapSettings.mapApiKey)}`;
-
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          throw new Error(
-            "Location search failed."
-          );
-        }
-
-        const data = (await response.json()) as {
-          results?: Array<{
-            place_id?: string | number;
-            name?: string;
-            formatted_address?: string;
-            geometry?: {
-              location?: {
-                lat?: number;
-                lng?: number;
+      const w = window as unknown as {
+        google?: {
+          maps?: {
+            places?: {
+              PlacesService: new (
+                attr: HTMLDivElement
+              ) => {
+                textSearch: (
+                  request: {
+                    query: string;
+                  },
+                  callback: (
+                    results: Array<{
+                      place_id?: string;
+                      formatted_address?: string;
+                      name?: string;
+                      geometry?: {
+                        location?: {
+                          lat: () => number;
+                          lng: () => number;
+                        };
+                      };
+                    }> | null,
+                    status: string
+                  ) => void
+                ) => void;
+              };
+              PlacesServiceStatus: {
+                OK: string;
+                ZERO_RESULTS: string;
               };
             };
-          }>;
+          };
         };
+      };
 
-        const places = data.results ?? [];
-
-        const normalized = places
-          .filter(
-            (p) =>
-              p.geometry?.location?.lat != null &&
-              p.geometry?.location?.lng != null
-          )
-          .map((p) => ({
-            place_id:
-              typeof p.place_id === "string"
-                ? Number(p.place_id) || 0
-                : p.place_id ?? 0,
-            display_name: p.formatted_address || p.name || "",
-            lat: String(p.geometry!.location!.lat),
-            lon: String(p.geometry!.location!.lng),
-          }));
-
-        if (normalized.length === 0) {
-          setMapSearchError(
-            "No matching location found. Try a nearby landmark or area name."
-          );
-          return;
-        }
-
-        setMapSearchResults(normalized);
-        return;
+      const maps = w.google?.maps;
+      if (!maps?.places) {
+        throw new Error("Map not ready");
       }
 
-      // Fallback: OpenStreetMap Nominatim.
-      const params = new URLSearchParams({
-        q: query,
-        format: "jsonv2",
-        limit: "5",
-        addressdetails: "1",
+      const mapEl = mapContainerRef.current;
+      if (!mapEl) {
+        throw new Error("Map container not ready");
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        const service = new maps.places!.PlacesService(mapEl);
+        service.textSearch(
+          { query },
+          (
+            results,
+            status
+          ) => {
+            if (status === maps.places!.PlacesServiceStatus.OK && results) {
+              const normalized = results
+                .filter(
+                  (p) =>
+                    p.geometry?.location != null
+                )
+                .map((p) => ({
+                  place_id:
+                    typeof p.place_id ===
+                    "string"
+                      ? Number(
+                          p.place_id
+                        ) || 0
+                      : p.place_id ?? 0,
+                  display_name:
+                    p.formatted_address ||
+                    p.name ||
+                    "",
+                  lat: String(
+                    p.geometry!.location!.lat()
+                  ),
+                  lon: String(
+                    p.geometry!.location!.lng()
+                  ),
+                }));
+
+              if (normalized.length === 0) {
+                setMapSearchError(
+                  "No matching location found. Try a nearby landmark or area name."
+                );
+                resolve();
+                return;
+              }
+
+              setMapSearchResults(normalized);
+              resolve();
+            } else if (
+              status ===
+              maps.places!.PlacesServiceStatus.ZERO_RESULTS
+            ) {
+              setMapSearchError(
+                "No matching location found. Try a nearby landmark or area name."
+              );
+              resolve();
+            } else {
+              reject(
+                new Error(
+                  "Location search failed."
+                )
+              );
+            }
+          }
+        );
       });
-
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?${params.toString()}`,
-        {
-          headers: {
-            Accept: "application/json",
-            "User-Agent": "FarmStay Property Manager",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          "Location search failed."
-        );
-      }
-
-      const results =
-        (await response.json()) as MapSearchResult[];
-
-      if (results.length === 0) {
-        setMapSearchError(
-          "No matching location found. Try a nearby landmark or area name."
-        );
-        return;
-      }
-
-      setMapSearchResults(results);
     } catch {
       setMapSearchError(
         "Unable to search the map right now."
@@ -1329,187 +1291,170 @@ const selectMapSearchResult = (
 };
 
 useEffect(() => {
-  const existingLeaflet =
-    (window as unknown as {
-      L?: LeafletApi;
-    }).L;
-
-  if (existingLeaflet) {
-    setLeafletLoaded(true);
-    return;
+  if (mapContainerRef.current) {
+    setMapContainerReady(true);
   }
-
-  const stylesheetId =
-    "leaflet-map-styles";
-  const scriptId = "leaflet-map-script";
-
-  if (
-    !document.getElementById(stylesheetId)
-  ) {
-    const link =
-      document.createElement("link");
-    link.id = stylesheetId;
-    link.rel = "stylesheet";
-    link.href =
-      "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-    document.head.appendChild(link);
-  }
-
-  const existingScript =
-    document.getElementById(
-      scriptId
-    ) as HTMLScriptElement | null;
-
-  if (existingScript) {
-    existingScript.addEventListener(
-      "load",
-      () => setLeafletLoaded(true),
-      {
-        once: true,
-      }
-    );
-    return;
-  }
-
-  const script =
-    document.createElement("script");
-  script.id = scriptId;
-  script.src =
-    "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-  script.async = true;
-  script.addEventListener(
-    "load",
-    () => setLeafletLoaded(true),
-    {
-      once: true,
-    }
-  );
-  document.body.appendChild(script);
-}, []);
+}, [mapContainerRef.current]);
 
 useEffect(() => {
   if (
     activeStep !== 2 ||
-    !leafletLoaded ||
-    !mapContainerRef.current
+    !mapSettings.mapApiKey ||
+    googleReady ||
+    !mapContainerReady
   ) {
     return;
   }
 
-  const leaflet =
-    (window as unknown as {
-      L?: LeafletApi;
-    }).L;
+  let cancelled = false;
 
-  if (!leaflet) {
+  const loadGoogleMaps = (apiKey: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const w = window as unknown as {
+        google?: { maps?: unknown };
+      };
+      if (w.google?.maps) {
+        resolve();
+        return;
+      }
+
+      const existing = document.getElementById(
+        "google-maps-script-vendor"
+      );
+
+      if (existing) {
+        const interval = window.setInterval(() => {
+          if (w.google?.maps) {
+            window.clearInterval(interval);
+            resolve();
+          }
+        }, 100);
+        window.setTimeout(() => {
+          window.clearInterval(interval);
+          resolve();
+        }, 10000);
+        return;
+      }
+
+      const callbackName = "__fsgMapsCallbackVendor";
+      (window as unknown as Record<string, () => void>)[
+        callbackName
+      ] = () => resolve();
+
+      const script = document.createElement("script");
+      script.id = "google-maps-script-vendor";
+      script.src =
+        `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(
+          apiKey
+        )}&libraries=places&callback=${callbackName}`;
+      script.async = true;
+      script.onerror = () =>
+        reject(new Error("Failed to load Google Maps"));
+      document.head.appendChild(script);
+    });
+  };
+
+  loadGoogleMaps(mapSettings.mapApiKey)
+    .then(() => {
+      if (!cancelled) setGoogleReady(true);
+    })
+    .catch(() => {
+      if (!cancelled) setGoogleReady(false);
+    });
+
+  return () => {
+    cancelled = true;
+  };
+}, [activeStep, mapSettings.mapApiKey, mapContainerReady]);
+
+useEffect(() => {
+  if (
+    activeStep !== 2 ||
+    !googleReady ||
+    !mapContainerReady
+  ) {
     return;
   }
 
-  if (leafletMapRef.current) {
-    leafletMapRef.current.remove();
-    leafletMapRef.current = null;
+  const w = window as unknown as {
+    google?: {
+      maps?: {
+        Map: new (
+          el: HTMLElement,
+          opts: Record<string, unknown>
+        ) => GoogleMap;
+        Marker: new (
+          opts: Record<string, unknown>
+        ) => GoogleMarker;
+      };
+    };
+  };
+
+  if (!w.google?.maps) {
+    return;
   }
 
-  leafletMarkerRef.current = null;
+  if (googleMapRef.current) {
+    googleMapRef.current = null;
+    googleMarkerRef.current = null;
+  }
 
-  const initialCenter: [number, number] = [
-    isValidLatitude(locationForm.latitude)
+  const initialCenter: { lat: number; lng: number } = {
+    lat: isValidLatitude(locationForm.latitude)
       ? Number(locationForm.latitude)
-      : mapCenter.latitude,
-    isValidLongitude(locationForm.longitude)
+      : _mapCenter.latitude,
+    lng: isValidLongitude(locationForm.longitude)
       ? Number(locationForm.longitude)
-      : mapCenter.longitude,
-  ];
+      : _mapCenter.longitude,
+  };
 
-  const map = leaflet.map(
+  const maps = w.google?.maps;
+  if (!maps || !mapContainerRef.current) {
+    return;
+  }
+
+  const map = new maps.Map(
     mapContainerRef.current,
     {
       center: initialCenter,
       zoom: 13,
-      scrollWheelZoom: true,
+      mapTypeControl: false,
+      scrollwheel: true,
     }
   );
 
-  const tileConfig = (() => {
-    switch (mapSettings.mapProvider) {
-      case "GOOGLE":
-        return {
-          url:
-            `https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}` +
-            (mapSettings.mapApiKey
-              ? `&key=${mapSettings.mapApiKey}`
-              : ""),
-          attribution:
-            '&copy; <a href="https://maps.google.com">Google Maps</a>',
-        };
-      case "MAPBOX":
-        return {
-          url:
-            mapSettings.mapApiKey &&
-            `https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=${mapSettings.mapApiKey}`,
-          attribution:
-            '&copy; <a href="https://www.mapbox.com/">Mapbox</a>',
-        };
-      default:
-        return {
-          url:
-            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        };
-    }
-  })();
+  const marker = new maps.Marker({
+    position: initialCenter,
+    map,
+  });
 
-  if (tileConfig.url) {
-    leaflet
-      .tileLayer(tileConfig.url, {
-        attribution: tileConfig.attribution,
-        maxZoom: 19,
-      })
-      .addTo(map);
-  }
+  googleMapRef.current = map;
+  googleMarkerRef.current = marker;
 
-  leafletMapRef.current = map;
-
-  if (
-    isValidLatitude(locationForm.latitude) &&
-    isValidLongitude(locationForm.longitude)
-  ) {
-    leafletMarkerRef.current = leaflet
-      .marker(initialCenter)
-      .addTo(map);
-  }
-
-  map.on("click", (event) => {
+  map.addListener("click", (event: { latLng: { lat: () => number; lng: () => number } }) => {
     if (editingBlocked) {
       return;
     }
 
-    setMapCoordinates(
-      event.latlng.lat,
-      event.latlng.lng
-    );
+    const lat = event.latLng.lat();
+    const lng = event.latLng.lng();
+
+    setMapCoordinates(lat, lng);
   });
 
-  window.setTimeout(() => {
-    map.invalidateSize();
-  }, 100);
-
   return () => {
-    map.remove();
-    leafletMapRef.current = null;
-    leafletMarkerRef.current = null;
+    googleMapRef.current = null;
+    googleMarkerRef.current = null;
   };
 }, [
   activeStep,
+  googleReady,
+  mapContainerReady,
   editingBlocked,
-  leafletLoaded,
   locationForm.latitude,
   locationForm.longitude,
-  mapCenter.latitude,
-  mapCenter.longitude,
-  mapSettings.mapProvider,
-  mapSettings.mapApiKey,
+  _mapCenter.latitude,
+  _mapCenter.longitude,
 ]);
 
   /*
@@ -3421,7 +3366,7 @@ const handleMovePropertyImage =
       </div>
 
       <div className="relative mt-5 overflow-hidden rounded-dashboard-card border border-border bg-surface-soft">
-        {!leafletLoaded && (
+        {!googleReady && (
           <div className="absolute inset-0 z-10 grid place-items-center bg-surface-soft text-sm font-bold text-text-muted">
             Loading map...
           </div>
