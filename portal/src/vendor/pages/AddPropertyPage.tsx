@@ -1290,9 +1290,14 @@ const syncMapFromTypedCoordinates = () => {
         setFetchingCurrentLocation(false);
       },
       (error) => {
+        const insecure =
+          !window.isSecureContext ||
+          /secure origin/i.test(error.message || "");
         setCurrentLocationError(
-          error.message ||
-            "Unable to fetch current location."
+          insecure
+            ? "Location access needs HTTPS or localhost. Please open the site over a secure (https) connection."
+            : (error.message ||
+              "Unable to fetch current location.")
         );
         setFetchingCurrentLocation(false);
       },

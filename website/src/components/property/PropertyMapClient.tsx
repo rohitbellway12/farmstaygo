@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { apiFetch } from "@/lib/api";
 
 interface PropertyMapProps {
   latitude: number | null;
@@ -97,23 +98,13 @@ export default function PropertyMap({
 
     const loadMapSettings = async () => {
       try {
-        const response = await fetch(
-          "/api/public/settings/map"
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            "Failed to load map settings"
-          );
-        }
-
-        const data = (await response.json()) as {
+        const data = await apiFetch<{
           success: boolean;
           data: {
             mapProvider: string;
             mapApiKey: string | null;
           };
-        };
+        }>("/public/settings/map");
 
         if (!cancelled) {
           setMapSettings({
@@ -237,8 +228,10 @@ export default function PropertyMap({
         case "GOOGLE":
           return {
             url:
-              mapSettings.mapApiKey &&
-              `https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${mapSettings.mapApiKey}`,
+              `https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}` +
+              (mapSettings.mapApiKey
+                ? `&key=${mapSettings.mapApiKey}`
+                : ""),
             attribution:
               '&copy; <a href="https://maps.google.com">Google Maps</a>',
           };
@@ -335,9 +328,14 @@ export default function PropertyMap({
           setRouteLoading(false);
         },
         (error) => {
+          const insecure =
+            !window.isSecureContext ||
+            /secure origin/i.test(error.message || "");
           setLocationError(
-            error.message ||
-              "Unable to get your location"
+            insecure
+              ? "Location access needs HTTPS or localhost. Please open the site over a secure (https) connection."
+              : (error.message ||
+                "Unable to get your location")
           );
           setRouteLoading(false);
         },
