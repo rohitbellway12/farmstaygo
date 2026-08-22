@@ -204,24 +204,10 @@ interface MapCenter {
 }
 
 interface MapSearchResult {
-  place_id: number;
+  place_id: string;
   display_name: string;
   lat: string;
   lon: string;
-}
-
-interface GoogleMap {
-  setCenter: (latlng: { lat: number; lng: number }) => void;
-  setZoom: (zoom: number) => void;
-  panTo: (latlng: { lat: number; lng: number }) => void;
-  addListener: (
-    eventName: string,
-    handler: (...args: any[]) => void
-  ) => { remove: () => void };
-}
-
-interface GoogleMarker {
-  setPosition: (latlng: { lat: number; lng: number }) => void;
 }
 
 const defaultMapCenter: MapCenter = {
@@ -527,10 +513,18 @@ const activeStep:
     useRef<HTMLDivElement | null>(null);
 
   const googleMapRef =
-    useRef<GoogleMap | null>(null);
+    useRef<{
+      addListener: (
+        eventName: string,
+        handler: (...args: any[]) => void
+      ) => { remove: () => void };
+      panTo: (latlng: { lat: number; lng: number }) => void;
+    } | null>(null);
 
   const googleMarkerRef =
-    useRef<GoogleMarker | null>(null);
+    useRef<{
+      setPosition: (latlng: { lat: number; lng: number }) => void;
+    } | null>(null);
 
   const [googleReady, setGoogleReady] =
     useState(false);
@@ -546,6 +540,20 @@ const activeStep:
 
   const [mapSearchError, setMapSearchError] =
     useState("");
+
+  const [mapPredictions, setMapPredictions] =
+    useState<
+      Array<{
+        place_id: string;
+        description: string;
+      }>
+    >([]);
+
+  const autocompleteServiceRef =
+    useRef<any>(null);
+
+  const debounceTimerRef =
+    useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [fetchingCurrentLocation, setFetchingCurrentLocation] =
     useState(false);
@@ -1077,150 +1085,6 @@ const syncMapFromTypedCoordinates = () => {
     Number(locationForm.latitude),
     Number(locationForm.longitude)
   );
-};
-
-  const handleMapSearch = async () => {
-    if (editingBlocked) {
-      return;
-    }
-
-    const queryParts = [
-      mapSearch.trim(),
-      locationForm.city,
-      locationForm.state,
-      locationForm.country,
-    ].filter(Boolean);
-
-    if (!mapSearch.trim()) {
-      setMapSearchError(
-        "Please enter a place, road, landmark or area."
-      );
-      setMapSearchResults([]);
-      return;
-    }
-
-    try {
-      setMapSearching(true);
-      setMapSearchError("");
-      setMapSearchResults([]);
-
-      const query = queryParts.join(", ");
-
-      const w = window as unknown as {
-        google?: {
-          maps?: {
-            places?: {
-              PlacesService: new (
-                attr: HTMLDivElement
-              ) => {
-                textSearch: (
-                  request: {
-                    query: string;
-                  },
-                  callback: (
-                    results: Array<{
-                      place_id?: string;
-                      formatted_address?: string;
-                      name?: string;
-                      geometry?: {
-                        location?: {
-                          lat: () => number;
-                          lng: () => number;
-                        };
-                      };
-                    }> | null,
-                    status: string
-                  ) => void
-                ) => void;
-              };
-              PlacesServiceStatus: {
-                OK: string;
-                ZERO_RESULTS: string;
-              };
-            };
-          };
-        };
-      };
-
-      const maps = w.google?.maps;
-      if (!maps?.places) {
-        throw new Error("Map not ready");
-      }
-
-      const mapEl = mapContainerRef.current;
-      if (!mapEl) {
-        throw new Error("Map container not ready");
-      }
-
-      await new Promise<void>((resolve, reject) => {
-        const service = new maps.places!.PlacesService(mapEl);
-        service.textSearch(
-          { query },
-          (
-            results,
-            status
-          ) => {
-            if (status === maps.places!.PlacesServiceStatus.OK && results) {
-              const normalized = results
-                .filter(
-                  (p) =>
-                    p.geometry?.location != null
-                )
-                .map((p) => ({
-                  place_id:
-                    typeof p.place_id ===
-                    "string"
-                      ? Number(
-                          p.place_id
-                        ) || 0
-                      : p.place_id ?? 0,
-                  display_name:
-                    p.formatted_address ||
-                    p.name ||
-                    "",
-                  lat: String(
-                    p.geometry!.location!.lat()
-                  ),
-                  lon: String(
-                    p.geometry!.location!.lng()
-                  ),
-                }));
-
-              if (normalized.length === 0) {
-                setMapSearchError(
-                  "No matching location found. Try a nearby landmark or area name."
-                );
-                resolve();
-                return;
-              }
-
-              setMapSearchResults(normalized);
-              resolve();
-            } else if (
-              status ===
-              maps.places!.PlacesServiceStatus.ZERO_RESULTS
-            ) {
-              setMapSearchError(
-                "No matching location found. Try a nearby landmark or area name."
-              );
-              resolve();
-            } else {
-              reject(
-                new Error(
-                  "Location search failed."
-                )
-              );
-            }
-          }
-        );
-      });
-    } catch {
-      setMapSearchError(
-        "Unable to search the map right now."
-      );
-    } finally {
-      setMapSearching(false);
-    }
   };
 
   const handleGetCurrentLocation = () => {
@@ -1271,26 +1135,7 @@ const syncMapFromTypedCoordinates = () => {
     );
   };
 
-const selectMapSearchResult = (
-  result: MapSearchResult
-) => {
-  const latitude = Number(result.lat);
-  const longitude = Number(result.lon);
-
-  if (
-    !Number.isFinite(latitude) ||
-    !Number.isFinite(longitude)
-  ) {
-    return;
-  }
-
-  setMapSearch(result.display_name);
-  setMapSearchResults([]);
-  setMapSearchError("");
-  setMapCoordinates(latitude, longitude);
-};
-
-useEffect(() => {
+  useEffect(() => {
   if (mapContainerRef.current) {
     setMapContainerReady(true);
   }
@@ -1368,6 +1213,260 @@ useEffect(() => {
 }, [activeStep, mapSettings.mapApiKey, mapContainerReady]);
 
 useEffect(() => {
+  if (!googleReady || !mapContainerReady) {
+    return;
+  }
+
+  const w = window as any;
+
+  if (!w.google?.maps?.places) {
+    return;
+  }
+
+  autocompleteServiceRef.current =
+    new w.google.maps.places.AutocompleteService();
+
+  return () => {
+    autocompleteServiceRef.current = null;
+  };
+}, [googleReady, mapContainerReady]);
+
+useEffect(() => {
+  return () => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+  };
+}, []);
+
+const fetchPlacePredictions = (
+  input: string
+) => {
+  if (!input.trim()) {
+    setMapPredictions([]);
+    return;
+  }
+
+  const service = autocompleteServiceRef.current;
+  if (!service) {
+    return;
+  }
+
+  service.getPlacePredictions(
+    {
+      input: input.trim(),
+      types: ["geocode", "establishment"],
+    },
+    (predictions: any, status: any) => {
+      if (
+        status ===
+          (window as any).google.maps.places.PlacesServiceStatus.OK &&
+        predictions
+      ) {
+        setMapPredictions(predictions);
+        setMapSearchError("");
+      } else if (
+        status ===
+        (window as any).google.maps.places.PlacesServiceStatus.ZERO_RESULTS
+      ) {
+        setMapPredictions([]);
+      } else {
+        setMapPredictions([]);
+      }
+    }
+  );
+};
+
+const getPlaceDetails = (
+  placeId: string
+): Promise<{
+  lat: number;
+  lng: number;
+  name: string;
+  address: string;
+}> => {
+  return new Promise((resolve, reject) => {
+    const mapEl = mapContainerRef.current;
+    if (!mapEl) {
+      reject(new Error("Map container not ready"));
+      return;
+    }
+
+    const w = window as any;
+
+    if (!w.google?.maps?.places) {
+      reject(new Error("Places service not ready"));
+      return;
+    }
+
+    const service = new w.google.maps.places.PlacesService(mapEl);
+    service.getDetails(
+      {
+        placeId,
+        fields: [
+          "geometry",
+          "formatted_address",
+          "name",
+        ],
+      },
+      (place: any, status: any) => {
+        if (
+          status ===
+          (window as any).google.maps.places.PlacesServiceStatus.OK &&
+          place?.geometry?.location
+        ) {
+          resolve({
+            lat: place.geometry.location.lat(),
+            lng: place.geometry.location.lng(),
+            name: place.name || place.formatted_address || "",
+            address:
+              place.formatted_address || place.name || "",
+          });
+        } else {
+          reject(new Error("Place details not found"));
+        }
+      }
+    );
+  });
+};
+
+const selectMapSearchResult = async (
+  prediction: {
+    place_id: string;
+    description: string;
+  }
+) => {
+  try {
+    setMapSearching(true);
+    const details = await getPlaceDetails(
+      prediction.place_id
+    );
+
+    setMapSearch(details.name || prediction.description);
+    setMapSearchResults([]);
+    setMapPredictions([]);
+    setMapSearchError("");
+    setMapCoordinates(details.lat, details.lng);
+  } catch {
+    setMapSearchError(
+      "Unable to fetch place details. Please try again."
+    );
+  } finally {
+    setMapSearching(false);
+  }
+};
+
+  const handleMapSearch = async () => {
+    if (editingBlocked) {
+      return;
+    }
+
+    setMapPredictions([]);
+
+    if (!mapSearch.trim()) {
+      setMapSearchError(
+        "Please enter a place, road, landmark or area."
+      );
+      setMapSearchResults([]);
+      return;
+    }
+
+  try {
+    setMapSearching(true);
+    setMapSearchError("");
+    setMapSearchResults([]);
+    setMapPredictions([]);
+
+    const w = window as any;
+
+    const maps = w.google?.maps;
+    if (!maps?.places) {
+      throw new Error("Map not ready");
+    }
+
+    const mapEl = mapContainerRef.current;
+    if (!mapEl) {
+      throw new Error("Map container not ready");
+    }
+
+    const queryParts = [
+      mapSearch.trim(),
+      locationForm.city,
+      locationForm.state,
+      locationForm.country,
+    ].filter(Boolean);
+    const query = queryParts.join(", ");
+
+    await new Promise<void>((resolve, reject) => {
+      const service = new maps.places!.PlacesService(mapEl);
+      service.textSearch(
+        { query },
+        (
+          results: any,
+          status: any
+        ) => {
+          if (status === maps.places!.PlacesServiceStatus.OK && results) {
+            const normalized = results
+              .filter(
+                (p: any) =>
+                  p.geometry?.location != null
+              )
+              .map((p: any) => ({
+                place_id:
+                  typeof p.place_id ===
+                    "string"
+                      ? p.place_id
+                      : String(p.place_id ?? ""),
+                display_name:
+                  p.formatted_address ||
+                  p.name ||
+                  "",
+                lat: String(
+                  p.geometry!.location!.lat()
+                ),
+                lon: String(
+                  p.geometry!.location!.lng()
+                ),
+              }));
+
+            if (normalized.length === 0) {
+              setMapSearchError(
+                "No matching location found. Try a nearby landmark or area name."
+              );
+              resolve();
+              return;
+            }
+
+            setMapSearchResults(normalized);
+            resolve();
+          } else if (
+            status ===
+            maps.places!.PlacesServiceStatus.ZERO_RESULTS
+          ) {
+            setMapSearchError(
+              "No matching location found. Try a nearby landmark or area name."
+            );
+            resolve();
+          } else {
+            reject(
+              new Error(
+                "Location search failed."
+              )
+            );
+          }
+        }
+      );
+    });
+  } catch {
+    setMapSearchError(
+      "Unable to search the map right now."
+    );
+  } finally {
+    setMapSearching(false);
+  }
+};
+
+useEffect(() => {
   if (
     activeStep !== 2 ||
     !googleReady ||
@@ -1382,10 +1481,18 @@ useEffect(() => {
         Map: new (
           el: HTMLElement,
           opts: Record<string, unknown>
-        ) => GoogleMap;
+        ) => {
+          addListener: (
+            eventName: string,
+            handler: (...args: any[]) => void
+          ) => { remove: () => void };
+          panTo: (latlng: { lat: number; lng: number }) => void;
+        };
         Marker: new (
           opts: Record<string, unknown>
-        ) => GoogleMarker;
+        ) => {
+          setPosition: (latlng: { lat: number; lng: number }) => void;
+        };
       };
     };
   };
@@ -3292,11 +3399,18 @@ const handleMovePropertyImage =
                 }
               }}
               onChange={(event) => {
-                setMapSearch(
-                  event.target.value
-                );
+                const value = event.target.value;
+                setMapSearch(value);
                 setMapSearchError("");
                 setMapSearchResults([]);
+
+                if (debounceTimerRef.current) {
+                  clearTimeout(debounceTimerRef.current);
+                }
+
+                debounceTimerRef.current = setTimeout(() => {
+                  fetchPlacePredictions(value);
+                }, 300);
               }}
               placeholder="Search landmark, road, farm name or area"
               className="h-12 w-full rounded-control border border-border bg-surface px-4 text-base text-text-main outline-none transition placeholder:text-text-soft focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
@@ -3347,14 +3461,29 @@ const handleMovePropertyImage =
           </p>
         )}
 
-        {mapSearchResults.length > 0 && (
+        {(mapPredictions.length > 0 || mapSearchResults.length > 0) && (
           <div className="absolute left-0 right-0 top-[84px] z-40 overflow-hidden rounded-dashboard-card border border-border bg-white shadow-dashboard-lg">
-            {mapSearchResults.map((result) => (
+            {mapPredictions.map((prediction) => (
               <button
-                key={result.place_id}
+                key={`prediction-${prediction.place_id}`}
                 type="button"
                 onClick={() =>
-                  selectMapSearchResult(result)
+                  selectMapSearchResult(prediction)
+                }
+                className="block w-full border-b border-border px-4 py-3 text-left text-sm font-semibold text-text-secondary transition last:border-b-0 hover:bg-primary-50 hover:text-primary-700"
+              >
+                {prediction.description}
+              </button>
+            ))}
+            {mapSearchResults.map((result) => (
+              <button
+                key={`result-${result.place_id}`}
+                type="button"
+                onClick={() =>
+                  selectMapSearchResult({
+                    place_id: String(result.place_id),
+                    description: result.display_name,
+                  })
                 }
                 className="block w-full border-b border-border px-4 py-3 text-left text-sm font-semibold text-text-secondary transition last:border-b-0 hover:bg-primary-50 hover:text-primary-700"
               >
