@@ -1392,13 +1392,9 @@ export const createBookingRequest =
           "This payment method is not enabled.";
       }
 
-      if (
-        paymentMethod === "ONLINE" &&
-        !paymentVerification
-      ) {
-        errors.paymentMethod =
-          "Online payment verification is required. Please complete the payment first.";
-      }
+      // Note: a booking request may be created first (as a short hold)
+      // and paid later via the Razorpay verify endpoint, so an ONLINE
+      // request without an immediate paymentVerification is valid.
 
       if (
         Object.keys(errors).length > 0 ||
