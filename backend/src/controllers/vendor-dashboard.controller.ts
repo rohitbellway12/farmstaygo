@@ -6,6 +6,7 @@ import {
 } from "../generated/prisma/client.js";
 
 import prisma from "../config/database.js";
+import { UNPAID_HOLD_EXCLUSION } from "./booking.controller.js";
 
 import type {
   AuthenticatedRequest,
@@ -147,6 +148,7 @@ export const getVendorDashboardStats = async (
       prisma.booking.findMany({
         where: {
           property: { vendorId: vendor.id },
+          ...UNPAID_HOLD_EXCLUSION,
         },
         take: 5,
         orderBy: { createdAt: "desc" },

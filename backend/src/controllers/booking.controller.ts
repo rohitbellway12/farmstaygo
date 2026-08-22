@@ -138,6 +138,24 @@ const getActiveAvailabilityBookingWhere =
     } satisfies Prisma.BookingWhereInput;
   };
 
+// An unpaid deposit "hold" is a temporary slot reservation created before
+// the customer pays. It must NOT appear in any booking list (user, vendor
+// or admin) — only once it is actually paid does it become a real booking.
+// Genuine booking requests (no deposit / pending bank-transfer approval)
+// still remain visible to the vendor for action.
+export const UNPAID_HOLD_EXCLUSION: Prisma.BookingWhereInput = {
+  NOT: {
+    status: BookingStatus.REQUESTED,
+    paymentStatus: "PENDING",
+    reservationAmount: {
+      gt: 0,
+    },
+    payments: {
+      none: {},
+    },
+  },
+};
+
 const parseDateOnly = (
   value: unknown
 ): Date | null => {
@@ -2552,6 +2570,7 @@ export const getMyBookings = async (
       await prisma.booking.findMany({
         where: {
           userId: req.user.id,
+          ...UNPAID_HOLD_EXCLUSION,
         },
         include: bookingListInclude,
         orderBy: {
@@ -2614,6 +2633,7 @@ export const getVendorBookings = async (
           property: {
             vendorId: vendor.id,
           },
+          ...UNPAID_HOLD_EXCLUSION,
         },
         include: bookingListInclude,
         orderBy: {
@@ -2648,6 +2668,9 @@ export const getAdminBookings = async (
   try {
     const bookings =
       await prisma.booking.findMany({
+        where: {
+          ...UNPAID_HOLD_EXCLUSION,
+        },
         include: bookingListInclude,
         orderBy: {
           createdAt: "desc",

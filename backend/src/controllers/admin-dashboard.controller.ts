@@ -7,6 +7,7 @@ import {
 } from "../generated/prisma/client.js";
 
 import prisma from "../config/database.js";
+import { UNPAID_HOLD_EXCLUSION } from "./booking.controller.js";
 
 import type {
   AuthenticatedRequest,
@@ -102,6 +103,9 @@ export const getAdminDashboardStats = async (
         _sum: { commissionAmount: true },
       }),
       prisma.booking.findMany({
+        where: {
+          ...UNPAID_HOLD_EXCLUSION,
+        },
         take: 5,
         orderBy: { createdAt: "desc" },
         select: {
