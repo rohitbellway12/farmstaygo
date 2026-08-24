@@ -18,10 +18,13 @@ import {
   updatePlatformSettings,
   updateMapSettings,
   updateHomeSettings,
-  type ContactSettings,
-  type SocialLink,
-  type MapSettings,
-  type HomeSettings,
+} from "../../shared/api/contactApi";
+
+import type {
+  ContactSettings,
+  SocialLink,
+  MapSettings,
+  HomeSettings,
 } from "../../shared/api/contactApi";
 
 interface ApiErrorResponse {

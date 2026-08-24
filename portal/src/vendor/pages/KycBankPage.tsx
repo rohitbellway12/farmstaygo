@@ -3,8 +3,9 @@ import {
   useCallback,
   useEffect,
   useState,
-  type FormEvent,
 } from "react";
+
+import type { FormEvent } from "react";
 
 import api from "../../shared/api/api";
 import {

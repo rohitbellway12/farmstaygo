@@ -12,8 +12,11 @@ import {
   fetchSupportTicketStats,
   fetchSupportTickets,
   updateSupportTicket,
-  type SupportTicket,
-  type SupportTicketsResponse,
+} from "../../shared/api/supportTicketApi";
+
+import type {
+  SupportTicket,
+  SupportTicketsResponse,
 } from "../../shared/api/supportTicketApi";
 
 interface ToastState {

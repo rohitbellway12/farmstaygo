@@ -11,8 +11,11 @@ import {
   markAllContactMessagesRead,
   deleteContactMessage,
   fetchUnreadContactMessageCount,
-  type ContactMessage,
-  type ContactMessagesResponse,
+} from "../../shared/api/contactApi";
+
+import type {
+  ContactMessage,
+  ContactMessagesResponse,
 } from "../../shared/api/contactApi";
 
 interface ToastState {

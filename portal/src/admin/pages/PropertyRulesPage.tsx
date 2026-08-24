@@ -4,8 +4,9 @@ import {
   useEffect,
   useMemo,
   useState,
-  type FormEvent,
 } from "react";
+
+import type { FormEvent } from "react";
 
 import api from "../../shared/api/api";
 
