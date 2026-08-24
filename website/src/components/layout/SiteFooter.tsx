@@ -231,7 +231,7 @@ export default async function SiteFooter() {
             </div>
           </div>
 
-          <p className="mt-4 text-center text-[13px] text-white/50">
+          <p className="mt-4 text-left text-[13px] text-white/50">
             Designed &amp; Developed by{" "}
             <a
               href="https://bellwayinfotech.com/"
