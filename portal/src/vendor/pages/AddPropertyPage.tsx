@@ -224,6 +224,10 @@ const clamp = (
 const isValidLatitude = (
   value: string
 ): boolean => {
+  if (!value || !value.trim()) {
+    return false;
+  }
+
   const parsed = Number(value);
 
   return (
@@ -236,6 +240,10 @@ const isValidLatitude = (
 const isValidLongitude = (
   value: string
 ): boolean => {
+  if (!value || !value.trim()) {
+    return false;
+  }
+
   const parsed = Number(value);
 
   return (
@@ -526,8 +534,13 @@ const activeStep:
       setPosition: (latlng: { lat: number; lng: number }) => void;
     } | null>(null);
 
+  const autoLocatedRef = useRef(false);
+
   const [googleReady, setGoogleReady] =
     useState(false);
+
+  const [mapLoadError, setMapLoadError] =
+    useState<string | null>(null);
 
   const [mapSearch, setMapSearch] =
     useState("");
@@ -566,6 +579,15 @@ const activeStep:
 
   const [mapContainerReady, setMapContainerReady] =
     useState(false);
+
+  const setMapContainerNode = useCallback(
+    (node: HTMLDivElement | null) => {
+      mapContainerRef.current = node;
+      setMapContainerReady(!!node);
+    },
+    []
+  );
+
 
   const [mapSettings, setMapSettings] = useState<{
     mapProvider: string;
@@ -1087,6 +1109,45 @@ const syncMapFromTypedCoordinates = () => {
   );
   };
 
+  const reverseGeocodeToSearch = (
+    latitude: number,
+    longitude: number
+  ): void => {
+    const w = window as any;
+
+    const fallback = () =>
+      setMapSearch(
+        `Current Location (${latitude.toFixed(6)}, ${longitude.toFixed(6)})`
+      );
+
+    if (!w.google?.maps?.Geocoder) {
+      fallback();
+      return;
+    }
+
+    const geocoder = new w.google.maps.Geocoder();
+
+    geocoder.geocode(
+      { location: { lat: latitude, lng: longitude } },
+      (
+        results:
+          | Array<{ formatted_address: string }>
+          | null,
+        status: string
+      ) => {
+        if (
+          status === w.google.maps.GeocoderStatus.OK &&
+          results &&
+          results[0]
+        ) {
+          setMapSearch(results[0].formatted_address);
+        } else {
+          fallback();
+        }
+      }
+    );
+  };
+
   const handleGetCurrentLocation = () => {
     if (editingBlocked || fetchingCurrentLocation) {
       return;
@@ -1108,12 +1169,10 @@ const syncMapFromTypedCoordinates = () => {
         const longitude = position.coords.longitude;
 
         setMapCoordinates(latitude, longitude);
-        setMapSearch(
-          `Current Location (${latitude.toFixed(6)}, ${longitude.toFixed(6)})`
-        );
         setMapSearchResults([]);
         setMapSearchError("");
         setFetchingCurrentLocation(false);
+        reverseGeocodeToSearch(latitude, longitude);
       },
       (error) => {
         const insecure =
@@ -1136,12 +1195,6 @@ const syncMapFromTypedCoordinates = () => {
   };
 
   useEffect(() => {
-  if (mapContainerRef.current) {
-    setMapContainerReady(true);
-  }
-}, [mapContainerRef.current]);
-
-useEffect(() => {
   if (
     activeStep !== 2 ||
     !mapSettings.mapApiKey ||
@@ -1152,6 +1205,8 @@ useEffect(() => {
   }
 
   let cancelled = false;
+
+  setMapLoadError(null);
 
   const loadGoogleMaps = (apiKey: string): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -1176,8 +1231,12 @@ useEffect(() => {
         }, 100);
         window.setTimeout(() => {
           window.clearInterval(interval);
-          resolve();
-        }, 10000);
+          if (!w.google?.maps) {
+            reject(
+              new Error("Timed out waiting for Google Maps")
+            );
+          }
+        }, 15000);
         return;
       }
 
@@ -1191,20 +1250,38 @@ useEffect(() => {
       script.src =
         `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(
           apiKey
-        )}&libraries=places&callback=${callbackName}`;
+        )}&libraries=places&callback=${callbackName}&loading=async`;
       script.async = true;
       script.onerror = () =>
         reject(new Error("Failed to load Google Maps"));
       document.head.appendChild(script);
+
+      window.setTimeout(() => {
+        if (!w.google?.maps) {
+          reject(
+            new Error("Timed out waiting for Google Maps")
+          );
+        }
+      }, 15000);
     });
   };
 
   loadGoogleMaps(mapSettings.mapApiKey)
     .then(() => {
-      if (!cancelled) setGoogleReady(true);
+      if (!cancelled) {
+        setGoogleReady(true);
+        setMapLoadError(null);
+      }
     })
-    .catch(() => {
-      if (!cancelled) setGoogleReady(false);
+    .catch((error: unknown) => {
+      if (!cancelled) {
+        setGoogleReady(false);
+        setMapLoadError(
+          error instanceof Error
+            ? error.message
+            : "Unable to load Google Maps"
+        );
+      }
     });
 
   return () => {
@@ -1562,6 +1639,36 @@ useEffect(() => {
   locationForm.longitude,
   _mapCenter.latitude,
   _mapCenter.longitude,
+]);
+
+useEffect(() => {
+  if (
+    activeStep !== 2 ||
+    !googleReady ||
+    !mapContainerReady ||
+    editingBlocked ||
+    autoLocatedRef.current
+  ) {
+    return;
+  }
+
+  if (
+    isValidLatitude(locationForm.latitude) &&
+    isValidLongitude(locationForm.longitude)
+  ) {
+    autoLocatedRef.current = true;
+    return;
+  }
+
+  autoLocatedRef.current = true;
+  handleGetCurrentLocation();
+}, [
+  activeStep,
+  googleReady,
+  mapContainerReady,
+  editingBlocked,
+  locationForm.latitude,
+  locationForm.longitude,
 ]);
 
   /*
@@ -3495,14 +3602,18 @@ const handleMovePropertyImage =
       </div>
 
       <div className="relative mt-5 overflow-hidden rounded-dashboard-card border border-border bg-surface-soft">
-        {!googleReady && (
+        {mapLoadError ? (
+          <div className="absolute inset-0 z-10 grid place-items-center bg-surface-soft px-4 text-center text-sm font-bold text-red-600">
+            {mapLoadError}
+          </div>
+        ) : !googleReady ? (
           <div className="absolute inset-0 z-10 grid place-items-center bg-surface-soft text-sm font-bold text-text-muted">
             Loading map...
           </div>
-        )}
+        ) : null}
 
         <div
-          ref={mapContainerRef}
+          ref={setMapContainerNode}
           className={`h-[420px] w-full ${
             editingBlocked
               ? "pointer-events-none opacity-70"
