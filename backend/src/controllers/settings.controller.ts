@@ -1,4 +1,4 @@
-import type { Response } from "express";
+import type { Request, Response } from "express";
 
 import prisma from "../config/database.js";
 
@@ -10,6 +10,8 @@ import {
   createSettingsImageUpload,
   deletePublicStorageFile,
   getSettingsImageStoragePath,
+  processHomeImage,
+  HOME_IMAGE_SIZES,
 } from "../config/upload.js";
 
 interface PlatformSettings {
@@ -529,6 +531,178 @@ export const updatePaymentSettings = async (
     return res.status(500).json({
       success: false,
       message: "Unable to update payment settings",
+    });
+  }
+};
+
+interface HomeSettings {
+  homeHeroImage: string | null;
+  homeGrowImage: string | null;
+}
+
+const resolveSettingUrl = (
+  req: Request,
+  url: string | null | undefined
+): string | null => {
+  if (!url) {
+    return null;
+  }
+
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+  return `${baseUrl}${url}`;
+};
+
+export const getHomeSettings = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    const [homeHeroImage, homeGrowImage] = await Promise.all([
+      getSetting("home_hero_image"),
+      getSetting("home_grow_image"),
+    ]);
+
+    const settings: HomeSettings = {
+      homeHeroImage: resolveSettingUrl(req, homeHeroImage),
+      homeGrowImage: resolveSettingUrl(req, homeGrowImage),
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: "Home settings fetched successfully",
+      data: settings,
+    });
+  } catch (error) {
+    console.error("Get home settings error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to fetch home settings",
+    });
+  }
+};
+
+export const updateHomeSettings = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    const files = (
+      req as unknown as {
+        files?: Record<string, Express.Multer.File[]>;
+      }
+    ).files;
+
+    const items: Array<{
+      key: string;
+      size: { width: number; height: number };
+      file?: Express.Multer.File;
+    }> = [
+      {
+        key: "home_hero_image",
+        size: HOME_IMAGE_SIZES.hero,
+        file: files?.hero?.[0],
+      },
+      {
+        key: "home_grow_image",
+        size: HOME_IMAGE_SIZES.grow,
+        file: files?.grow?.[0],
+      },
+    ];
+
+    const newValues: Record<string, string> = {};
+
+    for (const item of items) {
+      if (!item.file) {
+        continue;
+      }
+
+      const existing = await getSetting(item.key);
+
+      if (existing) {
+        deletePublicStorageFile(existing);
+      }
+
+      newValues[item.key] = await processHomeImage(
+        item.file,
+        item.size.width,
+        item.size.height
+      );
+    }
+
+    if (Object.keys(newValues).length === 0) {
+      return res.status(422).json({
+        success: false,
+        message: "Please upload at least one home page image",
+      });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      for (const [key, value] of Object.entries(newValues)) {
+        await tx.setting.upsert({
+          where: { key },
+          update: { value },
+          create: { key, value },
+        });
+      }
+    });
+
+    const [homeHeroImage, homeGrowImage] = await Promise.all([
+      getSetting("home_hero_image"),
+      getSetting("home_grow_image"),
+    ]);
+
+    const settings: HomeSettings = {
+      homeHeroImage: resolveSettingUrl(req, homeHeroImage),
+      homeGrowImage: resolveSettingUrl(req, homeGrowImage),
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: "Home page images updated successfully",
+      data: settings,
+    });
+  } catch (error) {
+    console.error("Update home settings error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to update home page images",
+    });
+  }
+};
+
+export const getPublicHomeSettings = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const [homeHeroImage, homeGrowImage] = await Promise.all([
+      getSetting("home_hero_image"),
+      getSetting("home_grow_image"),
+    ]);
+
+    const settings: HomeSettings = {
+      homeHeroImage: resolveSettingUrl(req, homeHeroImage),
+      homeGrowImage: resolveSettingUrl(req, homeGrowImage),
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: "Public home settings fetched successfully",
+      data: settings,
+    });
+  } catch (error) {
+    console.error("Get public home settings error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to fetch public home settings",
     });
   }
 };

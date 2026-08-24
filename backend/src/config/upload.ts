@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import multer from "multer";
+import sharp from "sharp";
 
 /*
 |--------------------------------------------------------------------------
@@ -667,4 +668,73 @@ export const getSettingsImageStoragePath = (
   fileName: string
 ): string => {
   return `/storage/settings/${fileName}`;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Home Page Image Upload (memory storage + sharp crop)
+|--------------------------------------------------------------------------
+|
+| Hero and "Grow with FarmStayGo" section images are cropped server
+| side to a fixed size so oversized uploads still render correctly.
+|
+*/
+
+export const HOME_IMAGE_SIZES = {
+  hero: { width: 1920, height: 1080 },
+  grow: { width: 1000, height: 800 },
+} as const;
+
+export const createHomeImageUpload = (
+  maxFileSizeMB = 5
+) => {
+  const storage = multer.memoryStorage();
+
+  return multer({
+    storage,
+    limits: {
+      fileSize: maxFileSizeMB * 1024 * 1024,
+      files: 2,
+    },
+    fileFilter: (_request, file, callback) => {
+      const extension = path
+        .extname(file.originalname)
+        .toLowerCase();
+
+      const isValidMimeType =
+        allowedImageMimeTypes.includes(file.mimetype);
+      const isValidExtension =
+        allowedImageExtensions.includes(extension);
+
+      if (!isValidMimeType || !isValidExtension) {
+        callback(
+          new Error(
+            "Only JPG, JPEG, PNG and WEBP images are allowed"
+          )
+        );
+        return;
+      }
+
+      callback(null, true);
+    },
+  });
+};
+
+export const processHomeImage = async (
+  file: Express.Multer.File,
+  width: number,
+  height: number
+): Promise<string> => {
+  const uploadDirectory = ensureUploadDirectory("settings");
+  const fileName = createSafeFileName(file.originalname);
+  const outputPath = path.join(uploadDirectory, fileName);
+
+  await sharp(file.buffer)
+    .resize(width, height, {
+      fit: "cover",
+      position: "centre",
+    })
+    .toFile(outputPath);
+
+  return getSettingsImageStoragePath(fileName);
 };

@@ -98,6 +98,17 @@ export interface MapSettingsResponse {
   data: MapSettings;
 }
 
+export interface HomeSettings {
+  homeHeroImage: string | null;
+  homeGrowImage: string | null;
+}
+
+export interface HomeSettingsResponse {
+  success: boolean;
+  message: string;
+  data: HomeSettings;
+}
+
 export async function fetchContactMessages(params?: {
   page?: number;
   limit?: number;
@@ -255,6 +266,25 @@ export async function updateMapSettings(
   const response = await api.put<MapSettingsResponse>(
     "/admin/settings/map",
     settings
+  );
+
+  return response.data;
+}
+
+export async function fetchHomeSettings(): Promise<HomeSettingsResponse> {
+  const response = await api.get<HomeSettingsResponse>(
+    "/admin/settings/home"
+  );
+
+  return response.data;
+}
+
+export async function updateHomeSettings(
+  formData: FormData
+): Promise<HomeSettingsResponse> {
+  const response = await api.put<HomeSettingsResponse>(
+    "/admin/settings/home",
+    formData
   );
 
   return response.data;

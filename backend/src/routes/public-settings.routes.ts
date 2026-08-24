@@ -7,6 +7,10 @@ import {
   getPublicMapSettings,
 } from "../controllers/public-settings.controller.js";
 
+import {
+  getPublicHomeSettings,
+} from "../controllers/settings.controller.js";
+
 const publicSettingsRoutes = Router();
 
 publicSettingsRoutes.get(
@@ -22,6 +26,11 @@ publicSettingsRoutes.get(
 publicSettingsRoutes.get(
   "/map",
   getPublicMapSettings
+);
+
+publicSettingsRoutes.get(
+  "/home",
+  getPublicHomeSettings
 );
 
 publicSettingsRoutes.get(

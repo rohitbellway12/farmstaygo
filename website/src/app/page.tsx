@@ -51,12 +51,15 @@ async function getHomeData(): Promise<{
   properties: PublicPropertyCard[];
   cities: PublicServiceCity[];
   blogPosts: BlogPost[];
+  homeHeroImage: string | null;
+  homeGrowImage: string | null;
 }> {
   const [
     categoriesResult,
     citiesResult,
     featuredResult,
     blogResult,
+    homeResult,
   ] = await Promise.allSettled([
     apiFetch<PublicCategoriesResponse>(
       "/public/property-categories"
@@ -73,6 +76,14 @@ async function getHomeData(): Promise<{
     apiFetch<{ success: boolean; data: BlogPost[] }>(
       "/public/blog"
     ),
+
+    apiFetch<{
+      success: boolean;
+      data: {
+        homeHeroImage: string | null;
+        homeGrowImage: string | null;
+      };
+    }>("/public/settings/home"),
   ]);
 
   const categories =
@@ -108,11 +119,18 @@ async function getHomeData(): Promise<{
       ? blogResult.value.data
       : [];
 
+  const homeSettings =
+    homeResult.status === "fulfilled"
+      ? homeResult.value.data
+      : { homeHeroImage: null, homeGrowImage: null };
+
   return {
     categories,
     cities,
     properties,
     blogPosts,
+    homeHeroImage: homeSettings.homeHeroImage,
+    homeGrowImage: homeSettings.homeGrowImage,
   };
 }
 
@@ -161,9 +179,12 @@ export default async function Home() {
     cities,
     properties,
     blogPosts,
+    homeHeroImage,
+    homeGrowImage,
   } = await getHomeData();
 
-  const heroImage = getAssetUrl("/storage/hero.png");
+  const heroImage =
+    homeHeroImage || getAssetUrl("/storage/hero.png");
 
   const heroStyle = {
     backgroundImage: heroImage
@@ -536,7 +557,10 @@ export default async function Home() {
 
             <div className="relative h-64 sm:h-72 md:h-80">
               <img
-                src={`${backendBaseUrl}/storage/properties/cmrq2q5750001j8tzxpcddekm/pjrxtqdfgdtvc5udxgebns-1784366573062-1b02fe11.jpg`}
+                src={
+                  homeGrowImage ||
+                  `${backendBaseUrl}/storage/properties/cmrq2q5750001j8tzxpcddekm/pjrxtqdfgdtvc5udxgebns-1784366573062-1b02fe11.jpg`
+                }
                 alt="Farm stay property"
                 className="h-full w-full object-cover"
               />

@@ -12,13 +12,16 @@ import {
   fetchPaymentSettings,
   fetchPlatformSettings,
   fetchMapSettings,
+  fetchHomeSettings,
   updateContactSettings,
   updatePaymentSettings,
   updatePlatformSettings,
   updateMapSettings,
+  updateHomeSettings,
   type ContactSettings,
   type SocialLink,
   type MapSettings,
+  type HomeSettings,
 } from "../../shared/api/contactApi";
 
 interface ApiErrorResponse {
@@ -26,7 +29,7 @@ interface ApiErrorResponse {
   errors?: Record<string, string[] | string>;
 }
 
-type Tab = "contact" | "platform" | "payment" | "map" | "service-cities";
+type Tab = "contact" | "platform" | "payment" | "map" | "service-cities" | "home";
 
 const inputClass =
   "h-11 w-full rounded-control border border-border bg-surface px-3.5 text-sm text-text-main outline-none transition placeholder:text-text-soft focus:border-primary-400 focus:ring-4 focus:ring-primary-100";
@@ -123,6 +126,17 @@ export default function SettingsPage() {
     mapProvider: "GOOGLE",
     mapApiKey: "",
   });
+
+  const [loadingHome, setLoadingHome] = useState(true);
+  const [savingHome, setSavingHome] = useState(false);
+  const [homeForm, setHomeForm] = useState<HomeSettings>({
+    homeHeroImage: "",
+    homeGrowImage: "",
+  });
+  const [heroFile, setHeroFile] = useState<File | null>(null);
+  const [growFile, setGrowFile] = useState<File | null>(null);
+  const [heroPreview, setHeroPreview] = useState<string>("");
+  const [growPreview, setGrowPreview] = useState<string>("");
 
   useEffect(() => {
     if (!toast) return;
@@ -233,6 +247,30 @@ export default function SettingsPage() {
     }
   }, []);
 
+  const loadHomeSettings = useCallback(async () => {
+    try {
+      setLoadingHome(true);
+      setPageError("");
+      const response = await fetchHomeSettings();
+      const data = response.data;
+      setHomeForm({
+        homeHeroImage: data.homeHeroImage || "",
+        homeGrowImage: data.homeGrowImage || "",
+      });
+      setHeroPreview(data.homeHeroImage || "");
+      setGrowPreview(data.homeGrowImage || "");
+    } catch (error) {
+      setPageError(
+        getApiErrorMessage(
+          error,
+          "Unable to load home page settings."
+        )
+      );
+    } finally {
+      setLoadingHome(false);
+    }
+  }, []);
+
   const loadServiceCities = useCallback(async () => {
     try {
       setLoadingCities(true);
@@ -278,6 +316,12 @@ export default function SettingsPage() {
       void loadMapSettings();
     }
   }, [activeTab, loadMapSettings]);
+
+  useEffect(() => {
+    if (activeTab === "home") {
+      void loadHomeSettings();
+    }
+  }, [activeTab, loadHomeSettings]);
 
   useEffect(() => {
     if (activeTab === "service-cities") {
@@ -484,6 +528,52 @@ export default function SettingsPage() {
     }
   };
 
+  const handleSaveHome = async () => {
+    setSavingHome(true);
+    setPageError("");
+
+    try {
+      const formData = new FormData();
+      if (heroFile) {
+        formData.append("hero", heroFile);
+      }
+      if (growFile) {
+        formData.append("grow", growFile);
+      }
+
+      const response = await updateHomeSettings(formData);
+      setHomeForm({
+        homeHeroImage: response.data.homeHeroImage || "",
+        homeGrowImage: response.data.homeGrowImage || "",
+      });
+      setHeroPreview(response.data.homeHeroImage || "");
+      setGrowPreview(response.data.homeGrowImage || "");
+      setHeroFile(null);
+      setGrowFile(null);
+      setToast({
+        type: "success",
+        message:
+          "Home page images updated successfully.",
+      });
+    } catch (error) {
+      setPageError(
+        getApiErrorMessage(
+          error,
+          "Unable to save home page images."
+        )
+      );
+      setToast({
+        type: "error",
+        message: getApiErrorMessage(
+          error,
+          "Unable to save home page images."
+        ),
+      });
+    } finally {
+      setSavingHome(false);
+    }
+  };
+
   const togglePaymentMethod = (method: string) => {
     setPaymentForm((current) => ({
       ...current,
@@ -535,6 +625,7 @@ export default function SettingsPage() {
     { key: "platform", label: "Platform" },
     { key: "payment", label: "Payment" },
     { key: "map", label: "Map" },
+    { key: "home", label: "Home Page" },
     {
       key: "service-cities",
       label: "Service Cities",
@@ -936,6 +1027,107 @@ export default function SettingsPage() {
               {savingPlatform
                 ? "Saving..."
                 : "Save Platform Settings"}
+            </button>
+          </div>
+        </section>
+      )}
+
+      {activeTab === "home" && (
+        <section className="space-y-6 rounded-dashboard-card border border-border bg-surface p-6 shadow-dashboard-card">
+          <div>
+            <h2 className="text-lg font-extrabold text-text-main">
+              Home Page Images
+            </h2>
+            <p className="mt-1 text-sm text-text-muted">
+              Manage the hero banner and the "Grow with
+              FarmStayGo" section image shown on the public
+              website. Oversized images are automatically
+              cropped to the correct size.
+            </p>
+          </div>
+
+          {loadingHome ? (
+            <div className="text-sm font-bold text-text-muted">
+              Loading home page settings...
+            </div>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2">
+              <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
+                Hero Banner Image
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setHeroFile(file);
+                      setHeroPreview(
+                        URL.createObjectURL(file)
+                      );
+                    }
+                  }}
+                  className={inputClass}
+                />
+                {heroPreview && (
+                  <div className="mt-2 overflow-hidden rounded border border-border">
+                    <img
+                      src={heroPreview}
+                      alt="Hero preview"
+                      className="h-32 w-full object-cover"
+                    />
+                  </div>
+                )}
+                <p className="text-[11px] text-text-soft">
+                  Shown as the home page hero background.
+                  Recommended: 1920x1080px. Max 5MB. JPG,
+                  PNG or WEBP.
+                </p>
+              </label>
+
+              <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
+                Grow Section Image
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setGrowFile(file);
+                      setGrowPreview(
+                        URL.createObjectURL(file)
+                      );
+                    }
+                  }}
+                  className={inputClass}
+                />
+                {growPreview && (
+                  <div className="mt-2 overflow-hidden rounded border border-border">
+                    <img
+                      src={growPreview}
+                      alt="Grow section preview"
+                      className="h-32 w-full object-cover"
+                    />
+                  </div>
+                )}
+                <p className="text-[11px] text-text-soft">
+                  Shown in the "Grow with FarmStayGo" section.
+                  Recommended: 1000x800px. Max 5MB. JPG,
+                  PNG or WEBP.
+                </p>
+              </label>
+            </div>
+          )}
+
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleSaveHome}
+              disabled={savingHome}
+              className="h-11 rounded-control bg-primary-700 px-6 text-sm font-bold text-white hover:bg-primary-800 disabled:opacity-60"
+            >
+              {savingHome
+                ? "Saving..."
+                : "Save Home Page Images"}
             </button>
           </div>
         </section>
