@@ -24,7 +24,6 @@ import type {
   ContactSettings,
   SocialLink,
   MapSettings,
-  HomeSettings,
 } from "../../shared/api/contactApi";
 
 interface ApiErrorResponse {
@@ -132,10 +131,7 @@ export default function SettingsPage() {
 
   const [loadingHome, setLoadingHome] = useState(true);
   const [savingHome, setSavingHome] = useState(false);
-  const [homeForm, setHomeForm] = useState<HomeSettings>({
-    homeHeroImage: "",
-    homeGrowImage: "",
-  });
+
   const [heroFile, setHeroFile] = useState<File | null>(null);
   const [growFile, setGrowFile] = useState<File | null>(null);
   const [heroPreview, setHeroPreview] = useState<string>("");
@@ -256,10 +252,6 @@ export default function SettingsPage() {
       setPageError("");
       const response = await fetchHomeSettings();
       const data = response.data;
-      setHomeForm({
-        homeHeroImage: data.homeHeroImage || "",
-        homeGrowImage: data.homeGrowImage || "",
-      });
       setHeroPreview(data.homeHeroImage || "");
       setGrowPreview(data.homeGrowImage || "");
     } catch (error) {
@@ -545,10 +537,6 @@ export default function SettingsPage() {
       }
 
       const response = await updateHomeSettings(formData);
-      setHomeForm({
-        homeHeroImage: response.data.homeHeroImage || "",
-        homeGrowImage: response.data.homeGrowImage || "",
-      });
       setHeroPreview(response.data.homeHeroImage || "");
       setGrowPreview(response.data.homeGrowImage || "");
       setHeroFile(null);
