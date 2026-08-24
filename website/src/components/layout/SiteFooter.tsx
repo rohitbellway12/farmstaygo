@@ -221,15 +221,27 @@ export default async function SiteFooter() {
             <p>© 2026 FarmStayGo. All rights reserved.</p>
 
             <div className="flex flex-wrap items-center gap-6">
-              <Link href="/sitemap">Sitemap</Link>
-
               <Link href="/privacy-policy">
                 Privacy
               </Link>
 
-              <Link href="/terms">Terms</Link>
+              <Link href="/terms">
+                Terms
+              </Link>
             </div>
           </div>
+
+          <p className="mt-4 text-center text-[13px] text-white/50">
+            Designed &amp; Developed by{" "}
+            <a
+              href="https://bellwayinfotech.com/"
+              target="_blank"
+              rel="noreferrer"
+              className="text-white/70 transition hover:text-white"
+            >
+              Bellway Infotech
+            </a>
+          </p>
         </div>
       </div>
     </footer>
