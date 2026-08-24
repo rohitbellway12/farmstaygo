@@ -20,7 +20,7 @@ export default function AboutPage() {
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <a
-              href="/vendor/register"
+              href="https://portal.farmstaygo.com/vendor/login"
               className="inline-flex h-12 items-center justify-center rounded-lg bg-white px-8 text-sm font-extrabold text-brand-700 transition hover:bg-brand-50"
             >
               Start Free Listing
@@ -158,7 +158,7 @@ export default function AboutPage() {
 
           <div className="mt-10 flex flex-wrap gap-4">
             <a
-              href="/vendor/register"
+              href="https://portal.farmstaygo.com/vendor/login"
               className="inline-flex h-12 items-center justify-center rounded-lg bg-white px-8 text-sm font-extrabold text-brand-700 transition hover:bg-brand-50"
             >
               Start Free Listing
@@ -322,7 +322,7 @@ export default function AboutPage() {
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
             <a
-              href="/vendor/register"
+              href="https://portal.farmstaygo.com/vendor/login"
               className="inline-flex h-12 items-center justify-center rounded-lg bg-white px-8 text-sm font-extrabold text-brand-700 transition hover:bg-brand-50"
             >
               Start Free Listing
