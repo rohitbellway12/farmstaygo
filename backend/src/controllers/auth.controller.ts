@@ -2,8 +2,10 @@ import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
+import crypto from "node:crypto";
 import prisma from "../config/database.js";
 import type { AuthenticatedRequest } from "../middleware/auth.middleware.js";
+import { sendAccountCreatedEmail, sendPasswordResetEmail } from "../services/email.js";
 
 const createToken = (userId: number, role: string): string => {
   const jwtSecret = process.env.JWT_SECRET;
@@ -105,6 +107,15 @@ export const registerUser = async (
 
     const token = createToken(user.id, user.role);
 
+    void sendAccountCreatedEmail({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+    }).catch((error) => {
+      console.error("Send account created email error:", error);
+    });
+
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
@@ -200,6 +211,15 @@ export const registerVendor = async (
     });
 
     const token = createToken(result.user.id, result.user.role);
+
+    void sendAccountCreatedEmail({
+      firstName: result.user.firstName,
+      lastName: result.user.lastName,
+      email: result.user.email,
+      role: result.user.role,
+    }).catch((error) => {
+      console.error("Send account created email error:", error);
+    });
 
     return res.status(201).json({
       success: true,
@@ -546,6 +566,137 @@ export const updateProfile = async (
     return res.status(500).json({
       success: false,
       message: "Unable to update profile",
+    });
+  }
+};
+
+export const forgotPassword = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const schema = z.object({
+      email: z.string().trim().email("Valid email is required"),
+    });
+
+    const validation = schema.safeParse(req.body);
+
+    if (!validation.success) {
+      return res.status(422).json({
+        success: false,
+        message: "Validation failed",
+        errors: validation.error.flatten().fieldErrors,
+      });
+    }
+
+    const { email } = validation.data;
+
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "No account found with this email address",
+      });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenExpiry = new Date(Date.now() + 30 * 60 * 1000);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetToken,
+        resetTokenExpiry,
+      },
+    });
+
+    const resetLink = `${process.env.FRONTEND_URL || process.env.WEBSITE_URL || "http://localhost:5173"}/reset-password?token=${resetToken}`;
+
+    void sendPasswordResetEmail({
+      firstName: user.firstName,
+      email: user.email,
+      resetLink,
+      expiryMinutes: 30,
+    }).catch((error) => {
+      console.error("Send password reset email error:", error);
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset link sent to your email",
+    });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to process password reset request",
+    });
+  }
+};
+
+export const resetPassword = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const schema = z.object({
+      token: z.string().trim().min(1, "Reset token is required"),
+      newPassword: z.string().min(8, "Password must be at least 8 characters"),
+    });
+
+    const validation = schema.safeParse(req.body);
+
+    if (!validation.success) {
+      return res.status(422).json({
+        success: false,
+        message: "Validation failed",
+        errors: validation.error.flatten().fieldErrors,
+      });
+    }
+
+    const { token, newPassword } = validation.data;
+
+    const user = await prisma.user.findFirst({
+      where: {
+        resetToken: token,
+        resetTokenExpiry: {
+          gt: new Date(),
+        },
+      },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired reset token",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetToken: null,
+        resetTokenExpiry: null,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset successfully",
+    });
+  } catch (error) {
+    console.error("Reset password error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to reset password",
     });
   }
 };

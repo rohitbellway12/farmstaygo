@@ -18,6 +18,8 @@ import {
   CommissionStatus,
 } from "../generated/prisma/enums.js";
 
+import { sendAccountCreatedEmail } from "../services/email.js";
+
 /*
 |--------------------------------------------------------------------------
 | Request Body Types
@@ -276,6 +278,15 @@ export const createAdminVendor = async (
       });
 
       return { user, vendor };
+    });
+
+    void sendAccountCreatedEmail({
+      firstName: result.user.firstName,
+      lastName: result.user.lastName,
+      email: result.user.email,
+      role: result.user.role,
+    }).catch((error) => {
+      console.error("Send account created email error:", error);
     });
 
     return res.status(201).json({

@@ -39,6 +39,8 @@ model User {
   status         UserStatus @default(ACTIVE)
   emailVerified  Boolean    @default(false) @map("email_verified")
   mobileVerified Boolean    @default(false) @map("mobile_verified")
+  resetToken     String?    @map("reset_token")
+  resetTokenExpiry DateTime? @map("reset_token_expiry")
   createdAt      DateTime   @default(now()) @map("created_at")
   updatedAt      DateTime   @updatedAt @map("updated_at")
 

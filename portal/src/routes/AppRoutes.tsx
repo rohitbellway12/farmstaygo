@@ -18,6 +18,7 @@ import PropertyApprovalReviewPage from "../admin/pages/PropertyApprovalReviewPag
 import AdminPropertiesPage from "../admin/pages/PropertiesPage";
 import AdminBookingsPage from "../admin/pages/BookingsPage";
 import VendorsPage from "../admin/pages/VendorsPage";
+import ResetPasswordPage from "../shared/pages/ResetPasswordPage";
 import UsersPage from "../admin/pages/UsersPage";
 import AdminPaymentsPage from "../admin/pages/PaymentsPage";
 import AdminCommissionsPage from "../admin/pages/CommissionsPage";
@@ -105,6 +106,11 @@ export default function AppRoutes() {
       <Route
         path="/vendor/register"
         element={<VendorRegisterPage />}
+      />
+
+      <Route
+        path="/reset-password"
+        element={<ResetPasswordPage />}
       />
 
       {/* Admin Protected Routes */}
