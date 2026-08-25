@@ -379,7 +379,7 @@ const buildBookingRejectedCustomerHtml = ({
               </table>
               <p style="font-size:14px;color:#333333;margin:0 0 24px;">We understand this may be disappointing. We encourage you to explore other similar properties on FarmStayGo that may be available for your dates.</p>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${bookingDashboardUrl}" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Browse Similar Properties</a>
+                <a href="${bookingDashboardUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Browse Similar Properties</a>
               </p>
               <p style="font-size:13px;color:#888888;margin:0;">If you have any questions or need assistance finding an alternative, our Customer Support team is always ready to help.</p>
             </td>
@@ -470,7 +470,7 @@ const buildPropertySubmittedHtml = ({
               </ul>
               <p style="font-size:14px;color:#333333;margin:0 0 24px;">You can log in to your FarmStayGo account at any time to view your property's status or update its information.</p>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${LOGIN_URL}" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Login Here</a>
+                <a href="${LOGIN_URL}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Login Here</a>
               </p>
               <p style="font-size:13px;color:#888888;margin:0;">
                 If you have any questions or need assistance, our support team is always happy to help.
@@ -546,7 +546,7 @@ const buildProfileCompleteHtml = ({
               </ul>
               <p style="font-size:14px;color:#333333;margin:0 0 24px;">A complete profile helps us verify your account faster, improves guest trust, and ensures timely booking notifications and payments.</p>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${profileUrl}" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Complete Your Profile</a>
+                <a href="${profileUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Complete Your Profile</a>
               </p>
               <p style="font-size:13px;color:#888888;margin:0;">
                 If you have already updated your profile, please ignore this email. Need help? Our support team is always here to assist you.
@@ -639,7 +639,7 @@ const buildVerificationPendingHtml = ({
               </ul>
               <p style="font-size:14px;color:#333333;margin:0 0 24px;">You can check your verification status anytime by logging in to your FarmStayGo account.</p>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${dashboardUrl}" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">View Verification Status</a>
+                <a href="${dashboardUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">View Verification Status</a>
               </p>
               <p style="font-size:13px;color:#888888;margin:0;">
                 If you have any questions or need assistance, please contact our support team.
@@ -733,7 +733,7 @@ const buildVerifiedCongratulationHtml = ({
                 <li>Update your profile and account settings.</li>
               </ul>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${dashboardUrl}" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Access Your Dashboard</a>
+                <a href="${dashboardUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Access Your Dashboard</a>
               </p>
               <p style="font-size:13px;color:#888888;margin:0;">
                 Thank you for completing the verification process and becoming a trusted member of the FarmStayGo community. If you have any questions or need assistance, our support team is always here to help.
@@ -911,7 +911,7 @@ export const sendAccountCreatedEmail = async (params: {
                 <li>Contact property hosts directly.</li>
               </ul>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${LOGIN_URL}" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Login Here</a>
+                <a href="${LOGIN_URL}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Login Here</a>
               </p>
               <p style="font-size:13px;color:#888888;margin:0;">
                 If you have any questions or need assistance, feel free to contact our support team at <a href="mailto:${SUPPORT_EMAIL}" style="color:#2d6a4f;text-decoration:none;">${SUPPORT_EMAIL}</a>.
@@ -998,7 +998,7 @@ const buildVendorWelcomeHtml = ({
               </ul>
               <p style="font-size:14px;color:#555555;margin:0 0 24px;">A complete profile helps us verify your account faster, improves guest trust, and ensures timely booking notifications and payments.</p>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${portalUrl}" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Complete Your Profile</a>
+                <a href="${portalUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Complete Your Profile</a>
               </p>
               <p style="font-size:13px;color:#888888;margin:0 0 24px;">If you have already updated your profile, please ignore this email. Need help? Our support team is always here to assist you.</p>
               <p style="font-size:14px;color:#333333;margin:0;">Thank you for being a part of FarmStayGo.<br />Best Regards,<br />Team FarmStayGo</p>
@@ -1054,7 +1054,7 @@ const buildPasswordResetHtml = ({
                 To create a new password, please click the button below:
               </p>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${resetLink}" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Reset Password</a>
+                <a href="${resetLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Reset Password</a>
               </p>
               <p style="font-size:13px;color:#888888;margin:0 0 24px;">
                 Or copy and paste this link into your browser:<br />
@@ -1217,7 +1217,7 @@ const buildBookingCancelledCustomerHtml = ({
               </table>
               <p style="font-size:14px;color:#333333;margin:0 0 24px;">If you are eligible for a refund, it will be processed through your original payment method. Depending on your bank or payment provider, the amount may take a few business days to appear in your account.</p>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${bookingDashboardUrl}" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Manage Your Bookings</a>
+                <a href="${bookingDashboardUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Manage Your Bookings</a>
               </p>
               <p style="font-size:13px;color:#888888;margin:0;">We sincerely apologize for any inconvenience this cancellation may have caused. We value your trust and hope to welcome you on a future trip.</p>
             </td>
@@ -1325,7 +1325,7 @@ const buildRatingReceivedAdminHtml = ({
                 </tr>
               </table>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${ownerDashboardUrl}" style="display:inline-block;padding:12px 24px;background-color:#f39c12;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">View &amp; Respond to Review</a>
+                <a href="${ownerDashboardUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#f39c12;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">View &amp; Respond to Review</a>
               </p>
             </td>
           </tr>
@@ -1414,7 +1414,7 @@ const buildRatingForStayCustomerHtml = ({
                 </tr>
               </table>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${ratingUrl}" style="display:inline-block;padding:12px 24px;background-color:#f39c12;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Rate Your Stay</a>
+                <a href="${ratingUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#f39c12;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Rate Your Stay</a>
               </p>
               <p style="font-size:13px;color:#888888;margin:0;">Your review only takes a few minutes and makes a big difference to our community.</p>
             </td>
@@ -1502,7 +1502,7 @@ const buildRegistrationSuccessfulCustomerHtml = ({
               </table>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">You can now explore and book unique farm stays, villas, and nature retreats through your FarmStayGo account.</p>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${loginUrl}" style="display:inline-block;padding:12px 24px;background-color:#27ae60;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Login to Your Account</a>
+                <a href="${loginUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#27ae60;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Login to Your Account</a>
               </p>
               <p style="font-size:13px;color:#888888;margin:0;">If you have any questions or need assistance, our support team is always happy to help.</p>
             </td>
@@ -1645,7 +1645,7 @@ const buildEnquiryReceivedHtml = ({
               </ul>
               <p style="font-size:14px;color:#333333;margin:0 0 24px;">You can log in to your FarmStayGo account anytime to track the status of your enquiry.</p>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${dashboardUrl}" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">View Your Enquiry</a>
+                <a href="${dashboardUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">View Your Enquiry</a>
               </p>
               <p style="font-size:13px;color:#888888;margin:0;">
                 If you have any questions or would like to update your enquiry, please contact our support team.
@@ -1807,7 +1807,7 @@ const buildEnquiryAdminHtml = ({
               <p style="font-size:14px;color:#333333;margin:0 0 16px;"><strong>Action Required</strong></p>
               <p style="font-size:14px;color:#333333;margin:0 0 24px;">Please review the enquiry and contact the customer or property owner as soon as possible. Prompt responses help improve customer satisfaction and increase booking conversions.</p>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${adminDashboardUrl}" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Access Admin Dashboard</a>
+                <a href="${adminDashboardUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Access Admin Dashboard</a>
               </p>
               <p style="font-size:13px;color:#888888;margin:0;">If you require any additional information, please review the enquiry in the admin panel.</p>
             </td>
@@ -2013,7 +2013,7 @@ const buildBookingConfirmedAdminHtml = ({
               <p style="font-size:14px;color:#333333;margin:0 0 16px;"><strong>Action Required</strong></p>
               <p style="font-size:14px;color:#333333;margin:0 0 24px;">Please verify the booking details, notify the property owner if required, and ensure the property is prepared before the guest's arrival. Monitor the booking through the admin dashboard and assist with any customer or host queries.</p>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${adminDashboardUrl}" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Open Admin Dashboard</a>
+                <a href="${adminDashboardUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Open Admin Dashboard</a>
               </p>
             </td>
           </tr>
@@ -2200,7 +2200,7 @@ const buildBookingConfirmedCustomerHtml = ({
                 <li>Review the property's amenities and directions before your trip.</li>
               </ul>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${bookingUrl}" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Manage Booking</a>
+                <a href="${bookingUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Manage Booking</a>
               </p>
               <p style="font-size:13px;color:#888888;margin:0;">We wish you a relaxing and memorable stay. Thank you for trusting FarmStayGo to make your travel experience special.</p>
             </td>
@@ -2376,7 +2376,7 @@ const buildPaymentReceivedAdminHtml = ({
               <p style="font-size:14px;color:#333333;margin:0 0 16px;"><strong>Action Required</strong></p>
               <p style="font-size:14px;color:#333333;margin:0 0 24px;">Please verify the payment in the admin dashboard and ensure the booking record reflects the latest payment status. If applicable, notify the property owner and proceed with the standard booking fulfillment process.</p>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${adminDashboardUrl}" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Access Admin Dashboard</a>
+                <a href="${adminDashboardUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Access Admin Dashboard</a>
               </p>
               <p style="font-size:13px;color:#888888;margin:0;">If you notice any discrepancies with the payment or booking information, please investigate the transaction promptly.</p>
             </td>
@@ -2531,7 +2531,7 @@ const buildPaymentReceivedCustomerHtml = ({
               </table>
               <p style="font-size:13px;color:#888888;margin:0 0 24px;">A copy of your payment receipt has been recorded in your account and can be accessed anytime from your booking dashboard.</p>
               <p style="font-size:15px;color:#333333;margin:0 0 24px;">
-                <a href="${bookingDashboardUrl}" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">View Booking &amp; Receipt</a>
+                <a href="${bookingDashboardUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">View Booking &amp; Receipt</a>
               </p>
               <p style="font-size:13px;color:#888888;margin:0;">If there is any remaining balance, it must be paid according to the property's payment policy before or at check-in.</p>
             </td>
