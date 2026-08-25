@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
-const rawAllowedHosts = import.meta.env.VITE_PREVIEW_ALLOWED_HOSTS || "";
+const rawAllowedHosts = process.env.VITE_PREVIEW_ALLOWED_HOSTS || "";
 
 const allowedHosts = rawAllowedHosts
   .split(",")
