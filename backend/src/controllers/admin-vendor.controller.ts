@@ -18,7 +18,7 @@ import {
   CommissionStatus,
 } from "../generated/prisma/enums.js";
 
-import { sendAccountCreatedEmail } from "../services/email.js";
+import { sendAccountCreatedEmail, sendProfileCompleteEmail, sendVerifiedCongratulationEmail } from "../services/email.js";
 
 /*
 |--------------------------------------------------------------------------
@@ -289,6 +289,16 @@ export const createAdminVendor = async (
       console.error("Send account created email error:", error);
     });
 
+    void sendProfileCompleteEmail({
+      firstName: result.user.firstName,
+      email: result.user.email,
+      profileUrl:
+        process.env.PORTAL_URL ||
+        "http://localhost:5173",
+    }).catch((error) => {
+      console.error("Send profile complete email error:", error);
+    });
+
     return res.status(201).json({
       success: true,
       message: "Vendor created successfully",
@@ -441,6 +451,29 @@ export const approveAdminVendor = async (
 
         return vendor;
       });
+
+    if (approvedVendor?.user?.email && approvedVendor.user.firstName && approvedVendor.kycReviewedAt) {
+      void sendVerifiedCongratulationEmail({
+        firstName: approvedVendor.user.firstName,
+        email: approvedVendor.user.email,
+        verificationDate: new Date(
+          approvedVendor.kycReviewedAt
+        ).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
+        accountType: "Host",
+        dashboardUrl:
+          process.env.PORTAL_URL ||
+          "http://localhost:5173",
+      }).catch((error) => {
+        console.error(
+          "Send verified congratulation email error:",
+          error
+        );
+      });
+    }
 
     return res.status(200).json({
       success: true,

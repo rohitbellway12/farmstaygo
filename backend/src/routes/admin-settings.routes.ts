@@ -5,10 +5,13 @@ import {
   getPaymentSettings,
   getMapSettings,
   getHomeSettings,
+  getSmtpSettings,
   updatePaymentSettings,
   updatePlatformSettings,
   updateMapSettings,
   updateHomeSettings,
+  updateSmtpSettings,
+  syncEnvSmtpSettings,
 } from "../controllers/settings.controller.js";
 
 import { authenticate } from "../middleware/auth.middleware.js";
@@ -76,6 +79,21 @@ adminSettingsRoutes.put(
     { name: "grow", maxCount: 1 },
   ]),
   updateHomeSettings
+);
+
+adminSettingsRoutes.get(
+  "/smtp",
+  getSmtpSettings
+);
+
+adminSettingsRoutes.put(
+  "/smtp",
+  updateSmtpSettings
+);
+
+adminSettingsRoutes.post(
+  "/smtp/sync-env",
+  syncEnvSmtpSettings
 );
 
 export { adminSettingsRoutes };

@@ -34,6 +34,15 @@ interface MapSettings {
   mapApiKey: string | null;
 }
 
+interface SmtpSettings {
+  smtpHost: string;
+  smtpPort: number;
+  smtpUsername: string;
+  smtpPassword: string;
+  smtpFromAddress: string;
+  smtpEncryption: string;
+}
+
 const getSetting = async (key: string): Promise<string | null> => {
   const setting = await prisma.setting.findUnique({
     where: { key },
@@ -673,6 +682,220 @@ export const updateHomeSettings = async (
     return res.status(500).json({
       success: false,
       message: "Unable to update home page images",
+    });
+  }
+};
+
+export const getSmtpSettings = async (
+  _req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    const [
+      smtpHost,
+      smtpPort,
+      smtpUsername,
+      smtpPassword,
+      smtpFromAddress,
+      smtpEncryption,
+    ] = await Promise.all([
+      getSetting("smtp_host"),
+      getSetting("smtp_port"),
+      getSetting("smtp_username"),
+      getSetting("smtp_password"),
+      getSetting("smtp_from_address"),
+      getSetting("smtp_encryption"),
+    ]);
+
+    const settings: SmtpSettings = {
+      smtpHost: smtpHost || "",
+      smtpPort: smtpPort ? parseInt(smtpPort, 10) : 587,
+      smtpUsername: smtpUsername || "",
+      smtpPassword: smtpPassword || "",
+      smtpFromAddress: smtpFromAddress || "",
+      smtpEncryption: smtpEncryption || "none",
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: "SMTP settings fetched successfully",
+      data: settings,
+    });
+  } catch (error) {
+    console.error("Get SMTP settings error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to fetch SMTP settings",
+    });
+  }
+};
+
+export const updateSmtpSettings = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    const body = req.body as Partial<SmtpSettings> & Record<string, unknown>;
+
+    const smtpHost =
+      typeof body.smtpHost === "string"
+        ? body.smtpHost.trim()
+        : "";
+    const smtpPort =
+      typeof body.smtpPort === "number"
+        ? body.smtpPort
+        : typeof body.smtpPort === "string"
+          ? parseInt(body.smtpPort, 10)
+          : 587;
+    const smtpUsername =
+      typeof body.smtpUsername === "string"
+        ? body.smtpUsername.trim()
+        : "";
+    const smtpPassword =
+      typeof body.smtpPassword === "string"
+        ? body.smtpPassword.trim()
+        : "";
+    const smtpFromAddress =
+      typeof body.smtpFromAddress === "string"
+        ? body.smtpFromAddress.trim()
+        : "";
+    const smtpEncryption =
+      typeof body.smtpEncryption === "string"
+        ? body.smtpEncryption.trim().toLowerCase()
+        : "none";
+
+    await prisma.$transaction(async (tx) => {
+      await tx.setting.upsert({
+        where: { key: "smtp_host" },
+        update: { value: smtpHost },
+        create: { key: "smtp_host", value: smtpHost },
+      });
+
+      await tx.setting.upsert({
+        where: { key: "smtp_port" },
+        update: { value: String(smtpPort) },
+        create: { key: "smtp_port", value: String(smtpPort) },
+      });
+
+      await tx.setting.upsert({
+        where: { key: "smtp_username" },
+        update: { value: smtpUsername },
+        create: { key: "smtp_username", value: smtpUsername },
+      });
+
+      if (smtpPassword) {
+        await tx.setting.upsert({
+          where: { key: "smtp_password" },
+          update: { value: smtpPassword },
+          create: { key: "smtp_password", value: smtpPassword },
+        });
+      }
+
+      await tx.setting.upsert({
+        where: { key: "smtp_from_address" },
+        update: { value: smtpFromAddress },
+        create: { key: "smtp_from_address", value: smtpFromAddress },
+      });
+
+      await tx.setting.upsert({
+        where: { key: "smtp_encryption" },
+        update: { value: smtpEncryption },
+        create: { key: "smtp_encryption", value: smtpEncryption },
+      });
+    });
+
+    const settings: SmtpSettings = {
+      smtpHost,
+      smtpPort,
+      smtpUsername,
+      smtpPassword: smtpPassword ? "******" : "",
+      smtpFromAddress,
+      smtpEncryption,
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: "SMTP settings updated successfully",
+      data: settings,
+    });
+  } catch (error) {
+    console.error("Update SMTP settings error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to update SMTP settings",
+    });
+  }
+};
+
+export const syncEnvSmtpSettings = async (
+  _req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    const smtpHost = process.env.MAIL_HOST || "";
+    const smtpPort = process.env.MAIL_PORT || "587";
+    const smtpUsername = process.env.MAIL_USERNAME || "";
+    const smtpPassword = process.env.MAIL_PASSWORD || "";
+    const smtpFromAddress = process.env.MAIL_FROM_ADDRESS || "noreply@farmstaygo.com";
+    const smtpEncryption = process.env.MAIL_ENCRYPTION?.toLowerCase() || "none";
+
+    if (!smtpHost || !smtpUsername || !smtpPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Required SMTP environment variables (MAIL_HOST, MAIL_USERNAME, MAIL_PASSWORD) are missing",
+      });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.setting.upsert({
+        where: { key: "smtp_host" },
+        update: { value: smtpHost },
+        create: { key: "smtp_host", value: smtpHost },
+      });
+
+      await tx.setting.upsert({
+        where: { key: "smtp_port" },
+        update: { value: smtpPort },
+        create: { key: "smtp_port", value: smtpPort },
+      });
+
+      await tx.setting.upsert({
+        where: { key: "smtp_username" },
+        update: { value: smtpUsername },
+        create: { key: "smtp_username", value: smtpUsername },
+      });
+
+      await tx.setting.upsert({
+        where: { key: "smtp_password" },
+        update: { value: smtpPassword },
+        create: { key: "smtp_password", value: smtpPassword },
+      });
+
+      await tx.setting.upsert({
+        where: { key: "smtp_from_address" },
+        update: { value: smtpFromAddress },
+        create: { key: "smtp_from_address", value: smtpFromAddress },
+      });
+
+      await tx.setting.upsert({
+        where: { key: "smtp_encryption" },
+        update: { value: smtpEncryption },
+        create: { key: "smtp_encryption", value: smtpEncryption },
+      });
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "SMTP settings synced from environment successfully",
+    });
+  } catch (error) {
+    console.error("Sync env SMTP settings error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to sync SMTP settings from environment",
     });
   }
 };

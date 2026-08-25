@@ -7,6 +7,10 @@ import type {
   AuthenticatedRequest,
 } from "../middleware/auth.middleware.js";
 
+import {
+  sendProfileCompleteEmail,
+} from "../services/email.js";
+
 const vendorBankSchema = z.object({
   bankAccountName: z
     .string()
@@ -124,8 +128,29 @@ export const updateVendorBankDetails = async (
         bankAccountNumber: true,
         bankIfscCode: true,
         kycStatus: true,
+        user: {
+          select: {
+            firstName: true,
+            email: true,
+          },
+        },
       },
     });
+
+    if (vendor.user?.email && vendor.user.firstName) {
+      void sendProfileCompleteEmail({
+        firstName: vendor.user.firstName,
+        email: vendor.user.email,
+        profileUrl:
+          process.env.PORTAL_URL ||
+          "http://localhost:5173",
+      }).catch((error) => {
+        console.error(
+          "Send profile complete email error:",
+          error
+        );
+      });
+    }
 
     return res.status(200).json({
       success: true,

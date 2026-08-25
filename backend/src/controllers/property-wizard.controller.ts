@@ -10,6 +10,10 @@ import type {
   AuthenticatedRequest,
 } from "../middleware/auth.middleware.js";
 
+import {
+  sendPropertySubmittedEmail,
+} from "../services/email.js";
+
 /*
 |--------------------------------------------------------------------------
 | Request Body Types
@@ -1037,8 +1041,52 @@ export const submitPropertyForApproval =
                 amenity: true,
               },
             },
+
+            roomTypes: true,
+
+            vendor: {
+              select: {
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                  },
+                },
+              },
+            },
           },
         });
+
+      if (
+        submittedProperty.vendor?.user
+          ?.email &&
+        submittedProperty.vendor.user
+          .firstName &&
+        submittedProperty.submittedAt
+      ) {
+        void sendPropertySubmittedEmail({
+          firstName:
+            submittedProperty.vendor.user
+              .firstName,
+          email:
+            submittedProperty.vendor.user.email,
+          propertyName: submittedProperty.title,
+          propertyId: submittedProperty.id,
+          submissionDate: new Date(
+            submittedProperty.submittedAt
+          ).toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+        }).catch((error) => {
+          console.error(
+            "Send property submitted email error:",
+            error
+          );
+        });
+      }
 
       return res.status(200).json({
         success: true,

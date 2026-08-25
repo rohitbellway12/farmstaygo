@@ -5,7 +5,7 @@ import { z } from "zod";
 import crypto from "node:crypto";
 import prisma from "../config/database.js";
 import type { AuthenticatedRequest } from "../middleware/auth.middleware.js";
-import { sendAccountCreatedEmail, sendPasswordResetEmail } from "../services/email.js";
+import { sendAccountCreatedEmail, sendPasswordResetEmail, sendProfileCompleteEmail, sendRegistrationSuccessfulCustomerEmail } from "../services/email.js";
 
 const createToken = (userId: number, role: string): string => {
   const jwtSecret = process.env.JWT_SECRET;
@@ -116,6 +116,25 @@ export const registerUser = async (
       console.error("Send account created email error:", error);
     });
 
+    void sendRegistrationSuccessfulCustomerEmail({
+      firstName: user.firstName,
+      fullName: `${user.firstName} ${user.lastName || ""}`.trim(),
+      email: user.email,
+      registrationDate: new Date(
+        user.createdAt
+      ).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+      loginUrl: `${process.env.WEBSITE_URL || "http://localhost:5173"}/login`,
+    }).catch((error) => {
+      console.error(
+        "Send registration successful email error:",
+        error
+      );
+    });
+
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
@@ -219,6 +238,16 @@ export const registerVendor = async (
       role: result.user.role,
     }).catch((error) => {
       console.error("Send account created email error:", error);
+    });
+
+    void sendProfileCompleteEmail({
+      firstName: result.user.firstName,
+      email: result.user.email,
+      profileUrl:
+        process.env.PORTAL_URL ||
+        "http://localhost:5173",
+    }).catch((error) => {
+      console.error("Send profile complete email error:", error);
     });
 
     return res.status(201).json({

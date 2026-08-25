@@ -13,17 +13,21 @@ import {
   fetchPlatformSettings,
   fetchMapSettings,
   fetchHomeSettings,
+  fetchSmtpSettings,
   updateContactSettings,
   updatePaymentSettings,
   updatePlatformSettings,
   updateMapSettings,
   updateHomeSettings,
+  updateSmtpSettings,
+  syncEnvSmtpSettings,
 } from "../../shared/api/contactApi";
 
 import type {
   ContactSettings,
   SocialLink,
   MapSettings,
+  SmtpSettings,
 } from "../../shared/api/contactApi";
 
 interface ApiErrorResponse {
@@ -31,7 +35,7 @@ interface ApiErrorResponse {
   errors?: Record<string, string[] | string>;
 }
 
-type Tab = "contact" | "platform" | "payment" | "map" | "service-cities" | "home";
+type Tab = "contact" | "platform" | "payment" | "map" | "service-cities" | "home" | "smtp";
 
 const inputClass =
   "h-11 w-full rounded-control border border-border bg-surface px-3.5 text-sm text-text-main outline-none transition placeholder:text-text-soft focus:border-primary-400 focus:ring-4 focus:ring-primary-100";
@@ -136,6 +140,18 @@ export default function SettingsPage() {
   const [growFile, setGrowFile] = useState<File | null>(null);
   const [heroPreview, setHeroPreview] = useState<string>("");
   const [growPreview, setGrowPreview] = useState<string>("");
+
+  const [loadingSmtp, setLoadingSmtp] = useState(true);
+  const [savingSmtp, setSavingSmtp] = useState(false);
+
+  const [smtpForm, setSmtpForm] = useState<SmtpSettings>({
+    smtpHost: "",
+    smtpPort: 587,
+    smtpUsername: "",
+    smtpPassword: "",
+    smtpFromAddress: "",
+    smtpEncryption: "none",
+  });
 
   useEffect(() => {
     if (!toast) return;
@@ -266,6 +282,32 @@ export default function SettingsPage() {
     }
   }, []);
 
+  const loadSmtpSettings = useCallback(async () => {
+    try {
+      setLoadingSmtp(true);
+      setPageError("");
+      const response = await fetchSmtpSettings();
+      const data = response.data;
+      setSmtpForm({
+        smtpHost: data.smtpHost,
+        smtpPort: data.smtpPort,
+        smtpUsername: data.smtpUsername,
+        smtpPassword: data.smtpPassword && data.smtpPassword !== "******" ? data.smtpPassword : "",
+        smtpFromAddress: data.smtpFromAddress,
+        smtpEncryption: data.smtpEncryption,
+      });
+    } catch (error) {
+      setPageError(
+        getApiErrorMessage(
+          error,
+          "Unable to load SMTP settings."
+        )
+      );
+    } finally {
+      setLoadingSmtp(false);
+    }
+  }, []);
+
   const loadServiceCities = useCallback(async () => {
     try {
       setLoadingCities(true);
@@ -317,6 +359,12 @@ export default function SettingsPage() {
       void loadHomeSettings();
     }
   }, [activeTab, loadHomeSettings]);
+
+  useEffect(() => {
+    if (activeTab === "smtp") {
+      void loadSmtpSettings();
+    }
+  }, [activeTab, loadSmtpSettings]);
 
   useEffect(() => {
     if (activeTab === "service-cities") {
@@ -565,6 +613,43 @@ export default function SettingsPage() {
     }
   };
 
+  const handleSaveSmtp = async () => {
+    setSavingSmtp(true);
+    setPageError("");
+
+    try {
+      await updateSmtpSettings({
+        smtpHost: smtpForm.smtpHost,
+        smtpPort: smtpForm.smtpPort,
+        smtpUsername: smtpForm.smtpUsername,
+        smtpPassword: smtpForm.smtpPassword,
+        smtpFromAddress: smtpForm.smtpFromAddress,
+        smtpEncryption: smtpForm.smtpEncryption,
+      } as Parameters<typeof updateSmtpSettings>[0]);
+      setToast({
+        type: "success",
+        message:
+          "SMTP settings updated successfully.",
+      });
+    } catch (error) {
+      setPageError(
+        getApiErrorMessage(
+          error,
+          "Unable to save SMTP settings."
+        )
+      );
+      setToast({
+        type: "error",
+        message: getApiErrorMessage(
+          error,
+          "Unable to save SMTP settings."
+        ),
+      });
+    } finally {
+      setSavingSmtp(false);
+    }
+  };
+
   const togglePaymentMethod = (method: string) => {
     setPaymentForm((current) => ({
       ...current,
@@ -621,6 +706,7 @@ export default function SettingsPage() {
       key: "service-cities",
       label: "Service Cities",
     },
+    { key: "smtp", label: "SMTP / Email" },
   ];
 
   return (
@@ -1480,6 +1566,191 @@ export default function SettingsPage() {
                   )}
                 </tbody>
               </table>
+            </div>
+          )}
+        </section>
+      )}
+
+      {activeTab === "smtp" && (
+        <section className="space-y-5 rounded-dashboard-card border border-border bg-surface p-6 shadow-dashboard-card">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h2 className="text-lg font-extrabold text-text-main">
+                SMTP / Email Settings
+              </h2>
+              <p className="mt-1 text-sm text-text-muted">
+                Configure mail server settings for sending transactional emails.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={handleSaveSmtp}
+                disabled={savingSmtp}
+                className="inline-flex h-11 items-center justify-center rounded-control bg-primary-700 px-5 text-sm font-bold text-white hover:bg-primary-800 disabled:opacity-60"
+              >
+                {savingSmtp ? "Saving..." : "Save SMTP Settings"}
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setSavingSmtp(true);
+                  setPageError("");
+                  try {
+                    await syncEnvSmtpSettings();
+                    await loadSmtpSettings();
+                    setToast({
+                      type: "success",
+                      message:
+                        "SMTP settings loaded from environment.",
+                    });
+                  } catch (error) {
+                    setPageError(
+                      getApiErrorMessage(
+                        error,
+                        "Unable to sync SMTP settings from environment."
+                      )
+                    );
+                    setToast({
+                      type: "error",
+                      message: getApiErrorMessage(
+                        error,
+                        "Unable to sync SMTP settings from environment."
+                      ),
+                    });
+                  } finally {
+                    setSavingSmtp(false);
+                  }
+                }}
+                disabled={savingSmtp}
+                className="inline-flex h-11 items-center justify-center rounded-control border border-border bg-surface-soft px-5 text-sm font-bold text-text-main hover:bg-surface-muted disabled:opacity-60"
+              >
+                Sync from Environment
+              </button>
+            </div>
+          </div>
+
+          {pageError && activeTab === "smtp" && (
+            <div className="rounded-control border border-danger/20 bg-danger-soft px-4 py-3 text-sm font-bold text-danger">
+              {pageError}
+            </div>
+          )}
+
+          {loadingSmtp ? (
+            <div className="text-sm font-bold text-text-muted">
+              Loading SMTP settings...
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <label className="mb-1.5 block text-sm font-bold text-text-main">
+                  SMTP Host
+                </label>
+                <input
+                  type="text"
+                  value={smtpForm.smtpHost}
+                  onChange={(event) =>
+                    setSmtpForm((current) => ({
+                      ...current,
+                      smtpHost: event.target.value,
+                    }))
+                  }
+                  placeholder="smtp.gmail.com"
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-bold text-text-main">
+                  SMTP Port
+                </label>
+                <input
+                  type="number"
+                  value={smtpForm.smtpPort}
+                  onChange={(event) =>
+                    setSmtpForm((current) => ({
+                      ...current,
+                      smtpPort: parseInt(event.target.value, 10) || 587,
+                    }))
+                  }
+                  placeholder="587"
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-bold text-text-main">
+                  Encryption
+                </label>
+                <select
+                  value={smtpForm.smtpEncryption}
+                  onChange={(event) =>
+                    setSmtpForm((current) => ({
+                      ...current,
+                      smtpEncryption: event.target.value,
+                    }))
+                  }
+                  className={inputClass}
+                >
+                  <option value="none">None</option>
+                  <option value="ssl">SSL</option>
+                  <option value="tls">TLS</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-bold text-text-main">
+                  SMTP Username
+                </label>
+                <input
+                  type="text"
+                  value={smtpForm.smtpUsername}
+                  onChange={(event) =>
+                    setSmtpForm((current) => ({
+                      ...current,
+                      smtpUsername: event.target.value,
+                    }))
+                  }
+                  placeholder="username@example.com"
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-bold text-text-main">
+                  SMTP Password
+                </label>
+                <input
+                  type="password"
+                  value={smtpForm.smtpPassword}
+                  onChange={(event) =>
+                    setSmtpForm((current) => ({
+                      ...current,
+                      smtpPassword: event.target.value,
+                    }))
+                  }
+                  placeholder="Enter SMTP password"
+                  className={inputClass}
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="mb-1.5 block text-sm font-bold text-text-main">
+                  From Address
+                </label>
+                <input
+                  type="email"
+                  value={smtpForm.smtpFromAddress}
+                  onChange={(event) =>
+                    setSmtpForm((current) => ({
+                      ...current,
+                      smtpFromAddress: event.target.value,
+                    }))
+                  }
+                  placeholder="noreply@farmstaygo.com"
+                  className={inputClass}
+                />
+              </div>
             </div>
           )}
         </section>

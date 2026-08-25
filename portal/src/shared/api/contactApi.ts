@@ -109,6 +109,21 @@ export interface HomeSettingsResponse {
   data: HomeSettings;
 }
 
+export interface SmtpSettings {
+  smtpHost: string;
+  smtpPort: number;
+  smtpUsername: string;
+  smtpPassword: string;
+  smtpFromAddress: string;
+  smtpEncryption: string;
+}
+
+export interface SmtpSettingsResponse {
+  success: boolean;
+  message: string;
+  data: SmtpSettings;
+}
+
 export async function fetchContactMessages(params?: {
   page?: number;
   limit?: number;
@@ -286,6 +301,37 @@ export async function updateHomeSettings(
     "/admin/settings/home",
     formData
   );
+
+  return response.data;
+}
+
+export async function fetchSmtpSettings(): Promise<SmtpSettingsResponse> {
+  const response = await api.get<SmtpSettingsResponse>(
+    "/admin/settings/smtp"
+  );
+
+  return response.data;
+}
+
+export async function updateSmtpSettings(
+  settings: Partial<SmtpSettings>
+): Promise<SmtpSettingsResponse> {
+  const response = await api.put<SmtpSettingsResponse>(
+    "/admin/settings/smtp",
+    settings
+  );
+
+  return response.data;
+}
+
+export async function syncEnvSmtpSettings(): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  const response = await api.post<{
+    success: boolean;
+    message: string;
+  }>("/admin/settings/smtp/sync-env");
 
   return response.data;
 }

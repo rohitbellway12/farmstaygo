@@ -26,6 +26,12 @@ import {
 
 import {
   sendBookingConfirmationEmail,
+  sendBookingConfirmedAdminEmail,
+  sendBookingConfirmedCustomerEmail,
+  sendPaymentReceivedAdminEmail,
+  sendPaymentReceivedCustomerEmail,
+  sendBookingCancelledCustomerEmail,
+  sendBookingRejectedCustomerEmail,
 } from "../services/email.js";
 
 import type {
@@ -2365,6 +2371,57 @@ export const approvePayment = async (
         },
       });
 
+    void sendPaymentReceivedAdminEmail({
+      paymentId: updatedPayment.id,
+      transactionId: updatedPayment.transactionId || "N/A",
+      paymentDateTime: updatedPayment.createdAt.toISOString(),
+      bookingId: booking.id,
+      propertyName: booking.property.title,
+      propertyId: booking.property.id,
+      guestName: `${booking.user.firstName} ${booking.user.lastName}`,
+      checkIn: booking.checkIn.toISOString().slice(0, 10),
+      checkOut: booking.checkOut.toISOString().slice(0, 10),
+      totalBookingAmount: booking.estimatedTotal?.toString() ?? "0",
+      amountReceived: Number(updatedPayment.amount).toFixed(2),
+      balanceAmount: "0",
+      paymentMethod: updatedPayment.paymentMethod,
+      gateway: "N/A",
+      referenceNumber: updatedPayment.id,
+      adminDashboardUrl:
+        process.env.PORTAL_URL ||
+        "http://localhost:5173",
+    }).catch((error) => {
+      console.error(
+        "Payment received admin email error:",
+        error
+      );
+    });
+
+    void sendPaymentReceivedCustomerEmail({
+      firstName: booking.user.firstName,
+      email: booking.user.email,
+      paymentDate: updatedPayment.createdAt.toISOString().slice(0, 10),
+      paymentId: updatedPayment.id,
+      transactionId: updatedPayment.transactionId || "N/A",
+      bookingId: booking.id,
+      propertyName: booking.property.title,
+      checkIn: booking.checkIn.toISOString().slice(0, 10),
+      checkOut: booking.checkOut.toISOString().slice(0, 10),
+      guests: booking.guests,
+      totalBookingAmount: booking.estimatedTotal?.toString() ?? "0",
+      amountPaid: Number(updatedPayment.amount).toFixed(2),
+      balanceAmount: "0",
+      paymentMethod: updatedPayment.paymentMethod,
+      bookingDashboardUrl:
+        process.env.PORTAL_URL ||
+        "http://localhost:5173",
+    }).catch((error) => {
+      console.error(
+        "Payment received customer email error:",
+        error
+      );
+    });
+
     const totalPaid =
       totalPaidSoFar._sum.amount
         ? Number(totalPaidSoFar._sum.amount)
@@ -2450,6 +2507,66 @@ export const approvePayment = async (
           remainingBalance.toFixed(2),
           newPaymentStatus
         );
+
+        void sendBookingConfirmedAdminEmail({
+          bookingId: booking.id,
+          bookingDateTime: booking.createdAt.toISOString(),
+          paymentStatus: newPaymentStatus,
+          guestName: `${booking.user.firstName} ${booking.user.lastName}`,
+          guestEmail: booking.user.email,
+          guestPhone: booking.guestMobile || "N/A",
+          propertyName: booking.property.title,
+          propertyId: booking.property.id,
+          location: "N/A",
+          checkIn: booking.checkIn.toISOString().slice(0, 10),
+          checkOut: booking.checkOut.toISOString().slice(0, 10),
+          nights: booking.totalNights,
+          adults: booking.guests,
+          children: 0,
+          bookingAmount: booking.estimatedTotal?.toString() ?? "0",
+          amountPaid: totalPaid.toFixed(2),
+          balanceAmount: remainingBalance.toFixed(2),
+          paymentMethod: booking.paymentMethod || "N/A",
+          transactionId: payment.transactionId || "N/A",
+          adminDashboardUrl:
+            process.env.PORTAL_URL ||
+            "http://localhost:5173",
+        }).catch((error) => {
+          console.error(
+            "Booking confirmed admin email error:",
+            error
+          );
+        });
+
+        void sendBookingConfirmedCustomerEmail({
+          firstName: booking.user.firstName,
+          email: booking.user.email,
+          bookingId: booking.id,
+          bookingDate: booking.createdAt.toISOString().slice(0, 10),
+          propertyName: booking.property.title,
+          propertyAddress: "N/A",
+          hostName: "Host",
+          hostPhone: "N/A",
+          checkIn: booking.checkIn.toISOString().slice(0, 10),
+          checkOut: booking.checkOut.toISOString().slice(0, 10),
+          checkInTime: "N/A",
+          checkOutTime: "N/A",
+          nights: booking.totalNights,
+          adults: booking.guests,
+          children: 0,
+          totalAmount: booking.estimatedTotal?.toString() ?? "0",
+          amountPaid: totalPaid.toFixed(2),
+          balanceAmount: remainingBalance.toFixed(2),
+          paymentMethod: booking.paymentMethod || "N/A",
+          bookingUrl:
+            process.env.PORTAL_URL ||
+            "http://localhost:5173",
+        }).catch((error) => {
+          console.error(
+            "Booking confirmed customer email error:",
+            error
+          );
+        });
       } catch (emailError) {
         console.error(
           "Booking confirmation email error:",
@@ -2974,6 +3091,66 @@ export const acceptBooking = async (
           remainingBalance.toFixed(2),
           paymentStatus
         );
+
+        void sendBookingConfirmedAdminEmail({
+          bookingId: bookingId,
+          bookingDateTime: booking.createdAt.toISOString(),
+          paymentStatus: paymentStatus,
+          guestName: `${updated.user.firstName} ${updated.user.lastName}`,
+          guestEmail: updated.user.email,
+          guestPhone: updated.user.mobile || "N/A",
+          propertyName: updated.property.title,
+          propertyId: booking.propertyId,
+          location: [updated.property.city, updated.property.state, updated.property.country].filter(Boolean).join(", ") || "N/A",
+          checkIn: updated.checkIn.toISOString().slice(0, 10),
+          checkOut: updated.checkOut.toISOString().slice(0, 10),
+          nights: updated.totalNights,
+          adults: updated.guests,
+          children: 0,
+          bookingAmount: updated.estimatedTotal?.toString() ?? "0",
+          amountPaid: totalPaid.toFixed(2),
+          balanceAmount: remainingBalance.toFixed(2),
+          paymentMethod: updated.paymentMethod || "N/A",
+          transactionId: payments[0]?.transactionId || "N/A",
+          adminDashboardUrl:
+            process.env.PORTAL_URL ||
+            "http://localhost:5173",
+        }).catch((error) => {
+          console.error(
+            "Booking confirmed admin email error:",
+            error
+          );
+        });
+
+        void sendBookingConfirmedCustomerEmail({
+          firstName: updated.user.firstName,
+          email: updated.user.email,
+          bookingId: bookingId,
+          bookingDate: booking.createdAt.toISOString().slice(0, 10),
+          propertyName: updated.property.title,
+          propertyAddress: [updated.property.city, updated.property.state, updated.property.country].filter(Boolean).join(", ") || "N/A",
+          hostName: updated.property.vendor?.user ? `${updated.property.vendor.user.firstName} ${updated.property.vendor.user.lastName}` : "Host",
+          hostPhone: updated.property.vendor?.user?.mobile || "N/A",
+          checkIn: updated.checkIn.toISOString().slice(0, 10),
+          checkOut: updated.checkOut.toISOString().slice(0, 10),
+          checkInTime: updated.property.checkInTime || "N/A",
+          checkOutTime: updated.property.checkOutTime || "N/A",
+          nights: updated.totalNights,
+          adults: updated.guests,
+          children: 0,
+          totalAmount: updated.estimatedTotal?.toString() ?? "0",
+          amountPaid: totalPaid.toFixed(2),
+          balanceAmount: remainingBalance.toFixed(2),
+          paymentMethod: updated.paymentMethod || "N/A",
+          bookingUrl:
+            process.env.PORTAL_URL ||
+            "http://localhost:5173",
+        }).catch((error) => {
+          console.error(
+            "Booking confirmed customer email error:",
+            error
+          );
+        });
       } catch (error) {
         console.error("Accept booking email error:", error);
       }
@@ -3046,6 +3223,23 @@ export const rejectBooking = async (
             vendorId,
           },
         },
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+          property: {
+            select: {
+              title: true,
+              city: true,
+              state: true,
+              country: true,
+            },
+          },
+        },
       });
 
     if (!booking) {
@@ -3096,11 +3290,32 @@ export const rejectBooking = async (
            message: `Your booking for "${updatedProperty?.title ?? "your booking"}" has been rejected by the vendor.`,
          },
        });
-     } catch (error) {
-       console.error("Reject booking notification error:", error);
-     }
+      } catch (error) {
+        console.error("Reject booking notification error:", error);
+      }
 
-     return res.json({
+      void sendBookingRejectedCustomerEmail({
+        firstName: booking.user.firstName,
+        email: booking.user.email,
+        bookingId: booking.id,
+        propertyName: booking.property.title,
+        location: [booking.property.city, booking.property.state, booking.property.country].filter(Boolean).join(", ") || "N/A",
+        checkIn: booking.checkIn.toISOString().slice(0, 10),
+        checkOut: booking.checkOut.toISOString().slice(0, 10),
+        guests: booking.guests,
+        rejectionDate: new Date().toISOString().slice(0, 10),
+        rejectionReason: reason || "Booking rejected by vendor",
+        bookingDashboardUrl:
+          process.env.PORTAL_URL ||
+          "http://localhost:5173",
+      }).catch((error) => {
+        console.error(
+          "Booking rejected customer email error:",
+          error
+        );
+      });
+
+      return res.json({
        success: true,
        message:
          "Booking rejected successfully",
@@ -3438,6 +3653,21 @@ export const cancelBooking = async (
         status: BookingStatus.REQUESTED,
       },
       include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+        property: {
+          select: {
+            title: true,
+            city: true,
+            state: true,
+            country: true,
+          },
+        },
         payments: true,
       },
     });
@@ -3461,6 +3691,30 @@ export const cancelBooking = async (
           "Cannot cancel a booking with completed payments",
       });
     }
+
+    void sendBookingCancelledCustomerEmail({
+      firstName: booking.user.firstName,
+      email: booking.user.email,
+      bookingId: booking.id,
+      propertyName: booking.property.title,
+      location: [booking.property.city, booking.property.state, booking.property.country].filter(Boolean).join(", ") || "N/A",
+      checkIn: booking.checkIn.toISOString().slice(0, 10),
+      checkOut: booking.checkOut.toISOString().slice(0, 10),
+      guests: booking.guests,
+      cancellationDate: new Date().toISOString().slice(0, 10),
+      cancellationReason: "Cancelled by customer",
+      refundStatus: "N/A",
+      refundAmount: "0",
+      refundTimeline: "N/A",
+      bookingDashboardUrl:
+        process.env.PORTAL_URL ||
+        "http://localhost:5173",
+    }).catch((error) => {
+      console.error(
+        "Booking cancelled customer email error:",
+        error
+      );
+    });
 
     await prisma.booking.delete({
       where: { id: bookingId },

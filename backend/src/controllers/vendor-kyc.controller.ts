@@ -3,6 +3,10 @@ import { z } from "zod";
 
 import prisma from "../config/database.js";
 
+import {
+  sendVerificationPendingEmail,
+} from "../services/email.js";
+
 import type {
   AuthenticatedRequest,
 } from "../middleware/auth.middleware.js";
@@ -128,7 +132,39 @@ export const submitVendorKyc = async (
         kycReviewedAt: null,
         kycRejectionReason: null,
       },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
     });
+
+    if (vendor.user?.email && vendor.user.firstName && vendor.kycSubmittedAt) {
+      void sendVerificationPendingEmail({
+        firstName: vendor.user.firstName,
+        email: vendor.user.email,
+        submissionDate: new Date(
+          vendor.kycSubmittedAt
+        ).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
+        verificationId: `VER-${vendor.id}`,
+        dashboardUrl:
+          process.env.PORTAL_URL ||
+          "http://localhost:5173",
+      }).catch((error) => {
+        console.error(
+          "Send verification pending email error:",
+          error
+        );
+      });
+    }
 
     return res.status(200).json({
       success: true,

@@ -6,7 +6,7 @@ import {
 
 import prisma from "../config/database.js";
 
-import { sendContactMessageNotificationEmail } from "../services/email.js";
+import { sendContactMessageNotificationEmail, sendEnquiryReceivedEmail, sendEnquiryAdminEmail } from "../services/email.js";
 import { notifyAdmins } from "../services/notification.service.js";
 
 interface ContactMessageBody {
@@ -149,6 +149,63 @@ export const createContactMessage = async (
         );
       });
     }
+
+    void sendEnquiryAdminEmail({
+      enquiryId: `ENQ-${contactMessage.id.slice(0, 8)}`,
+      customerName: contactMessage.name,
+      customerEmail: contactMessage.email,
+      customerPhone: contactMessage.phone || "N/A",
+      propertyName: contactMessage.subject,
+      propertyId: "N/A",
+      location: "N/A",
+      checkIn: "N/A",
+      checkOut: "N/A",
+      guests: 1,
+      message: contactMessage.message,
+      dateTime: new Date(
+        contactMessage.createdAt
+      ).toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      adminDashboardUrl:
+        process.env.PORTAL_URL ||
+        "http://localhost:5173",
+    }).catch((error) => {
+      console.error(
+        "Send enquiry admin email error:",
+        error
+      );
+    });
+
+    void sendEnquiryReceivedEmail({
+      email: contactMessage.email,
+      firstName: contactMessage.name.split(" ")[0],
+      enquiryId: `ENQ-${contactMessage.id.slice(0, 8)}`,
+      propertyName: contactMessage.subject,
+      propertyLocation: "N/A",
+      checkIn: "N/A",
+      checkOut: "N/A",
+      guests: 1,
+      submissionDate: new Date(
+        contactMessage.createdAt
+      ).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+      dashboardUrl:
+        process.env.PORTAL_URL ||
+        "http://localhost:5173",
+    }).catch((error) => {
+      console.error(
+        "Send enquiry received email error:",
+        error
+      );
+    });
 
     void notifyAdmins({
       type: NotificationType.CONTACT,
