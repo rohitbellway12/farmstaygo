@@ -67,22 +67,6 @@ interface PayoutsResponse {
   data: VendorPayout[];
 }
 
-interface PayoutSummaryResponse {
-  success: boolean;
-  message: string;
-  data: {
-    totalPayouts: number;
-    totalBookingAmount: number;
-    totalCommissionAmount: number;
-    totalVendorEarning: number;
-    pendingCount: number;
-    pendingAmount: number;
-    paidCount: number;
-    paidAmount: number;
-    totalVendors: number;
-  };
-}
-
 const statusConfig: Record<
   string,
   { label: string; badgeClass: string; dotClass: string }

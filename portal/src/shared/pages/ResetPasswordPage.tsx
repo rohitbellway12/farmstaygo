@@ -7,7 +7,7 @@ import {
 import axios from "axios";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 
-import api from "../shared/api/api";
+import api from "../../shared/api/api";
 
 interface ResetPasswordResponse {
   success: boolean;
