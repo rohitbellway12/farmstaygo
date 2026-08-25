@@ -12,6 +12,8 @@ interface EarningsData {
   totalCommission: number;
   pendingCommission: number;
   paidCommission: number;
+  pendingPayout: number;
+  paidPayout: number;
   totalBookings: number;
   completedBookings: number;
   totalBookingsRevenue: number;
@@ -103,7 +105,7 @@ export default function VendorEarningsPage() {
           <span className="grid h-11 w-11 place-items-center rounded-xl bg-success-soft text-success"><TrendingUpIcon /></span>
           <div>
             <h1 className="text-2xl font-extrabold text-text-main">Earnings</h1>
-            <p className="mt-1 text-sm text-text-muted">Your revenue and commission breakdown.</p>
+            <p className="mt-1 text-sm text-text-muted">Your earnings breakdown: what you receive, what's pending, and platform commission deducted.</p>
           </div>
         </div>
       </section>
@@ -112,22 +114,22 @@ export default function VendorEarningsPage() {
         <div className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card">
           <span className="text-sm font-semibold text-text-muted">Total Earnings</span>
           <strong className="mt-2 block text-2xl font-extrabold leading-none text-success">{formatMoney(earnings.totalEarnings)}</strong>
-          <span className="mt-2 block text-xs text-text-muted">After platform commission</span>
+          <span className="mt-2 block text-xs text-text-muted">From all bookings</span>
+        </div>
+        <div className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card">
+          <span className="text-sm font-semibold text-text-muted">Pending Payout</span>
+          <strong className="mt-2 block text-2xl font-extrabold leading-none text-warning">{formatMoney(earnings.pendingPayout)}</strong>
+          <span className="mt-2 block text-xs text-text-muted">Awaiting payment</span>
+        </div>
+        <div className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card">
+          <span className="text-sm font-semibold text-text-muted">Paid Out</span>
+          <strong className="mt-2 block text-2xl font-extrabold leading-none text-text-main">{formatMoney(earnings.paidPayout)}</strong>
+          <span className="mt-2 block text-xs text-text-muted">Settled to you</span>
         </div>
         <div className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card">
           <span className="text-sm font-semibold text-text-muted">Platform Commission</span>
           <strong className="mt-2 block text-2xl font-extrabold leading-none text-danger">{formatMoney(earnings.totalCommission)}</strong>
           <span className="mt-2 block text-xs text-text-muted">Deducted by platform</span>
-        </div>
-        <div className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card">
-          <span className="text-sm font-semibold text-text-muted">Pending Commission</span>
-          <strong className="mt-2 block text-2xl font-extrabold leading-none text-warning">{formatMoney(earnings.pendingCommission)}</strong>
-          <span className="mt-2 block text-xs text-text-muted">Awaiting payout</span>
-        </div>
-        <div className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card">
-          <span className="text-sm font-semibold text-text-muted">Paid Commission</span>
-          <strong className="mt-2 block text-2xl font-extrabold leading-none text-text-main">{formatMoney(earnings.paidCommission)}</strong>
-          <span className="mt-2 block text-xs text-text-muted">Already settled</span>
         </div>
       </section>
 

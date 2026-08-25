@@ -277,6 +277,7 @@ export type UserWhereInput = {
   bookings?: Prisma.BookingListRelationFilter
   supportTickets?: Prisma.SupportTicketListRelationFilter
   assignedSupportTickets?: Prisma.SupportTicketListRelationFilter
+  paidCommissions?: Prisma.VendorCommissionListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -297,6 +298,7 @@ export type UserOrderByWithRelationInput = {
   bookings?: Prisma.BookingOrderByRelationAggregateInput
   supportTickets?: Prisma.SupportTicketOrderByRelationAggregateInput
   assignedSupportTickets?: Prisma.SupportTicketOrderByRelationAggregateInput
+  paidCommissions?: Prisma.VendorCommissionOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -320,6 +322,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   bookings?: Prisma.BookingListRelationFilter
   supportTickets?: Prisma.SupportTicketListRelationFilter
   assignedSupportTickets?: Prisma.SupportTicketListRelationFilter
+  paidCommissions?: Prisma.VendorCommissionListRelationFilter
 }, "id" | "email" | "mobile">
 
 export type UserOrderByWithAggregationInput = {
@@ -377,6 +380,7 @@ export type UserCreateInput = {
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   supportTickets?: Prisma.SupportTicketCreateNestedManyWithoutUserInput
   assignedSupportTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  paidCommissions?: Prisma.VendorCommissionCreateNestedManyWithoutPaidByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -397,6 +401,7 @@ export type UserUncheckedCreateInput = {
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   supportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutUserInput
   assignedSupportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  paidCommissions?: Prisma.VendorCommissionUncheckedCreateNestedManyWithoutPaidByInput
 }
 
 export type UserUpdateInput = {
@@ -416,6 +421,7 @@ export type UserUpdateInput = {
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   supportTickets?: Prisma.SupportTicketUpdateManyWithoutUserNestedInput
   assignedSupportTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  paidCommissions?: Prisma.VendorCommissionUpdateManyWithoutPaidByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -436,6 +442,7 @@ export type UserUncheckedUpdateInput = {
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   supportTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutUserNestedInput
   assignedSupportTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  paidCommissions?: Prisma.VendorCommissionUncheckedUpdateManyWithoutPaidByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -591,6 +598,22 @@ export type UserUpdateOneRequiredWithoutVendorNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutVendorInput, Prisma.UserUpdateWithoutVendorInput>, Prisma.UserUncheckedUpdateWithoutVendorInput>
 }
 
+export type UserCreateNestedOneWithoutPaidCommissionsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPaidCommissionsInput, Prisma.UserUncheckedCreateWithoutPaidCommissionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPaidCommissionsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutPaidCommissionsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPaidCommissionsInput, Prisma.UserUncheckedCreateWithoutPaidCommissionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPaidCommissionsInput
+  upsert?: Prisma.UserUpsertWithoutPaidCommissionsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPaidCommissionsInput, Prisma.UserUpdateWithoutPaidCommissionsInput>, Prisma.UserUncheckedUpdateWithoutPaidCommissionsInput>
+}
+
 export type UserCreateNestedOneWithoutWishlistsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutWishlistsInput, Prisma.UserUncheckedCreateWithoutWishlistsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutWishlistsInput
@@ -667,6 +690,7 @@ export type UserCreateWithoutVendorInput = {
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   supportTickets?: Prisma.SupportTicketCreateNestedManyWithoutUserInput
   assignedSupportTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  paidCommissions?: Prisma.VendorCommissionCreateNestedManyWithoutPaidByInput
 }
 
 export type UserUncheckedCreateWithoutVendorInput = {
@@ -686,6 +710,7 @@ export type UserUncheckedCreateWithoutVendorInput = {
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   supportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutUserInput
   assignedSupportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  paidCommissions?: Prisma.VendorCommissionUncheckedCreateNestedManyWithoutPaidByInput
 }
 
 export type UserCreateOrConnectWithoutVendorInput = {
@@ -720,6 +745,7 @@ export type UserUpdateWithoutVendorInput = {
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   supportTickets?: Prisma.SupportTicketUpdateManyWithoutUserNestedInput
   assignedSupportTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  paidCommissions?: Prisma.VendorCommissionUpdateManyWithoutPaidByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVendorInput = {
@@ -735,6 +761,101 @@ export type UserUncheckedUpdateWithoutVendorInput = {
   mobileVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  wishlists?: Prisma.WishlistUncheckedUpdateManyWithoutUserNestedInput
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
+  supportTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutUserNestedInput
+  assignedSupportTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  paidCommissions?: Prisma.VendorCommissionUncheckedUpdateManyWithoutPaidByNestedInput
+}
+
+export type UserCreateWithoutPaidCommissionsInput = {
+  firstName: string
+  lastName?: string | null
+  email: string
+  mobile?: string | null
+  password: string
+  role?: $Enums.UserRole
+  status?: $Enums.UserStatus
+  emailVerified?: boolean
+  mobileVerified?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  vendor?: Prisma.VendorCreateNestedOneWithoutUserInput
+  wishlists?: Prisma.WishlistCreateNestedManyWithoutUserInput
+  bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
+  supportTickets?: Prisma.SupportTicketCreateNestedManyWithoutUserInput
+  assignedSupportTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+}
+
+export type UserUncheckedCreateWithoutPaidCommissionsInput = {
+  id?: number
+  firstName: string
+  lastName?: string | null
+  email: string
+  mobile?: string | null
+  password: string
+  role?: $Enums.UserRole
+  status?: $Enums.UserStatus
+  emailVerified?: boolean
+  mobileVerified?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  vendor?: Prisma.VendorUncheckedCreateNestedOneWithoutUserInput
+  wishlists?: Prisma.WishlistUncheckedCreateNestedManyWithoutUserInput
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
+  supportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutUserInput
+  assignedSupportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+}
+
+export type UserCreateOrConnectWithoutPaidCommissionsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutPaidCommissionsInput, Prisma.UserUncheckedCreateWithoutPaidCommissionsInput>
+}
+
+export type UserUpsertWithoutPaidCommissionsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutPaidCommissionsInput, Prisma.UserUncheckedUpdateWithoutPaidCommissionsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutPaidCommissionsInput, Prisma.UserUncheckedCreateWithoutPaidCommissionsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutPaidCommissionsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutPaidCommissionsInput, Prisma.UserUncheckedUpdateWithoutPaidCommissionsInput>
+}
+
+export type UserUpdateWithoutPaidCommissionsInput = {
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mobileVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vendor?: Prisma.VendorUpdateOneWithoutUserNestedInput
+  wishlists?: Prisma.WishlistUpdateManyWithoutUserNestedInput
+  bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
+  supportTickets?: Prisma.SupportTicketUpdateManyWithoutUserNestedInput
+  assignedSupportTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+}
+
+export type UserUncheckedUpdateWithoutPaidCommissionsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mobileVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vendor?: Prisma.VendorUncheckedUpdateOneWithoutUserNestedInput
   wishlists?: Prisma.WishlistUncheckedUpdateManyWithoutUserNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   supportTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutUserNestedInput
@@ -757,6 +878,7 @@ export type UserCreateWithoutWishlistsInput = {
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   supportTickets?: Prisma.SupportTicketCreateNestedManyWithoutUserInput
   assignedSupportTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  paidCommissions?: Prisma.VendorCommissionCreateNestedManyWithoutPaidByInput
 }
 
 export type UserUncheckedCreateWithoutWishlistsInput = {
@@ -776,6 +898,7 @@ export type UserUncheckedCreateWithoutWishlistsInput = {
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   supportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutUserInput
   assignedSupportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  paidCommissions?: Prisma.VendorCommissionUncheckedCreateNestedManyWithoutPaidByInput
 }
 
 export type UserCreateOrConnectWithoutWishlistsInput = {
@@ -810,6 +933,7 @@ export type UserUpdateWithoutWishlistsInput = {
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   supportTickets?: Prisma.SupportTicketUpdateManyWithoutUserNestedInput
   assignedSupportTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  paidCommissions?: Prisma.VendorCommissionUpdateManyWithoutPaidByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutWishlistsInput = {
@@ -829,6 +953,7 @@ export type UserUncheckedUpdateWithoutWishlistsInput = {
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   supportTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutUserNestedInput
   assignedSupportTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  paidCommissions?: Prisma.VendorCommissionUncheckedUpdateManyWithoutPaidByNestedInput
 }
 
 export type UserCreateWithoutBookingsInput = {
@@ -847,6 +972,7 @@ export type UserCreateWithoutBookingsInput = {
   wishlists?: Prisma.WishlistCreateNestedManyWithoutUserInput
   supportTickets?: Prisma.SupportTicketCreateNestedManyWithoutUserInput
   assignedSupportTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  paidCommissions?: Prisma.VendorCommissionCreateNestedManyWithoutPaidByInput
 }
 
 export type UserUncheckedCreateWithoutBookingsInput = {
@@ -866,6 +992,7 @@ export type UserUncheckedCreateWithoutBookingsInput = {
   wishlists?: Prisma.WishlistUncheckedCreateNestedManyWithoutUserInput
   supportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutUserInput
   assignedSupportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  paidCommissions?: Prisma.VendorCommissionUncheckedCreateNestedManyWithoutPaidByInput
 }
 
 export type UserCreateOrConnectWithoutBookingsInput = {
@@ -900,6 +1027,7 @@ export type UserUpdateWithoutBookingsInput = {
   wishlists?: Prisma.WishlistUpdateManyWithoutUserNestedInput
   supportTickets?: Prisma.SupportTicketUpdateManyWithoutUserNestedInput
   assignedSupportTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  paidCommissions?: Prisma.VendorCommissionUpdateManyWithoutPaidByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutBookingsInput = {
@@ -919,6 +1047,7 @@ export type UserUncheckedUpdateWithoutBookingsInput = {
   wishlists?: Prisma.WishlistUncheckedUpdateManyWithoutUserNestedInput
   supportTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutUserNestedInput
   assignedSupportTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  paidCommissions?: Prisma.VendorCommissionUncheckedUpdateManyWithoutPaidByNestedInput
 }
 
 export type UserCreateWithoutSupportTicketsInput = {
@@ -937,6 +1066,7 @@ export type UserCreateWithoutSupportTicketsInput = {
   wishlists?: Prisma.WishlistCreateNestedManyWithoutUserInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   assignedSupportTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  paidCommissions?: Prisma.VendorCommissionCreateNestedManyWithoutPaidByInput
 }
 
 export type UserUncheckedCreateWithoutSupportTicketsInput = {
@@ -956,6 +1086,7 @@ export type UserUncheckedCreateWithoutSupportTicketsInput = {
   wishlists?: Prisma.WishlistUncheckedCreateNestedManyWithoutUserInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   assignedSupportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  paidCommissions?: Prisma.VendorCommissionUncheckedCreateNestedManyWithoutPaidByInput
 }
 
 export type UserCreateOrConnectWithoutSupportTicketsInput = {
@@ -979,6 +1110,7 @@ export type UserCreateWithoutAssignedSupportTicketsInput = {
   wishlists?: Prisma.WishlistCreateNestedManyWithoutUserInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   supportTickets?: Prisma.SupportTicketCreateNestedManyWithoutUserInput
+  paidCommissions?: Prisma.VendorCommissionCreateNestedManyWithoutPaidByInput
 }
 
 export type UserUncheckedCreateWithoutAssignedSupportTicketsInput = {
@@ -998,6 +1130,7 @@ export type UserUncheckedCreateWithoutAssignedSupportTicketsInput = {
   wishlists?: Prisma.WishlistUncheckedCreateNestedManyWithoutUserInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   supportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutUserInput
+  paidCommissions?: Prisma.VendorCommissionUncheckedCreateNestedManyWithoutPaidByInput
 }
 
 export type UserCreateOrConnectWithoutAssignedSupportTicketsInput = {
@@ -1032,6 +1165,7 @@ export type UserUpdateWithoutSupportTicketsInput = {
   wishlists?: Prisma.WishlistUpdateManyWithoutUserNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   assignedSupportTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  paidCommissions?: Prisma.VendorCommissionUpdateManyWithoutPaidByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSupportTicketsInput = {
@@ -1051,6 +1185,7 @@ export type UserUncheckedUpdateWithoutSupportTicketsInput = {
   wishlists?: Prisma.WishlistUncheckedUpdateManyWithoutUserNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   assignedSupportTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  paidCommissions?: Prisma.VendorCommissionUncheckedUpdateManyWithoutPaidByNestedInput
 }
 
 export type UserUpsertWithoutAssignedSupportTicketsInput = {
@@ -1080,6 +1215,7 @@ export type UserUpdateWithoutAssignedSupportTicketsInput = {
   wishlists?: Prisma.WishlistUpdateManyWithoutUserNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   supportTickets?: Prisma.SupportTicketUpdateManyWithoutUserNestedInput
+  paidCommissions?: Prisma.VendorCommissionUpdateManyWithoutPaidByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAssignedSupportTicketsInput = {
@@ -1099,6 +1235,7 @@ export type UserUncheckedUpdateWithoutAssignedSupportTicketsInput = {
   wishlists?: Prisma.WishlistUncheckedUpdateManyWithoutUserNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   supportTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutUserNestedInput
+  paidCommissions?: Prisma.VendorCommissionUncheckedUpdateManyWithoutPaidByNestedInput
 }
 
 
@@ -1111,6 +1248,7 @@ export type UserCountOutputType = {
   bookings: number
   supportTickets: number
   assignedSupportTickets: number
+  paidCommissions: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1118,6 +1256,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   bookings?: boolean | UserCountOutputTypeCountBookingsArgs
   supportTickets?: boolean | UserCountOutputTypeCountSupportTicketsArgs
   assignedSupportTickets?: boolean | UserCountOutputTypeCountAssignedSupportTicketsArgs
+  paidCommissions?: boolean | UserCountOutputTypeCountPaidCommissionsArgs
 }
 
 /**
@@ -1158,6 +1297,13 @@ export type UserCountOutputTypeCountAssignedSupportTicketsArgs<ExtArgs extends r
   where?: Prisma.SupportTicketWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountPaidCommissionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.VendorCommissionWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1177,6 +1323,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   bookings?: boolean | Prisma.User$bookingsArgs<ExtArgs>
   supportTickets?: boolean | Prisma.User$supportTicketsArgs<ExtArgs>
   assignedSupportTickets?: boolean | Prisma.User$assignedSupportTicketsArgs<ExtArgs>
+  paidCommissions?: boolean | Prisma.User$paidCommissionsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1232,6 +1379,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   bookings?: boolean | Prisma.User$bookingsArgs<ExtArgs>
   supportTickets?: boolean | Prisma.User$supportTicketsArgs<ExtArgs>
   assignedSupportTickets?: boolean | Prisma.User$assignedSupportTicketsArgs<ExtArgs>
+  paidCommissions?: boolean | Prisma.User$paidCommissionsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1245,6 +1393,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     bookings: Prisma.$BookingPayload<ExtArgs>[]
     supportTickets: Prisma.$SupportTicketPayload<ExtArgs>[]
     assignedSupportTickets: Prisma.$SupportTicketPayload<ExtArgs>[]
+    paidCommissions: Prisma.$VendorCommissionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1658,6 +1807,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   bookings<T extends Prisma.User$bookingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$bookingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   supportTickets<T extends Prisma.User$supportTicketsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$supportTicketsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupportTicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   assignedSupportTickets<T extends Prisma.User$assignedSupportTicketsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$assignedSupportTicketsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupportTicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  paidCommissions<T extends Prisma.User$paidCommissionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$paidCommissionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VendorCommissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2204,6 +2354,30 @@ export type User$assignedSupportTicketsArgs<ExtArgs extends runtime.Types.Extens
   take?: number
   skip?: number
   distinct?: Prisma.SupportTicketScalarFieldEnum | Prisma.SupportTicketScalarFieldEnum[]
+}
+
+/**
+ * User.paidCommissions
+ */
+export type User$paidCommissionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VendorCommission
+   */
+  select?: Prisma.VendorCommissionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the VendorCommission
+   */
+  omit?: Prisma.VendorCommissionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VendorCommissionInclude<ExtArgs> | null
+  where?: Prisma.VendorCommissionWhereInput
+  orderBy?: Prisma.VendorCommissionOrderByWithRelationInput | Prisma.VendorCommissionOrderByWithRelationInput[]
+  cursor?: Prisma.VendorCommissionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.VendorCommissionScalarFieldEnum | Prisma.VendorCommissionScalarFieldEnum[]
 }
 
 /**

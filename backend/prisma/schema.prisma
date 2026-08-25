@@ -47,6 +47,7 @@ model User {
   bookings Booking[]
   supportTickets SupportTicket[] @relation("UserSupportTickets")
   assignedSupportTickets SupportTicket[] @relation("AssignedSupportTickets")
+  paidCommissions VendorCommission[] @relation("PaidByCommissions")
 
   @@map("users")
 }
@@ -92,15 +93,21 @@ model VendorCommission {
   vendorEarning   Decimal   @db.Decimal(12, 2) @map("vendor_earning")
   status          CommissionStatus @default(PENDING) @map("status")
   paidAt          DateTime? @map("paid_at")
+  transactionId   String?   @map("transaction_id")
+  paymentMethod   PaymentMethod? @map("payment_method")
+  notes           String?   @map("notes")
+  paidByUserId    Int?      @map("paid_by_user_id")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
   vendor  Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   booking Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  paidBy  User?    @relation("PaidByCommissions", fields: [paidByUserId], references: [id], onDelete: SetNull)
 
-  @@index([vendorId, status])
-  @@index([bookingId])
-  @@map("vendor_commissions")
+   @@index([vendorId, status])
+   @@index([bookingId])
+   @@unique([bookingId])
+   @@map("vendor_commissions")
 }
 
 enum CommissionStatus {

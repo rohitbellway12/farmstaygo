@@ -16,6 +16,8 @@ interface Payout {
   vendorEarning: string;
   status: string;
   paidAt: string | null;
+  transactionId: string | null;
+  paymentMethod: string | null;
   createdAt: string;
   booking: {
     id: string;
@@ -41,6 +43,12 @@ const statusConfig: Record<
   PENDING: { label: "Pending", badgeClass: "border-warning/20 bg-warning-soft text-warning" },
   PAID: { label: "Paid", badgeClass: "border-success/20 bg-success-soft text-success" },
   CANCELLED: { label: "Cancelled", badgeClass: "border-border bg-surface-muted text-text-secondary" },
+};
+
+const paymentMethodConfig: Record<string, { label: string }> = {
+  ONLINE: { label: "Online" },
+  CASH: { label: "Cash" },
+  BANK_TRANSFER: { label: "Bank Transfer" },
 };
 
 const formatDate = (value?: string | null): string => {
@@ -134,8 +142,8 @@ export default function VendorPayoutsPage() {
     const totalEarnings = payouts.reduce((sum, p) => sum + Number(p.vendorEarning), 0);
     const pendingEarnings = payouts.filter((p) => p.status === "PENDING").reduce((sum, p) => sum + Number(p.vendorEarning), 0);
     const paidEarnings = payouts.filter((p) => p.status === "PAID").reduce((sum, p) => sum + Number(p.vendorEarning), 0);
-    const totalCommission = payouts.reduce((sum, p) => sum + Number(p.commissionAmount), 0);
-    return { totalEarnings, pendingEarnings, paidEarnings, totalCommission };
+    const totalPlatformCommission = payouts.reduce((sum, p) => sum + Number(p.commissionAmount), 0);
+    return { totalEarnings, pendingEarnings, paidEarnings, totalPlatformCommission };
   }, [payouts]);
 
   return (
@@ -144,15 +152,15 @@ export default function VendorPayoutsPage() {
         <div className="flex items-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary-50 text-primary-700"><WalletIcon /></span>
           <div>
-            <h1 className="text-2xl font-extrabold text-text-main">Payouts</h1>
-            <p className="mt-1 text-sm text-text-muted">Track your commission payouts and settlements.</p>
+            <h1 className="text-2xl font-extrabold text-text-main">My Payouts</h1>
+            <p className="mt-1 text-sm text-text-muted">Track your earnings. Guest payments are split: platform keeps a commission, you receive the rest.</p>
           </div>
         </div>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card">
-          <span className="text-sm font-semibold text-text-muted">Total Earnings</span>
+          <span className="text-sm font-semibold text-text-muted">Total Payouts Received</span>
           <strong className="mt-2 block text-2xl font-extrabold leading-none text-success">{formatMoney(summary.totalEarnings)}</strong>
           <span className="mt-2 block text-xs text-text-muted">{payouts.length} payouts</span>
         </div>
@@ -167,8 +175,8 @@ export default function VendorPayoutsPage() {
           <span className="mt-2 block text-xs text-text-muted">Settled</span>
         </div>
         <div className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card">
-          <span className="text-sm font-semibold text-text-muted">Total Commission</span>
-          <strong className="mt-2 block text-2xl font-extrabold leading-none text-danger">{formatMoney(summary.totalCommission)}</strong>
+          <span className="text-sm font-semibold text-text-muted">Platform Commission Deducted</span>
+          <strong className="mt-2 block text-2xl font-extrabold leading-none text-danger">{formatMoney(summary.totalPlatformCommission)}</strong>
           <span className="mt-2 block text-xs text-text-muted">Platform cut</span>
         </div>
       </section>
@@ -203,7 +211,7 @@ export default function VendorPayoutsPage() {
           <table className="w-full min-w-[900px] border-collapse">
             <thead>
               <tr className="border-b border-border bg-surface-soft">
-                {["Property", "Guest", "Dates", "Booking Amount", "Commission", "Your Earning", "Status", "Paid At"].map((heading) => (
+                {["Property", "Guest", "Dates", "Booking Amount", "Platform Fee", "Your Payout", "Status", "Transaction", "Paid At"].map((heading) => (
                   <th key={heading} className="px-5 py-3.5 text-xs font-extrabold uppercase tracking-wide text-text-muted">{heading}</th>
                 ))}
               </tr>
@@ -212,7 +220,7 @@ export default function VendorPayoutsPage() {
               {loading ? (
                 <LoadingRows />
               ) : filteredPayouts.length === 0 ? (
-                <tr><td colSpan={8} className="px-5 py-16 text-center">
+                <tr><td colSpan={9} className="px-5 py-16 text-center">
                   <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-primary-50 text-primary-700"><WalletIcon /></span>
                   <h3 className="mt-4 text-base font-extrabold text-text-main">No payouts yet</h3>
                   <p className="mt-1 text-sm text-text-muted">Payout records will appear here after bookings are paid.</p>
@@ -245,6 +253,18 @@ export default function VendorPayoutsPage() {
                       </span>
                     </td>
                     <td className="px-5 py-4">
+                      {payout.transactionId && payout.status === "PAID" ? (
+                        <div className="min-w-0">
+                          <span className="block text-xs font-semibold text-text-main">{payout.transactionId}</span>
+                          <span className="mt-1 block text-xs text-text-muted">
+                            {paymentMethodConfig[payout.paymentMethod ?? ""]?.label ?? payout.paymentMethod ?? ""}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-text-muted">Pending</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-4">
                       <span className="text-xs text-text-muted">{payout.paidAt ? formatDate(payout.paidAt) : "Pending"}</span>
                     </td>
                   </tr>
@@ -272,8 +292,11 @@ export default function VendorPayoutsPage() {
                     <span className="mt-1 block text-xs text-text-muted">Guest: {payout.booking.guestName}</span>
                     <span className="mt-1 block text-xs text-text-muted">{formatDate(payout.booking.checkIn)} - {formatDate(payout.booking.checkOut)}</span>
                     <span className="mt-2 block text-xs font-semibold text-text-secondary">Booking: {formatMoney(payout.bookingAmount)}</span>
-                    <span className="mt-1 block text-xs font-semibold text-danger">Commission: {formatMoney(payout.commissionAmount)} ({payout.commissionRate}%)</span>
-                    <span className="mt-1 block text-xs font-semibold text-success">Your earning: {formatMoney(payout.vendorEarning)}</span>
+                    <span className="mt-1 block text-xs font-semibold text-danger">Platform fee: {formatMoney(payout.commissionAmount)} ({payout.commissionRate}%)</span>
+                    <span className="mt-1 block text-xs font-semibold text-success">Your payout: {formatMoney(payout.vendorEarning)}</span>
+                    {payout.transactionId && payout.status === "PAID" && (
+                      <span className="mt-1 block text-xs text-text-muted">Txn: {payout.transactionId} ({paymentMethodConfig[payout.paymentMethod ?? ""]?.label ?? payout.paymentMethod ?? ""})</span>
+                    )}
                     <span className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-extrabold ${statusConfig[payout.status]?.badgeClass || statusConfig.PENDING.badgeClass}`}>
                       {statusConfig[payout.status]?.label || payout.status}
                     </span>

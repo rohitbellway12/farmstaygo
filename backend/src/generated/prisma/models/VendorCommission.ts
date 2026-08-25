@@ -32,6 +32,7 @@ export type VendorCommissionAvgAggregateOutputType = {
   commissionRate: runtime.Decimal | null
   commissionAmount: runtime.Decimal | null
   vendorEarning: runtime.Decimal | null
+  paidByUserId: number | null
 }
 
 export type VendorCommissionSumAggregateOutputType = {
@@ -40,6 +41,7 @@ export type VendorCommissionSumAggregateOutputType = {
   commissionRate: runtime.Decimal | null
   commissionAmount: runtime.Decimal | null
   vendorEarning: runtime.Decimal | null
+  paidByUserId: number | null
 }
 
 export type VendorCommissionMinAggregateOutputType = {
@@ -52,6 +54,10 @@ export type VendorCommissionMinAggregateOutputType = {
   vendorEarning: runtime.Decimal | null
   status: $Enums.CommissionStatus | null
   paidAt: Date | null
+  transactionId: string | null
+  paymentMethod: $Enums.PaymentMethod | null
+  notes: string | null
+  paidByUserId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -66,6 +72,10 @@ export type VendorCommissionMaxAggregateOutputType = {
   vendorEarning: runtime.Decimal | null
   status: $Enums.CommissionStatus | null
   paidAt: Date | null
+  transactionId: string | null
+  paymentMethod: $Enums.PaymentMethod | null
+  notes: string | null
+  paidByUserId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -80,6 +90,10 @@ export type VendorCommissionCountAggregateOutputType = {
   vendorEarning: number
   status: number
   paidAt: number
+  transactionId: number
+  paymentMethod: number
+  notes: number
+  paidByUserId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -92,6 +106,7 @@ export type VendorCommissionAvgAggregateInputType = {
   commissionRate?: true
   commissionAmount?: true
   vendorEarning?: true
+  paidByUserId?: true
 }
 
 export type VendorCommissionSumAggregateInputType = {
@@ -100,6 +115,7 @@ export type VendorCommissionSumAggregateInputType = {
   commissionRate?: true
   commissionAmount?: true
   vendorEarning?: true
+  paidByUserId?: true
 }
 
 export type VendorCommissionMinAggregateInputType = {
@@ -112,6 +128,10 @@ export type VendorCommissionMinAggregateInputType = {
   vendorEarning?: true
   status?: true
   paidAt?: true
+  transactionId?: true
+  paymentMethod?: true
+  notes?: true
+  paidByUserId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -126,6 +146,10 @@ export type VendorCommissionMaxAggregateInputType = {
   vendorEarning?: true
   status?: true
   paidAt?: true
+  transactionId?: true
+  paymentMethod?: true
+  notes?: true
+  paidByUserId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -140,6 +164,10 @@ export type VendorCommissionCountAggregateInputType = {
   vendorEarning?: true
   status?: true
   paidAt?: true
+  transactionId?: true
+  paymentMethod?: true
+  notes?: true
+  paidByUserId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -241,6 +269,10 @@ export type VendorCommissionGroupByOutputType = {
   vendorEarning: runtime.Decimal
   status: $Enums.CommissionStatus
   paidAt: Date | null
+  transactionId: string | null
+  paymentMethod: $Enums.PaymentMethod | null
+  notes: string | null
+  paidByUserId: number | null
   createdAt: Date
   updatedAt: Date
   _count: VendorCommissionCountAggregateOutputType | null
@@ -278,10 +310,15 @@ export type VendorCommissionWhereInput = {
   vendorEarning?: Prisma.DecimalFilter<"VendorCommission"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumCommissionStatusFilter<"VendorCommission"> | $Enums.CommissionStatus
   paidAt?: Prisma.DateTimeNullableFilter<"VendorCommission"> | Date | string | null
+  transactionId?: Prisma.StringNullableFilter<"VendorCommission"> | string | null
+  paymentMethod?: Prisma.EnumPaymentMethodNullableFilter<"VendorCommission"> | $Enums.PaymentMethod | null
+  notes?: Prisma.StringNullableFilter<"VendorCommission"> | string | null
+  paidByUserId?: Prisma.IntNullableFilter<"VendorCommission"> | number | null
   createdAt?: Prisma.DateTimeFilter<"VendorCommission"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"VendorCommission"> | Date | string
   vendor?: Prisma.XOR<Prisma.VendorScalarRelationFilter, Prisma.VendorWhereInput>
   booking?: Prisma.XOR<Prisma.BookingScalarRelationFilter, Prisma.BookingWhereInput>
+  paidBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }
 
 export type VendorCommissionOrderByWithRelationInput = {
@@ -294,30 +331,40 @@ export type VendorCommissionOrderByWithRelationInput = {
   vendorEarning?: Prisma.SortOrder
   status?: Prisma.SortOrder
   paidAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  transactionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  paymentMethod?: Prisma.SortOrderInput | Prisma.SortOrder
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  paidByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   vendor?: Prisma.VendorOrderByWithRelationInput
   booking?: Prisma.BookingOrderByWithRelationInput
+  paidBy?: Prisma.UserOrderByWithRelationInput
 }
 
 export type VendorCommissionWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  bookingId?: string
   AND?: Prisma.VendorCommissionWhereInput | Prisma.VendorCommissionWhereInput[]
   OR?: Prisma.VendorCommissionWhereInput[]
   NOT?: Prisma.VendorCommissionWhereInput | Prisma.VendorCommissionWhereInput[]
   vendorId?: Prisma.IntFilter<"VendorCommission"> | number
-  bookingId?: Prisma.StringFilter<"VendorCommission"> | string
   bookingAmount?: Prisma.DecimalFilter<"VendorCommission"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   commissionRate?: Prisma.DecimalFilter<"VendorCommission"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   commissionAmount?: Prisma.DecimalFilter<"VendorCommission"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   vendorEarning?: Prisma.DecimalFilter<"VendorCommission"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumCommissionStatusFilter<"VendorCommission"> | $Enums.CommissionStatus
   paidAt?: Prisma.DateTimeNullableFilter<"VendorCommission"> | Date | string | null
+  transactionId?: Prisma.StringNullableFilter<"VendorCommission"> | string | null
+  paymentMethod?: Prisma.EnumPaymentMethodNullableFilter<"VendorCommission"> | $Enums.PaymentMethod | null
+  notes?: Prisma.StringNullableFilter<"VendorCommission"> | string | null
+  paidByUserId?: Prisma.IntNullableFilter<"VendorCommission"> | number | null
   createdAt?: Prisma.DateTimeFilter<"VendorCommission"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"VendorCommission"> | Date | string
   vendor?: Prisma.XOR<Prisma.VendorScalarRelationFilter, Prisma.VendorWhereInput>
   booking?: Prisma.XOR<Prisma.BookingScalarRelationFilter, Prisma.BookingWhereInput>
-}, "id">
+  paidBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+}, "id" | "bookingId">
 
 export type VendorCommissionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -329,6 +376,10 @@ export type VendorCommissionOrderByWithAggregationInput = {
   vendorEarning?: Prisma.SortOrder
   status?: Prisma.SortOrder
   paidAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  transactionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  paymentMethod?: Prisma.SortOrderInput | Prisma.SortOrder
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  paidByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.VendorCommissionCountOrderByAggregateInput
@@ -351,6 +402,10 @@ export type VendorCommissionScalarWhereWithAggregatesInput = {
   vendorEarning?: Prisma.DecimalWithAggregatesFilter<"VendorCommission"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumCommissionStatusWithAggregatesFilter<"VendorCommission"> | $Enums.CommissionStatus
   paidAt?: Prisma.DateTimeNullableWithAggregatesFilter<"VendorCommission"> | Date | string | null
+  transactionId?: Prisma.StringNullableWithAggregatesFilter<"VendorCommission"> | string | null
+  paymentMethod?: Prisma.EnumPaymentMethodNullableWithAggregatesFilter<"VendorCommission"> | $Enums.PaymentMethod | null
+  notes?: Prisma.StringNullableWithAggregatesFilter<"VendorCommission"> | string | null
+  paidByUserId?: Prisma.IntNullableWithAggregatesFilter<"VendorCommission"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"VendorCommission"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"VendorCommission"> | Date | string
 }
@@ -363,10 +418,14 @@ export type VendorCommissionCreateInput = {
   vendorEarning: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.CommissionStatus
   paidAt?: Date | string | null
+  transactionId?: string | null
+  paymentMethod?: $Enums.PaymentMethod | null
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   vendor: Prisma.VendorCreateNestedOneWithoutCommissionsInput
   booking: Prisma.BookingCreateNestedOneWithoutCommissionsInput
+  paidBy?: Prisma.UserCreateNestedOneWithoutPaidCommissionsInput
 }
 
 export type VendorCommissionUncheckedCreateInput = {
@@ -379,6 +438,10 @@ export type VendorCommissionUncheckedCreateInput = {
   vendorEarning: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.CommissionStatus
   paidAt?: Date | string | null
+  transactionId?: string | null
+  paymentMethod?: $Enums.PaymentMethod | null
+  notes?: string | null
+  paidByUserId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -391,10 +454,14 @@ export type VendorCommissionUpdateInput = {
   vendorEarning?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumCommissionStatusFieldUpdateOperationsInput | $Enums.CommissionStatus
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   vendor?: Prisma.VendorUpdateOneRequiredWithoutCommissionsNestedInput
   booking?: Prisma.BookingUpdateOneRequiredWithoutCommissionsNestedInput
+  paidBy?: Prisma.UserUpdateOneWithoutPaidCommissionsNestedInput
 }
 
 export type VendorCommissionUncheckedUpdateInput = {
@@ -407,6 +474,10 @@ export type VendorCommissionUncheckedUpdateInput = {
   vendorEarning?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumCommissionStatusFieldUpdateOperationsInput | $Enums.CommissionStatus
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paidByUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -421,6 +492,10 @@ export type VendorCommissionCreateManyInput = {
   vendorEarning: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.CommissionStatus
   paidAt?: Date | string | null
+  transactionId?: string | null
+  paymentMethod?: $Enums.PaymentMethod | null
+  notes?: string | null
+  paidByUserId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -433,6 +508,9 @@ export type VendorCommissionUpdateManyMutationInput = {
   vendorEarning?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumCommissionStatusFieldUpdateOperationsInput | $Enums.CommissionStatus
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -447,6 +525,10 @@ export type VendorCommissionUncheckedUpdateManyInput = {
   vendorEarning?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumCommissionStatusFieldUpdateOperationsInput | $Enums.CommissionStatus
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paidByUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -471,6 +553,10 @@ export type VendorCommissionCountOrderByAggregateInput = {
   vendorEarning?: Prisma.SortOrder
   status?: Prisma.SortOrder
   paidAt?: Prisma.SortOrder
+  transactionId?: Prisma.SortOrder
+  paymentMethod?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
+  paidByUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -481,6 +567,7 @@ export type VendorCommissionAvgOrderByAggregateInput = {
   commissionRate?: Prisma.SortOrder
   commissionAmount?: Prisma.SortOrder
   vendorEarning?: Prisma.SortOrder
+  paidByUserId?: Prisma.SortOrder
 }
 
 export type VendorCommissionMaxOrderByAggregateInput = {
@@ -493,6 +580,10 @@ export type VendorCommissionMaxOrderByAggregateInput = {
   vendorEarning?: Prisma.SortOrder
   status?: Prisma.SortOrder
   paidAt?: Prisma.SortOrder
+  transactionId?: Prisma.SortOrder
+  paymentMethod?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
+  paidByUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -507,6 +598,10 @@ export type VendorCommissionMinOrderByAggregateInput = {
   vendorEarning?: Prisma.SortOrder
   status?: Prisma.SortOrder
   paidAt?: Prisma.SortOrder
+  transactionId?: Prisma.SortOrder
+  paymentMethod?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
+  paidByUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -517,6 +612,49 @@ export type VendorCommissionSumOrderByAggregateInput = {
   commissionRate?: Prisma.SortOrder
   commissionAmount?: Prisma.SortOrder
   vendorEarning?: Prisma.SortOrder
+  paidByUserId?: Prisma.SortOrder
+}
+
+export type VendorCommissionCreateNestedManyWithoutPaidByInput = {
+  create?: Prisma.XOR<Prisma.VendorCommissionCreateWithoutPaidByInput, Prisma.VendorCommissionUncheckedCreateWithoutPaidByInput> | Prisma.VendorCommissionCreateWithoutPaidByInput[] | Prisma.VendorCommissionUncheckedCreateWithoutPaidByInput[]
+  connectOrCreate?: Prisma.VendorCommissionCreateOrConnectWithoutPaidByInput | Prisma.VendorCommissionCreateOrConnectWithoutPaidByInput[]
+  createMany?: Prisma.VendorCommissionCreateManyPaidByInputEnvelope
+  connect?: Prisma.VendorCommissionWhereUniqueInput | Prisma.VendorCommissionWhereUniqueInput[]
+}
+
+export type VendorCommissionUncheckedCreateNestedManyWithoutPaidByInput = {
+  create?: Prisma.XOR<Prisma.VendorCommissionCreateWithoutPaidByInput, Prisma.VendorCommissionUncheckedCreateWithoutPaidByInput> | Prisma.VendorCommissionCreateWithoutPaidByInput[] | Prisma.VendorCommissionUncheckedCreateWithoutPaidByInput[]
+  connectOrCreate?: Prisma.VendorCommissionCreateOrConnectWithoutPaidByInput | Prisma.VendorCommissionCreateOrConnectWithoutPaidByInput[]
+  createMany?: Prisma.VendorCommissionCreateManyPaidByInputEnvelope
+  connect?: Prisma.VendorCommissionWhereUniqueInput | Prisma.VendorCommissionWhereUniqueInput[]
+}
+
+export type VendorCommissionUpdateManyWithoutPaidByNestedInput = {
+  create?: Prisma.XOR<Prisma.VendorCommissionCreateWithoutPaidByInput, Prisma.VendorCommissionUncheckedCreateWithoutPaidByInput> | Prisma.VendorCommissionCreateWithoutPaidByInput[] | Prisma.VendorCommissionUncheckedCreateWithoutPaidByInput[]
+  connectOrCreate?: Prisma.VendorCommissionCreateOrConnectWithoutPaidByInput | Prisma.VendorCommissionCreateOrConnectWithoutPaidByInput[]
+  upsert?: Prisma.VendorCommissionUpsertWithWhereUniqueWithoutPaidByInput | Prisma.VendorCommissionUpsertWithWhereUniqueWithoutPaidByInput[]
+  createMany?: Prisma.VendorCommissionCreateManyPaidByInputEnvelope
+  set?: Prisma.VendorCommissionWhereUniqueInput | Prisma.VendorCommissionWhereUniqueInput[]
+  disconnect?: Prisma.VendorCommissionWhereUniqueInput | Prisma.VendorCommissionWhereUniqueInput[]
+  delete?: Prisma.VendorCommissionWhereUniqueInput | Prisma.VendorCommissionWhereUniqueInput[]
+  connect?: Prisma.VendorCommissionWhereUniqueInput | Prisma.VendorCommissionWhereUniqueInput[]
+  update?: Prisma.VendorCommissionUpdateWithWhereUniqueWithoutPaidByInput | Prisma.VendorCommissionUpdateWithWhereUniqueWithoutPaidByInput[]
+  updateMany?: Prisma.VendorCommissionUpdateManyWithWhereWithoutPaidByInput | Prisma.VendorCommissionUpdateManyWithWhereWithoutPaidByInput[]
+  deleteMany?: Prisma.VendorCommissionScalarWhereInput | Prisma.VendorCommissionScalarWhereInput[]
+}
+
+export type VendorCommissionUncheckedUpdateManyWithoutPaidByNestedInput = {
+  create?: Prisma.XOR<Prisma.VendorCommissionCreateWithoutPaidByInput, Prisma.VendorCommissionUncheckedCreateWithoutPaidByInput> | Prisma.VendorCommissionCreateWithoutPaidByInput[] | Prisma.VendorCommissionUncheckedCreateWithoutPaidByInput[]
+  connectOrCreate?: Prisma.VendorCommissionCreateOrConnectWithoutPaidByInput | Prisma.VendorCommissionCreateOrConnectWithoutPaidByInput[]
+  upsert?: Prisma.VendorCommissionUpsertWithWhereUniqueWithoutPaidByInput | Prisma.VendorCommissionUpsertWithWhereUniqueWithoutPaidByInput[]
+  createMany?: Prisma.VendorCommissionCreateManyPaidByInputEnvelope
+  set?: Prisma.VendorCommissionWhereUniqueInput | Prisma.VendorCommissionWhereUniqueInput[]
+  disconnect?: Prisma.VendorCommissionWhereUniqueInput | Prisma.VendorCommissionWhereUniqueInput[]
+  delete?: Prisma.VendorCommissionWhereUniqueInput | Prisma.VendorCommissionWhereUniqueInput[]
+  connect?: Prisma.VendorCommissionWhereUniqueInput | Prisma.VendorCommissionWhereUniqueInput[]
+  update?: Prisma.VendorCommissionUpdateWithWhereUniqueWithoutPaidByInput | Prisma.VendorCommissionUpdateWithWhereUniqueWithoutPaidByInput[]
+  updateMany?: Prisma.VendorCommissionUpdateManyWithWhereWithoutPaidByInput | Prisma.VendorCommissionUpdateManyWithWhereWithoutPaidByInput[]
+  deleteMany?: Prisma.VendorCommissionScalarWhereInput | Prisma.VendorCommissionScalarWhereInput[]
 }
 
 export type VendorCommissionCreateNestedManyWithoutVendorInput = {
@@ -573,6 +711,18 @@ export type EnumCommissionStatusFieldUpdateOperationsInput = {
   set?: $Enums.CommissionStatus
 }
 
+export type NullableEnumPaymentMethodFieldUpdateOperationsInput = {
+  set?: $Enums.PaymentMethod | null
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type VendorCommissionCreateNestedManyWithoutBookingInput = {
   create?: Prisma.XOR<Prisma.VendorCommissionCreateWithoutBookingInput, Prisma.VendorCommissionUncheckedCreateWithoutBookingInput> | Prisma.VendorCommissionCreateWithoutBookingInput[] | Prisma.VendorCommissionUncheckedCreateWithoutBookingInput[]
   connectOrCreate?: Prisma.VendorCommissionCreateOrConnectWithoutBookingInput | Prisma.VendorCommissionCreateOrConnectWithoutBookingInput[]
@@ -615,6 +765,87 @@ export type VendorCommissionUncheckedUpdateManyWithoutBookingNestedInput = {
   deleteMany?: Prisma.VendorCommissionScalarWhereInput | Prisma.VendorCommissionScalarWhereInput[]
 }
 
+export type VendorCommissionCreateWithoutPaidByInput = {
+  id?: string
+  bookingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  commissionRate: runtime.Decimal | runtime.DecimalJsLike | number | string
+  commissionAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  vendorEarning: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: $Enums.CommissionStatus
+  paidAt?: Date | string | null
+  transactionId?: string | null
+  paymentMethod?: $Enums.PaymentMethod | null
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  vendor: Prisma.VendorCreateNestedOneWithoutCommissionsInput
+  booking: Prisma.BookingCreateNestedOneWithoutCommissionsInput
+}
+
+export type VendorCommissionUncheckedCreateWithoutPaidByInput = {
+  id?: string
+  vendorId: number
+  bookingId: string
+  bookingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  commissionRate: runtime.Decimal | runtime.DecimalJsLike | number | string
+  commissionAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  vendorEarning: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: $Enums.CommissionStatus
+  paidAt?: Date | string | null
+  transactionId?: string | null
+  paymentMethod?: $Enums.PaymentMethod | null
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type VendorCommissionCreateOrConnectWithoutPaidByInput = {
+  where: Prisma.VendorCommissionWhereUniqueInput
+  create: Prisma.XOR<Prisma.VendorCommissionCreateWithoutPaidByInput, Prisma.VendorCommissionUncheckedCreateWithoutPaidByInput>
+}
+
+export type VendorCommissionCreateManyPaidByInputEnvelope = {
+  data: Prisma.VendorCommissionCreateManyPaidByInput | Prisma.VendorCommissionCreateManyPaidByInput[]
+  skipDuplicates?: boolean
+}
+
+export type VendorCommissionUpsertWithWhereUniqueWithoutPaidByInput = {
+  where: Prisma.VendorCommissionWhereUniqueInput
+  update: Prisma.XOR<Prisma.VendorCommissionUpdateWithoutPaidByInput, Prisma.VendorCommissionUncheckedUpdateWithoutPaidByInput>
+  create: Prisma.XOR<Prisma.VendorCommissionCreateWithoutPaidByInput, Prisma.VendorCommissionUncheckedCreateWithoutPaidByInput>
+}
+
+export type VendorCommissionUpdateWithWhereUniqueWithoutPaidByInput = {
+  where: Prisma.VendorCommissionWhereUniqueInput
+  data: Prisma.XOR<Prisma.VendorCommissionUpdateWithoutPaidByInput, Prisma.VendorCommissionUncheckedUpdateWithoutPaidByInput>
+}
+
+export type VendorCommissionUpdateManyWithWhereWithoutPaidByInput = {
+  where: Prisma.VendorCommissionScalarWhereInput
+  data: Prisma.XOR<Prisma.VendorCommissionUpdateManyMutationInput, Prisma.VendorCommissionUncheckedUpdateManyWithoutPaidByInput>
+}
+
+export type VendorCommissionScalarWhereInput = {
+  AND?: Prisma.VendorCommissionScalarWhereInput | Prisma.VendorCommissionScalarWhereInput[]
+  OR?: Prisma.VendorCommissionScalarWhereInput[]
+  NOT?: Prisma.VendorCommissionScalarWhereInput | Prisma.VendorCommissionScalarWhereInput[]
+  id?: Prisma.StringFilter<"VendorCommission"> | string
+  vendorId?: Prisma.IntFilter<"VendorCommission"> | number
+  bookingId?: Prisma.StringFilter<"VendorCommission"> | string
+  bookingAmount?: Prisma.DecimalFilter<"VendorCommission"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  commissionRate?: Prisma.DecimalFilter<"VendorCommission"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  commissionAmount?: Prisma.DecimalFilter<"VendorCommission"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  vendorEarning?: Prisma.DecimalFilter<"VendorCommission"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumCommissionStatusFilter<"VendorCommission"> | $Enums.CommissionStatus
+  paidAt?: Prisma.DateTimeNullableFilter<"VendorCommission"> | Date | string | null
+  transactionId?: Prisma.StringNullableFilter<"VendorCommission"> | string | null
+  paymentMethod?: Prisma.EnumPaymentMethodNullableFilter<"VendorCommission"> | $Enums.PaymentMethod | null
+  notes?: Prisma.StringNullableFilter<"VendorCommission"> | string | null
+  paidByUserId?: Prisma.IntNullableFilter<"VendorCommission"> | number | null
+  createdAt?: Prisma.DateTimeFilter<"VendorCommission"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"VendorCommission"> | Date | string
+}
+
 export type VendorCommissionCreateWithoutVendorInput = {
   id?: string
   bookingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -623,9 +854,13 @@ export type VendorCommissionCreateWithoutVendorInput = {
   vendorEarning: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.CommissionStatus
   paidAt?: Date | string | null
+  transactionId?: string | null
+  paymentMethod?: $Enums.PaymentMethod | null
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   booking: Prisma.BookingCreateNestedOneWithoutCommissionsInput
+  paidBy?: Prisma.UserCreateNestedOneWithoutPaidCommissionsInput
 }
 
 export type VendorCommissionUncheckedCreateWithoutVendorInput = {
@@ -637,6 +872,10 @@ export type VendorCommissionUncheckedCreateWithoutVendorInput = {
   vendorEarning: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.CommissionStatus
   paidAt?: Date | string | null
+  transactionId?: string | null
+  paymentMethod?: $Enums.PaymentMethod | null
+  notes?: string | null
+  paidByUserId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -667,23 +906,6 @@ export type VendorCommissionUpdateManyWithWhereWithoutVendorInput = {
   data: Prisma.XOR<Prisma.VendorCommissionUpdateManyMutationInput, Prisma.VendorCommissionUncheckedUpdateManyWithoutVendorInput>
 }
 
-export type VendorCommissionScalarWhereInput = {
-  AND?: Prisma.VendorCommissionScalarWhereInput | Prisma.VendorCommissionScalarWhereInput[]
-  OR?: Prisma.VendorCommissionScalarWhereInput[]
-  NOT?: Prisma.VendorCommissionScalarWhereInput | Prisma.VendorCommissionScalarWhereInput[]
-  id?: Prisma.StringFilter<"VendorCommission"> | string
-  vendorId?: Prisma.IntFilter<"VendorCommission"> | number
-  bookingId?: Prisma.StringFilter<"VendorCommission"> | string
-  bookingAmount?: Prisma.DecimalFilter<"VendorCommission"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  commissionRate?: Prisma.DecimalFilter<"VendorCommission"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  commissionAmount?: Prisma.DecimalFilter<"VendorCommission"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  vendorEarning?: Prisma.DecimalFilter<"VendorCommission"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  status?: Prisma.EnumCommissionStatusFilter<"VendorCommission"> | $Enums.CommissionStatus
-  paidAt?: Prisma.DateTimeNullableFilter<"VendorCommission"> | Date | string | null
-  createdAt?: Prisma.DateTimeFilter<"VendorCommission"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"VendorCommission"> | Date | string
-}
-
 export type VendorCommissionCreateWithoutBookingInput = {
   id?: string
   bookingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -692,9 +914,13 @@ export type VendorCommissionCreateWithoutBookingInput = {
   vendorEarning: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.CommissionStatus
   paidAt?: Date | string | null
+  transactionId?: string | null
+  paymentMethod?: $Enums.PaymentMethod | null
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   vendor: Prisma.VendorCreateNestedOneWithoutCommissionsInput
+  paidBy?: Prisma.UserCreateNestedOneWithoutPaidCommissionsInput
 }
 
 export type VendorCommissionUncheckedCreateWithoutBookingInput = {
@@ -706,6 +932,10 @@ export type VendorCommissionUncheckedCreateWithoutBookingInput = {
   vendorEarning: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.CommissionStatus
   paidAt?: Date | string | null
+  transactionId?: string | null
+  paymentMethod?: $Enums.PaymentMethod | null
+  notes?: string | null
+  paidByUserId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -736,6 +966,74 @@ export type VendorCommissionUpdateManyWithWhereWithoutBookingInput = {
   data: Prisma.XOR<Prisma.VendorCommissionUpdateManyMutationInput, Prisma.VendorCommissionUncheckedUpdateManyWithoutBookingInput>
 }
 
+export type VendorCommissionCreateManyPaidByInput = {
+  id?: string
+  vendorId: number
+  bookingId: string
+  bookingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  commissionRate: runtime.Decimal | runtime.DecimalJsLike | number | string
+  commissionAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  vendorEarning: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: $Enums.CommissionStatus
+  paidAt?: Date | string | null
+  transactionId?: string | null
+  paymentMethod?: $Enums.PaymentMethod | null
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type VendorCommissionUpdateWithoutPaidByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  bookingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  commissionRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  commissionAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  vendorEarning?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumCommissionStatusFieldUpdateOperationsInput | $Enums.CommissionStatus
+  paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vendor?: Prisma.VendorUpdateOneRequiredWithoutCommissionsNestedInput
+  booking?: Prisma.BookingUpdateOneRequiredWithoutCommissionsNestedInput
+}
+
+export type VendorCommissionUncheckedUpdateWithoutPaidByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorId?: Prisma.IntFieldUpdateOperationsInput | number
+  bookingId?: Prisma.StringFieldUpdateOperationsInput | string
+  bookingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  commissionRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  commissionAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  vendorEarning?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumCommissionStatusFieldUpdateOperationsInput | $Enums.CommissionStatus
+  paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type VendorCommissionUncheckedUpdateManyWithoutPaidByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorId?: Prisma.IntFieldUpdateOperationsInput | number
+  bookingId?: Prisma.StringFieldUpdateOperationsInput | string
+  bookingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  commissionRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  commissionAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  vendorEarning?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumCommissionStatusFieldUpdateOperationsInput | $Enums.CommissionStatus
+  paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type VendorCommissionCreateManyVendorInput = {
   id?: string
   bookingId: string
@@ -745,6 +1043,10 @@ export type VendorCommissionCreateManyVendorInput = {
   vendorEarning: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.CommissionStatus
   paidAt?: Date | string | null
+  transactionId?: string | null
+  paymentMethod?: $Enums.PaymentMethod | null
+  notes?: string | null
+  paidByUserId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -757,9 +1059,13 @@ export type VendorCommissionUpdateWithoutVendorInput = {
   vendorEarning?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumCommissionStatusFieldUpdateOperationsInput | $Enums.CommissionStatus
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   booking?: Prisma.BookingUpdateOneRequiredWithoutCommissionsNestedInput
+  paidBy?: Prisma.UserUpdateOneWithoutPaidCommissionsNestedInput
 }
 
 export type VendorCommissionUncheckedUpdateWithoutVendorInput = {
@@ -771,6 +1077,10 @@ export type VendorCommissionUncheckedUpdateWithoutVendorInput = {
   vendorEarning?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumCommissionStatusFieldUpdateOperationsInput | $Enums.CommissionStatus
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paidByUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -784,6 +1094,10 @@ export type VendorCommissionUncheckedUpdateManyWithoutVendorInput = {
   vendorEarning?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumCommissionStatusFieldUpdateOperationsInput | $Enums.CommissionStatus
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paidByUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -797,6 +1111,10 @@ export type VendorCommissionCreateManyBookingInput = {
   vendorEarning: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.CommissionStatus
   paidAt?: Date | string | null
+  transactionId?: string | null
+  paymentMethod?: $Enums.PaymentMethod | null
+  notes?: string | null
+  paidByUserId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -809,9 +1127,13 @@ export type VendorCommissionUpdateWithoutBookingInput = {
   vendorEarning?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumCommissionStatusFieldUpdateOperationsInput | $Enums.CommissionStatus
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   vendor?: Prisma.VendorUpdateOneRequiredWithoutCommissionsNestedInput
+  paidBy?: Prisma.UserUpdateOneWithoutPaidCommissionsNestedInput
 }
 
 export type VendorCommissionUncheckedUpdateWithoutBookingInput = {
@@ -823,6 +1145,10 @@ export type VendorCommissionUncheckedUpdateWithoutBookingInput = {
   vendorEarning?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumCommissionStatusFieldUpdateOperationsInput | $Enums.CommissionStatus
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paidByUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -836,6 +1162,10 @@ export type VendorCommissionUncheckedUpdateManyWithoutBookingInput = {
   vendorEarning?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumCommissionStatusFieldUpdateOperationsInput | $Enums.CommissionStatus
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paidByUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -852,10 +1182,15 @@ export type VendorCommissionSelect<ExtArgs extends runtime.Types.Extensions.Inte
   vendorEarning?: boolean
   status?: boolean
   paidAt?: boolean
+  transactionId?: boolean
+  paymentMethod?: boolean
+  notes?: boolean
+  paidByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
   booking?: boolean | Prisma.BookingDefaultArgs<ExtArgs>
+  paidBy?: boolean | Prisma.VendorCommission$paidByArgs<ExtArgs>
 }, ExtArgs["result"]["vendorCommission"]>
 
 export type VendorCommissionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -868,10 +1203,15 @@ export type VendorCommissionSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   vendorEarning?: boolean
   status?: boolean
   paidAt?: boolean
+  transactionId?: boolean
+  paymentMethod?: boolean
+  notes?: boolean
+  paidByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
   booking?: boolean | Prisma.BookingDefaultArgs<ExtArgs>
+  paidBy?: boolean | Prisma.VendorCommission$paidByArgs<ExtArgs>
 }, ExtArgs["result"]["vendorCommission"]>
 
 export type VendorCommissionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -884,10 +1224,15 @@ export type VendorCommissionSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   vendorEarning?: boolean
   status?: boolean
   paidAt?: boolean
+  transactionId?: boolean
+  paymentMethod?: boolean
+  notes?: boolean
+  paidByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
   booking?: boolean | Prisma.BookingDefaultArgs<ExtArgs>
+  paidBy?: boolean | Prisma.VendorCommission$paidByArgs<ExtArgs>
 }, ExtArgs["result"]["vendorCommission"]>
 
 export type VendorCommissionSelectScalar = {
@@ -900,22 +1245,29 @@ export type VendorCommissionSelectScalar = {
   vendorEarning?: boolean
   status?: boolean
   paidAt?: boolean
+  transactionId?: boolean
+  paymentMethod?: boolean
+  notes?: boolean
+  paidByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type VendorCommissionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "vendorId" | "bookingId" | "bookingAmount" | "commissionRate" | "commissionAmount" | "vendorEarning" | "status" | "paidAt" | "createdAt" | "updatedAt", ExtArgs["result"]["vendorCommission"]>
+export type VendorCommissionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "vendorId" | "bookingId" | "bookingAmount" | "commissionRate" | "commissionAmount" | "vendorEarning" | "status" | "paidAt" | "transactionId" | "paymentMethod" | "notes" | "paidByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["vendorCommission"]>
 export type VendorCommissionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
   booking?: boolean | Prisma.BookingDefaultArgs<ExtArgs>
+  paidBy?: boolean | Prisma.VendorCommission$paidByArgs<ExtArgs>
 }
 export type VendorCommissionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
   booking?: boolean | Prisma.BookingDefaultArgs<ExtArgs>
+  paidBy?: boolean | Prisma.VendorCommission$paidByArgs<ExtArgs>
 }
 export type VendorCommissionIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
   booking?: boolean | Prisma.BookingDefaultArgs<ExtArgs>
+  paidBy?: boolean | Prisma.VendorCommission$paidByArgs<ExtArgs>
 }
 
 export type $VendorCommissionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -923,6 +1275,7 @@ export type $VendorCommissionPayload<ExtArgs extends runtime.Types.Extensions.In
   objects: {
     vendor: Prisma.$VendorPayload<ExtArgs>
     booking: Prisma.$BookingPayload<ExtArgs>
+    paidBy: Prisma.$UserPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -934,6 +1287,10 @@ export type $VendorCommissionPayload<ExtArgs extends runtime.Types.Extensions.In
     vendorEarning: runtime.Decimal
     status: $Enums.CommissionStatus
     paidAt: Date | null
+    transactionId: string | null
+    paymentMethod: $Enums.PaymentMethod | null
+    notes: string | null
+    paidByUserId: number | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["vendorCommission"]>
@@ -1332,6 +1689,7 @@ export interface Prisma__VendorCommissionClient<T, Null = never, ExtArgs extends
   readonly [Symbol.toStringTag]: "PrismaPromise"
   vendor<T extends Prisma.VendorDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VendorDefaultArgs<ExtArgs>>): Prisma.Prisma__VendorClient<runtime.Types.Result.GetResult<Prisma.$VendorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   booking<T extends Prisma.BookingDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BookingDefaultArgs<ExtArgs>>): Prisma.Prisma__BookingClient<runtime.Types.Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  paidBy<T extends Prisma.VendorCommission$paidByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VendorCommission$paidByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1370,6 +1728,10 @@ export interface VendorCommissionFieldRefs {
   readonly vendorEarning: Prisma.FieldRef<"VendorCommission", 'Decimal'>
   readonly status: Prisma.FieldRef<"VendorCommission", 'CommissionStatus'>
   readonly paidAt: Prisma.FieldRef<"VendorCommission", 'DateTime'>
+  readonly transactionId: Prisma.FieldRef<"VendorCommission", 'String'>
+  readonly paymentMethod: Prisma.FieldRef<"VendorCommission", 'PaymentMethod'>
+  readonly notes: Prisma.FieldRef<"VendorCommission", 'String'>
+  readonly paidByUserId: Prisma.FieldRef<"VendorCommission", 'Int'>
   readonly createdAt: Prisma.FieldRef<"VendorCommission", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"VendorCommission", 'DateTime'>
 }
@@ -1770,6 +2132,25 @@ export type VendorCommissionDeleteManyArgs<ExtArgs extends runtime.Types.Extensi
    * Limit how many VendorCommissions to delete.
    */
   limit?: number
+}
+
+/**
+ * VendorCommission.paidBy
+ */
+export type VendorCommission$paidByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
 }
 
 /**

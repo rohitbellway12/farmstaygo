@@ -46,6 +46,7 @@ export const getVendorEarnings = async (
     const [
       pendingCommissionAgg,
       paidCommissionAgg,
+      totalCommissionAgg,
       totalBookingsCount,
       completedBookingsCount,
       totalRevenueAgg,
@@ -57,6 +58,7 @@ export const getVendorEarnings = async (
         },
         _sum: {
           commissionAmount: true,
+          vendorEarning: true,
         },
       }),
       prisma.vendorCommission.aggregate({
@@ -66,6 +68,16 @@ export const getVendorEarnings = async (
         },
         _sum: {
           commissionAmount: true,
+          vendorEarning: true,
+        },
+      }),
+      prisma.vendorCommission.aggregate({
+        where: {
+          vendorId: vendor.id,
+        },
+        _sum: {
+          commissionAmount: true,
+          vendorEarning: true,
         },
       }),
       prisma.booking.count({
@@ -105,6 +117,26 @@ export const getVendorEarnings = async (
         ? Number(paidCommissionAgg._sum.commissionAmount)
         : 0;
 
+    const totalPlatformCommission =
+      totalCommissionAgg._sum.commissionAmount !== null
+        ? Number(totalCommissionAgg._sum.commissionAmount)
+        : 0;
+
+    const totalVendorEarnings =
+      totalCommissionAgg._sum.vendorEarning !== null
+        ? Number(totalCommissionAgg._sum.vendorEarning)
+        : 0;
+
+    const pendingVendorPayout =
+      pendingCommissionAgg._sum.vendorEarning !== null
+        ? Number(pendingCommissionAgg._sum.vendorEarning)
+        : 0;
+
+    const paidVendorPayout =
+      paidCommissionAgg._sum.vendorEarning !== null
+        ? Number(paidCommissionAgg._sum.vendorEarning)
+        : 0;
+
     const totalBookingsRevenue =
       totalRevenueAgg._sum.estimatedTotal !== null
         ? Number(totalRevenueAgg._sum.estimatedTotal)
@@ -114,10 +146,12 @@ export const getVendorEarnings = async (
       success: true,
       message: "Vendor earnings fetched successfully",
       data: {
-        totalEarnings: Number(vendor.totalEarnings),
-        totalCommission: Number(vendor.totalCommission),
+        totalEarnings: totalVendorEarnings,
+        totalCommission: totalPlatformCommission,
         pendingCommission,
         paidCommission,
+        pendingPayout: pendingVendorPayout,
+        paidPayout: paidVendorPayout,
         totalBookings: totalBookingsCount,
         completedBookings: completedBookingsCount,
         totalBookingsRevenue,
@@ -203,6 +237,9 @@ export const getVendorPayouts = async (
       commissionAmount: Number(payout.commissionAmount),
       vendorEarning: Number(payout.vendorEarning),
       paidAt: payout.paidAt,
+      transactionId: payout.transactionId,
+      paymentMethod: payout.paymentMethod,
+      notes: payout.notes,
       createdAt: payout.createdAt,
       updatedAt: payout.updatedAt,
       vendor: payout.vendor,

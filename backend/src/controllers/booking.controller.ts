@@ -999,6 +999,15 @@ const recordOnlinePaymentForBooking = async (
     const vendorEarning =
       estimatedTotal - commissionAmount;
 
+    const existingCommission =
+      await tx.vendorCommission.findFirst({
+        where: { bookingId },
+      });
+
+    if (existingCommission) {
+      return;
+    }
+
     await tx.vendorCommission.create(
       {
         data: {

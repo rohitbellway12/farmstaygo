@@ -21,6 +21,7 @@ import VendorsPage from "../admin/pages/VendorsPage";
 import UsersPage from "../admin/pages/UsersPage";
 import AdminPaymentsPage from "../admin/pages/PaymentsPage";
 import AdminCommissionsPage from "../admin/pages/CommissionsPage";
+import AdminPayoutsPage from "../admin/pages/AdminPayoutsPage";
 import ContactMessagesPage from "../admin/pages/ContactMessagesPage";
 import FaqsPage from "../admin/pages/FaqsPage";
 import SupportTicketsPage from "../admin/pages/SupportTicketsPage";
@@ -197,6 +198,11 @@ export default function AppRoutes() {
           <Route
             path="commissions"
             element={<AdminCommissionsPage />}
+          />
+
+          <Route
+            path="payouts"
+            element={<AdminPayoutsPage />}
           />
 
           <Route

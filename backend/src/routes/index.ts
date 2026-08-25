@@ -88,6 +88,10 @@ import {
 } from "./admin-vendor.routes.js";
 
 import {
+  adminPayoutsRoutes,
+} from "./admin-payouts.routes.js";
+
+import {
   adminUserRoutes,
 } from "./admin-user.routes.js";
 
@@ -306,6 +310,11 @@ router.use(
 router.use(
   "/admin/vendors",
   adminVendorRoutes
+);
+
+router.use(
+  "/admin/payouts",
+  adminPayoutsRoutes
 );
 
 /*

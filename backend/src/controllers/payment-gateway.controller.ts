@@ -874,37 +874,46 @@ export const verifyRazorpayPayment = async (
         const vendorEarning =
           bookingAmount - commissionAmount;
 
-        await tx.vendorCommission.create(
-          {
-            data: {
-              vendorId: vendor.id,
-              bookingId,
-              bookingAmount: new Prisma.Decimal(
-                bookingAmount
-              ),
-              commissionRate: new Prisma.Decimal(
-                commissionRate
-              ),
-              commissionAmount: new Prisma.Decimal(
-                commissionAmount
-              ),
-              vendorEarning: new Prisma.Decimal(
-                vendorEarning
-              ),
-              status: CommissionStatus.PENDING,
-            },
-          }
-        );
+        const existingCommission =
+          await tx.vendorCommission.findFirst({
+            where: { bookingId },
+          });
 
-        await tx.vendor.update({
-          where: { id: vendor.id },
-          data: {
-            totalEarnings:
-              { increment: vendorEarning },
-            totalCommission:
-              { increment: commissionAmount },
-          },
-        });
+        if (!existingCommission) {
+          await tx.vendorCommission.create(
+            {
+              data: {
+                vendorId: vendor.id,
+                bookingId,
+                bookingAmount: new Prisma.Decimal(
+                  bookingAmount
+                ),
+                commissionRate: new Prisma.Decimal(
+                  commissionRate
+                ),
+                commissionAmount: new Prisma.Decimal(
+                  commissionAmount
+                ),
+                vendorEarning: new Prisma.Decimal(
+                  vendorEarning
+                ),
+                status: CommissionStatus.PENDING,
+              },
+            }
+          );
+
+          await tx.vendor.update({
+            where: { id: vendor.id },
+            data: {
+              totalEarnings: {
+                increment: vendorEarning,
+              },
+              totalCommission: {
+                increment: commissionAmount,
+              },
+            },
+          });
+        }
       }
     });
 

@@ -279,6 +279,24 @@ const menuItems: MenuItem[] = [
     ),
   },
   {
+    label: "Payouts",
+    path: "/admin/payouts",
+    end: true,
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        className={iconClass}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      >
+        <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+        <path d="M3 7v14a2 2 0 0 0 2 2h16v-5" />
+        <path d="M18 12a2 2 0 0 1 0 4" />
+      </svg>
+    ),
+  },
+  {
     label: "Contact Messages",
     path: "/admin/contact-messages",
     end: true,
@@ -454,6 +472,7 @@ const pageTitles: Record<string, string> = {
   "/admin/bookings": "Bookings",
   "/admin/payments": "Payments",
   "/admin/commissions": "Commissions",
+  "/admin/payouts": "Payouts",
   "/admin/contact-messages": "Contact Messages",
   "/admin/faqs": "FAQs",
   "/admin/cms": "CMS",
@@ -493,6 +512,7 @@ const menuGroups = [
       "/admin/bookings",
       "/admin/payments",
       "/admin/commissions",
+      "/admin/payouts",
       "/admin/contact-messages",
     ],
   },

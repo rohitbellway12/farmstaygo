@@ -153,6 +153,10 @@ export const VendorCommissionScalarFieldEnum = {
   vendorEarning: 'vendorEarning',
   status: 'status',
   paidAt: 'paidAt',
+  transactionId: 'transactionId',
+  paymentMethod: 'paymentMethod',
+  notes: 'notes',
+  paidByUserId: 'paidByUserId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
