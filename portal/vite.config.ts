@@ -6,8 +6,8 @@ const rawAllowedHosts = import.meta.env.VITE_PREVIEW_ALLOWED_HOSTS || "";
 
 const allowedHosts = rawAllowedHosts
   .split(",")
-  .map((host) => host.trim())
-  .filter(Boolean);
+  .map((host: string) => host.trim())
+  .filter((host: string) => host.length > 0);
 
 if (allowedHosts.length === 0) {
   allowedHosts.push("portal.farmstaygo.com");
