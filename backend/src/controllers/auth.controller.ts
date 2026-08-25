@@ -5,7 +5,7 @@ import { z } from "zod";
 import crypto from "node:crypto";
 import prisma from "../config/database.js";
 import type { AuthenticatedRequest } from "../middleware/auth.middleware.js";
-import { sendAccountCreatedEmail, sendPasswordResetEmail, sendProfileCompleteEmail, sendRegistrationSuccessfulCustomerEmail } from "../services/email.js";
+import { sendPasswordResetEmail, sendRegistrationSuccessfulCustomerEmail, sendVendorWelcomeEmail } from "../services/email.js";
 
 const createToken = (userId: number, role: string): string => {
   const jwtSecret = process.env.JWT_SECRET;
@@ -106,15 +106,6 @@ export const registerUser = async (
     });
 
     const token = createToken(user.id, user.role);
-
-    void sendAccountCreatedEmail({
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      role: user.role,
-    }).catch((error) => {
-      console.error("Send account created email error:", error);
-    });
 
     void sendRegistrationSuccessfulCustomerEmail({
       firstName: user.firstName,
@@ -231,23 +222,19 @@ export const registerVendor = async (
 
     const token = createToken(result.user.id, result.user.role);
 
-    void sendAccountCreatedEmail({
+    void sendVendorWelcomeEmail({
       firstName: result.user.firstName,
       lastName: result.user.lastName,
       email: result.user.email,
-      role: result.user.role,
-    }).catch((error) => {
-      console.error("Send account created email error:", error);
-    });
-
-    void sendProfileCompleteEmail({
-      firstName: result.user.firstName,
-      email: result.user.email,
-      profileUrl:
+      businessName: result.vendor.businessName,
+      portalUrl:
         process.env.PORTAL_URL ||
         "http://localhost:5173",
     }).catch((error) => {
-      console.error("Send profile complete email error:", error);
+      console.error(
+        "Send vendor welcome email error:",
+        error
+      );
     });
 
     return res.status(201).json({

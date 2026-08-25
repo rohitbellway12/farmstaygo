@@ -18,7 +18,7 @@ import {
   CommissionStatus,
 } from "../generated/prisma/enums.js";
 
-import { sendAccountCreatedEmail, sendProfileCompleteEmail, sendVerifiedCongratulationEmail } from "../services/email.js";
+import { sendVendorWelcomeEmail, sendVerifiedCongratulationEmail } from "../services/email.js";
 
 /*
 |--------------------------------------------------------------------------
@@ -280,23 +280,19 @@ export const createAdminVendor = async (
       return { user, vendor };
     });
 
-    void sendAccountCreatedEmail({
+    void sendVendorWelcomeEmail({
       firstName: result.user.firstName,
       lastName: result.user.lastName,
       email: result.user.email,
-      role: result.user.role,
-    }).catch((error) => {
-      console.error("Send account created email error:", error);
-    });
-
-    void sendProfileCompleteEmail({
-      firstName: result.user.firstName,
-      email: result.user.email,
-      profileUrl:
+      businessName: result.vendor.businessName,
+      portalUrl:
         process.env.PORTAL_URL ||
         "http://localhost:5173",
     }).catch((error) => {
-      console.error("Send profile complete email error:", error);
+      console.error(
+        "Send vendor welcome email error:",
+        error
+      );
     });
 
     return res.status(201).json({

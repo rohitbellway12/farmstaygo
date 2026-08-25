@@ -929,6 +929,87 @@ export const sendAccountCreatedEmail = async (params: {
   await sendEmail(params.email, "Welcome to FarmStayGo!", html);
 };
 
+export const sendVendorWelcomeEmail = async (params: {
+  firstName: string;
+  lastName?: string | null;
+  email: string;
+  businessName: string;
+  portalUrl: string;
+}): Promise<void> => {
+  const fullName = [params.firstName, params.lastName].filter(Boolean).join(" ");
+  const html = buildVendorWelcomeHtml(params);
+
+  await sendEmail(params.email, "Welcome to FarmStayGo — Your Account Has Been Created", html);
+};
+
+const buildVendorWelcomeHtml = ({
+  firstName,
+  lastName,
+  email,
+  businessName,
+  portalUrl,
+}: {
+  firstName: string;
+  lastName?: string | null;
+  email: string;
+  businessName: string;
+  portalUrl: string;
+}): string => {
+  const fullName = [firstName, lastName].filter(Boolean).join(" ");
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to FarmStayGo — Your Account Has Been Created</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4;padding:20px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+          <tr>
+            <td style="background-color:#2d6a4f;padding:24px;text-align:center;">
+              <h1 style="color:#ffffff;margin:0;font-size:22px;">FarmStayGo</h1>
+              <p style="color:#d8f3dc;margin:4px 0 0;font-size:13px;">Welcome to FarmStayGo</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <p style="font-size:15px;color:#333333;margin:0 0 16px;">Dear ${firstName},</p>
+              <p style="font-size:15px;color:#333333;margin:0 0 24px;">Welcome to FarmStayGo! Your account has been created successfully, but your profile is not yet complete.</p>
+              <p style="font-size:15px;color:#333333;margin:0 0 24px;">To enjoy all the features of FarmStayGo and list or manage your properties without interruption, please complete your profile.</p>
+              <p style="font-size:15px;color:#333333;margin:0 0 16px;"><strong>Please update the following information:</strong></p>
+              <ul style="font-size:14px;color:#333333;margin:0 0 24px;padding-left:20px;">
+                <li>Profile Photo</li>
+                <li>Mobile Number</li>
+                <li>Address</li>
+                <li>Identity Verification (if applicable)</li>
+                <li>Bank Account Details (for payouts)</li>
+                <li>Property Owner Information</li>
+              </ul>
+              <p style="font-size:14px;color:#555555;margin:0 0 24px;">A complete profile helps us verify your account faster, improves guest trust, and ensures timely booking notifications and payments.</p>
+              <p style="font-size:15px;color:#333333;margin:0 0 24px;">
+                <a href="${portalUrl}" style="display:inline-block;padding:12px 24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Complete Your Profile</a>
+              </p>
+              <p style="font-size:13px;color:#888888;margin:0 0 24px;">If you have already updated your profile, please ignore this email. Need help? Our support team is always here to assist you.</p>
+              <p style="font-size:14px;color:#333333;margin:0;">Thank you for being a part of FarmStayGo.<br />Best Regards,<br />Team FarmStayGo</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color:#f8f9fa;padding:16px;text-align:center;font-size:12px;color:#999999;">
+              <a href="${WEBSITE_URL}" style="color:#2d6a4f;text-decoration:none;">${WEBSITE_URL}</a> | <a href="mailto:${SUPPORT_EMAIL}" style="color:#2d6a4f;text-decoration:none;">${SUPPORT_EMAIL}</a>${SUPPORT_PHONE ? ` | ${SUPPORT_PHONE}` : ""}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+};
+
 const buildPasswordResetHtml = ({
   firstName,
   resetLink,
