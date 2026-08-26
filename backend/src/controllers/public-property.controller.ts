@@ -1121,10 +1121,36 @@ const buildPublicPropertyWhere = (
   }
 
   if (requestedBookingType) {
-    conditions.push({
-      bookingType:
-        requestedBookingType,
-    });
+    if (
+      requestedBookingType ===
+      PropertyBookingType.ENTIRE_PROPERTY
+    ) {
+      conditions.push({
+        bookingType: {
+          in: [
+            PropertyBookingType.ENTIRE_PROPERTY,
+            PropertyBookingType.BOTH,
+          ],
+        },
+      });
+    } else if (
+      requestedBookingType ===
+      PropertyBookingType.ROOM_WISE
+    ) {
+      conditions.push({
+        bookingType: {
+          in: [
+            PropertyBookingType.ROOM_WISE,
+            PropertyBookingType.BOTH,
+          ],
+        },
+      });
+    } else {
+      conditions.push({
+        bookingType:
+          requestedBookingType,
+      });
+    }
   }
 
   if (featured !== null) {
