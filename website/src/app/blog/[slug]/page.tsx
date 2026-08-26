@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { apiFetch } from "@/lib/api";
 
@@ -19,6 +20,34 @@ interface BlogPost {
   updatedAt: string;
 }
 
+interface BlogPostPageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: BlogPostPageProps): Promise<Metadata> {
+  const { slug } = await params;
+
+  try {
+    const response = await apiFetch<{ success: boolean; data: BlogPost }>(
+      `/public/blog/${slug}`
+    );
+
+    const post = response.data;
+
+    return {
+      title: post.metaTitle || post.title,
+      description: post.metaDescription || post.excerpt || undefined,
+    };
+  } catch {
+    return {
+      title: "Blog Post",
+      description: undefined,
+    };
+  }
+}
+
 async function getBlogPost(slug: string) {
   const data = await apiFetch<{ success: boolean; data: BlogPost }>(
     `/public/blog/${slug}`
@@ -36,9 +65,7 @@ function formatDate(dateStr: string) {
 
 export default async function BlogPostPage({
   params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+}: BlogPostPageProps) {
   const { slug } = await params;
   const post = await getBlogPost(slug);
 

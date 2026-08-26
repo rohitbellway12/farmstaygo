@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { apiFetch, ApiRequestError } from "@/lib/api";
 import Link from "next/link";
@@ -30,6 +30,24 @@ interface LoginResponse {
 
 export default function LoginPage() {
   const router = useRouter();
+
+  useEffect(() => {
+    document.title =
+      "Login | FarmStayGo | Manage Your Farmhouse Bookings";
+
+    let metaDescription = document.querySelector(
+      'meta[name="description"]'
+    );
+    if (!metaDescription) {
+      metaDescription = document.createElement("meta");
+      metaDescription.setAttribute("name", "description");
+      document.head.appendChild(metaDescription);
+    }
+    metaDescription.setAttribute(
+      "content",
+      "Log in to your FarmStayGo account to manage farmhouse bookings, view reservations, update your profile and access your account from one place."
+    );
+  }, []);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

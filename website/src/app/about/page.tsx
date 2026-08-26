@@ -1,6 +1,13 @@
 import Image from "next/image";
+import type { Metadata } from "next";
 
 import { getAssetUrl } from "@/lib/assets";
+
+export const metadata: Metadata = {
+  title: "About FarmStayGo | Grow Your Farmhouse Bookings Near Indore",
+  description:
+    "Learn how FarmStayGo helps farmhouse and villa owners get discovered, promoted and booked while helping travellers find verified spaces near Indore.",
+};
 
 export default function AboutPage() {
   return (

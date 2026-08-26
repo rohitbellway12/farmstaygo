@@ -25,6 +25,24 @@ interface LoginResponse {
 export default function VendorLoginPage() {
   const navigate = useNavigate();
 
+  useEffect(() => {
+    document.title =
+      "Vendor Login | FarmStayGo | Manage Your Property & Bookings";
+
+    let metaDescription = document.querySelector(
+      'meta[name="description"]'
+    );
+    if (!metaDescription) {
+      metaDescription = document.createElement("meta");
+      metaDescription.setAttribute("name", "description");
+      document.head.appendChild(metaDescription);
+    }
+    metaDescription.setAttribute(
+      "content",
+      "Log in to the FarmStayGo vendor portal to manage your property, availability, bookings, enquiries, pricing and listing details from one dashboard."
+    );
+  }, []);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 

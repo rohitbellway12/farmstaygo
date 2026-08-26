@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   Tag,
   ShieldCheck,
@@ -32,6 +33,12 @@ import type {
   PublicServiceCitiesResponse,
   PublicServiceCity,
 } from "@/types/public";
+
+export const metadata: Metadata = {
+  title: "Farmhouses Near Indore | Book Farmhouses, Villas & Stays",
+  description:
+    "Discover and book verified farmhouses near Indore, private villas and nature stays for birthdays, parties, family outings, corporate events and weekend getaways.",
+};
 
 interface BlogPost {
   id: string;

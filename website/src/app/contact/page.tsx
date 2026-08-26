@@ -1,5 +1,6 @@
 "use client";
 
+import type { Metadata } from "next";
 import { useEffect, useState } from "react";
 
 import {
@@ -16,6 +17,12 @@ import type {
   PublicServiceCitiesResponse,
   ContactMessageResponse,
 } from "@/types/public";
+
+export const metadata: Metadata = {
+  title: "Contact FarmStayGo | Farmhouse Booking Near Indore",
+  description:
+    "Contact FarmStayGo for farmhouse bookings, property enquiries, host partnerships and customer support. Get help finding and booking the right stay near Indore.",
+};
 
 function MailIcon() {
   return (

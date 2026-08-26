@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
 import { apiFetch } from "@/lib/api";
 import type {
@@ -9,6 +10,30 @@ interface CmsPageProps {
   params: Promise<{
     slug: string;
   }>;
+}
+
+export async function generateMetadata({
+  params,
+}: CmsPageProps): Promise<Metadata> {
+  const { slug } = await params;
+
+  try {
+    const response = await apiFetch<PublicCmsPageResponse>(
+      `/public/cms-pages/${slug}`
+    );
+
+    const page = response.data;
+
+    return {
+      title: page.metaTitle || page.title,
+      description: page.metaDescription || undefined,
+    };
+  } catch {
+    return {
+      title: "Page Not Found",
+      description: undefined,
+    };
+  }
 }
 
 function sanitizeCmsHtml(content: string) {

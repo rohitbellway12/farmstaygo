@@ -1,6 +1,13 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { apiFetch } from "@/lib/api";
+
+export const metadata: Metadata = {
+  title: "FarmStayGo Blog | Farmhouses, Getaways & Travel Tips in Indore",
+  description:
+    "Explore FarmStayGo's blog for farmhouse recommendations, weekend getaways, travel tips, party ideas and places to visit around Indore and nearby destinations.",
+};
 
 interface BlogPost {
   id: string;

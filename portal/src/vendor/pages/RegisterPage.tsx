@@ -55,6 +55,24 @@ export default function VendorRegisterPage() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
+    document.title =
+      "List Your Property | FarmStayGo Vendor Registration Portal";
+
+    let metaDescription = document.querySelector(
+      'meta[name="description"]'
+    );
+    if (!metaDescription) {
+      metaDescription = document.createElement("meta");
+      metaDescription.setAttribute("name", "description");
+      document.head.appendChild(metaDescription);
+    }
+    metaDescription.setAttribute(
+      "content",
+      "Register as a FarmStayGo vendor and list your farmhouse, villa or resort to reach travellers searching for stays and event venues near Indore."
+    );
+  }, []);
+
+  useEffect(() => {
     const auth = localStorage.getItem("farmstaygo_portal_auth");
 
     if (auth) {

@@ -1,5 +1,6 @@
 "use client";
 
+import type { Metadata } from "next";
 import { useEffect, useState } from "react";
 
 import {
@@ -9,6 +10,12 @@ import {
   type PublicSupportTicket,
   type PublicSupportTicketResponse,
 } from "@/types/support";
+
+export const metadata: Metadata = {
+  title: "FarmStayGo Support | Farmhouse Booking Help Near Indore",
+  description:
+    "Need help with your farmhouse booking near Indore? Get assistance with bookings, payments, cancellations, refunds, property enquiries and other FarmStayGo queries.",
+};
 
 interface FormState {
   userName: string;
