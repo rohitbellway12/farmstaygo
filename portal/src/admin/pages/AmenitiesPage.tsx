@@ -747,13 +747,14 @@ const handleImageChange = (
     "image/jpeg",
     "image/png",
     "image/webp",
+    "image/svg+xml",
   ];
 
   if (!allowedTypes.includes(file.type)) {
     setToast({
       type: "error",
       message:
-        "Only JPG, JPEG, PNG and WEBP images are allowed.",
+        "Only JPG, JPEG, PNG, WEBP and SVG images are allowed.",
     });
 
     event.target.value = "";
@@ -1872,30 +1873,30 @@ await loadAmenities();
           />
         </div>
 
-        <div className="min-w-0 flex-1">
-          <strong className="block truncate text-sm font-extrabold text-text-main">
-            {selectedImage
-              ? selectedImage.name
-              : "Current amenity image"}
-          </strong>
+         <div className="min-w-0 flex-1">
+           <strong className="block truncate text-sm font-extrabold text-text-main">
+             {selectedImage
+               ? selectedImage.name
+               : "Current amenity image"}
+           </strong>
 
-          <p className="mt-1 text-xs leading-5 text-text-muted">
-            Use a square PNG or WEBP image with a
-            transparent background. Maximum file size
-            is 1 MB.
-          </p>
+           <p className="mt-1 text-xs leading-5 text-text-muted">
+             Use a square PNG, WEBP or SVG image with a
+             transparent background. Maximum file size
+             is 1 MB.
+           </p>
 
-          <div className="mt-3 flex flex-wrap gap-2">
-            <label className="inline-flex h-9 cursor-pointer items-center justify-center rounded-control border border-primary-300 bg-primary-50 px-4 text-xs font-bold text-primary-700 transition hover:bg-primary-100">
-              Replace Image
+           <div className="mt-3 flex flex-wrap gap-2">
+             <label className="inline-flex h-9 cursor-pointer items-center justify-center rounded-control border border-primary-300 bg-primary-50 px-4 text-xs font-bold text-primary-700 transition hover:bg-primary-100">
+               Replace Image
 
-              <input
-                type="file"
-                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-                onChange={handleImageChange}
-                className="hidden"
-              />
-            </label>
+               <input
+                 type="file"
+                 accept=".jpg,.jpeg,.png,.webp,.svg,image/jpeg,image/png,image/webp,image/svg+xml"
+                 onChange={handleImageChange}
+                 className="hidden"
+               />
+             </label>
 
             <button
               type="button"
@@ -1928,7 +1929,7 @@ await loadAmenities();
         </strong>
 
         <span className="mt-1 text-xs text-text-muted">
-          PNG, JPG or WEBP up to 1 MB
+          PNG, JPG, WEBP or SVG up to 1 MB
         </span>
 
         <span className="mt-1 text-xs text-text-soft">
@@ -1937,7 +1938,7 @@ await loadAmenities();
 
         <input
           type="file"
-          accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+          accept=".jpg,.jpeg,.png,.webp,.svg,image/jpeg,image/png,image/webp,image/svg+xml"
           onChange={handleImageChange}
           className="hidden"
         />

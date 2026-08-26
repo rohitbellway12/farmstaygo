@@ -41,6 +41,7 @@ const allowedImageMimeTypes = [
   "image/jpeg",
   "image/png",
   "image/webp",
+  "image/svg+xml",
 ];
 
 const allowedImageExtensions = [
@@ -48,6 +49,7 @@ const allowedImageExtensions = [
   ".jpeg",
   ".png",
   ".webp",
+  ".svg",
 ];
 
 /*
@@ -170,7 +172,7 @@ export const createPublicImageUpload = (
       ) {
         callback(
           new Error(
-            "Only JPG, JPEG, PNG and WEBP images are allowed"
+            "Only JPG, JPEG, PNG, WEBP and SVG images are allowed"
           )
         );
 
@@ -393,7 +395,7 @@ export const createPropertyImageUpload = (
       ) {
         callback(
           new Error(
-            "Only JPG, JPEG, PNG and WEBP property images are allowed"
+            "Only JPG, JPEG, PNG, WEBP and SVG property images are allowed"
           )
         );
 
@@ -583,7 +585,7 @@ export const createRoomImageUpload = (
       ) {
         callback(
           new Error(
-            "Only JPG, JPEG, PNG and WEBP room images are allowed"
+            "Only JPG, JPEG, PNG, WEBP and SVG room images are allowed"
           )
         );
 
@@ -653,7 +655,7 @@ export const createSettingsImageUpload = (
       if (!isValidMimeType || !isValidExtension) {
         callback(
           new Error(
-            "Only JPG, JPEG, PNG and WEBP images are allowed"
+            "Only JPG, JPEG, PNG, WEBP and SVG images are allowed"
           )
         );
         return;
@@ -709,7 +711,7 @@ export const createHomeImageUpload = (
       if (!isValidMimeType || !isValidExtension) {
         callback(
           new Error(
-            "Only JPG, JPEG, PNG and WEBP images are allowed"
+            "Only JPG, JPEG, PNG, WEBP and SVG images are allowed"
           )
         );
         return;
