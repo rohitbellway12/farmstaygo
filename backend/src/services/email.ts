@@ -273,8 +273,215 @@ const buildBookingConfirmationHtml = ({
             <td style="background-color:#f8f9fa;padding:16px;text-align:center;font-size:12px;color:#999999;">
               &copy; ${new Date().getFullYear()} FarmStayGo. All rights reserved.
             </td>
-          </tr>
+           </tr>
          </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+};
+
+export const sendBookingConfirmedVendorEmail = async (params: {
+  vendorEmail: string;
+  vendorName: string;
+  bookingId: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  propertyName: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  guests: number;
+  totalAmount: string;
+  amountPaid: string;
+  balanceAmount: string;
+  portalUrl: string;
+}): Promise<void> => {
+  const html = buildBookingConfirmedVendorHtml(params);
+
+  await sendEmail(params.vendorEmail, `New Booking — ${params.propertyName}`, html, HOST_EMAIL);
+};
+
+const buildBookingConfirmedVendorHtml = ({
+  vendorName,
+  bookingId,
+  guestName,
+  guestEmail,
+  guestPhone,
+  propertyName,
+  checkIn,
+  checkOut,
+  nights,
+  guests,
+  totalAmount,
+  amountPaid,
+  balanceAmount,
+  portalUrl,
+}: {
+  vendorName: string;
+  bookingId: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  propertyName: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  guests: number;
+  totalAmount: string;
+  amountPaid: string;
+  balanceAmount: string;
+  portalUrl: string;
+}): string => {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Booking – FarmStayGo</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4;padding:20px_0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0_2px_8px_rgba(0,0,0,0.08);">
+          <tr>
+            <td style="background-color:#2d6a4f;padding:24px;text-align:center;">
+              <h1 style="color:#ffffff;margin:0;font-size:22px;">FarmStayGo</h1>
+              <p style="color:#d8f3dc;margin:4px_0_0;font-size:13px;">New Booking Received</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <p style="font-size:15px;color:#333333;margin:0_0_16px;">Dear ${vendorName},</p>
+              <p style="font-size:15px;color:#333333;margin:0_0_24px;">Great news! A new booking has been made for your property <strong>${propertyName}</strong>.</p>
+              <p style="font-size:15px;color:#333333;margin:0_0_16px;"><strong>Booking Details</strong></p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border:1px_solid_#e0e0e0;border-radius:6px;overflow:hidden;margin-bottom:24px;">
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Booking ID</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${bookingId}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Guest Name</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${guestName}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Guest Email</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${guestEmail}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Guest Phone</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${guestPhone}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Property</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${propertyName}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Check-in</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${checkIn}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Check-out</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${checkOut}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Nights</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${nights}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Guests</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${guests}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Total Amount</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">₹${totalAmount}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Amount Paid</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#28a745;font-weight:bold;">₹${amountPaid}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;font-weight:bold;color:#555555;font-size:13px;">Balance</td><td style="padding:12px_16px;font-size:14px;color:#333333;">₹${balanceAmount}</td></tr>
+              </table>
+              <p style="font-size:15px;color:#333333;margin:0_0_24px;">Please ensure your property is ready for the guest arrival. You can view the full booking details in your vendor portal.</p>
+              <p style="font-size:15px;color:#333333;margin:0_0_24px;"><a href="${portalUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px_24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">View Booking in Portal</a></p>
+              <p style="font-size:14px;color:#333333;margin:0;">Best Regards,<br/>Team FarmStayGo</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color:#f8f9fa;padding:16px;text-align:center;font-size:12px;color:#999999;">
+              <a href="${WEBSITE_URL}" style="color:#2d6a4f;text-decoration:none;">${WEBSITE_URL}</a> | <a href="mailto:${SUPPORT_EMAIL}" style="color:#2d6a4f;text-decoration:none;">${SUPPORT_EMAIL}</a>${SUPPORT_PHONE ? ` | ${SUPPORT_PHONE}` : ""}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+};
+
+export const sendPaymentReceivedVendorEmail = async (params: {
+  vendorEmail: string;
+  vendorName: string;
+  paymentDate: string;
+  paymentId: string;
+  transactionId: string;
+  bookingId: string;
+  propertyName: string;
+  checkIn: string;
+  checkOut: string;
+  amountPaid: string;
+  totalBookingAmount: string;
+  balanceAmount: string;
+  portalUrl: string;
+}): Promise<void> => {
+  const html = buildPaymentReceivedVendorHtml(params);
+
+  await sendEmail(params.vendorEmail, `Payment Received — ${params.propertyName}`, html, HOST_EMAIL);
+};
+
+const buildPaymentReceivedVendorHtml = ({
+  vendorName,
+  paymentDate,
+  paymentId,
+  transactionId,
+  bookingId,
+  propertyName,
+  checkIn,
+  checkOut,
+  amountPaid,
+  totalBookingAmount,
+  balanceAmount,
+  portalUrl,
+}: {
+  vendorName: string;
+  paymentDate: string;
+  paymentId: string;
+  transactionId: string;
+  bookingId: string;
+  propertyName: string;
+  checkIn: string;
+  checkOut: string;
+  amountPaid: string;
+  totalBookingAmount: string;
+  balanceAmount: string;
+  portalUrl: string;
+}): string => {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Received – FarmStayGo</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4;padding:20px_0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0_2px_8px_rgba(0,0,0,0.08);">
+          <tr>
+            <td style="background-color:#28a745;padding:24px;text-align:center;">
+              <h1 style="color:#ffffff;margin:0;font-size:22px;">FarmStayGo</h1>
+              <p style="color:#d4edda;margin:4px_0_0;font-size:13px;">Payment Received</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <p style="font-size:15px;color:#333333;margin:0_0_16px;">Dear ${vendorName},</p>
+              <p style="font-size:15px;color:#333333;margin:0_0_24px;">A payment has been received for your property <strong>${propertyName}</strong>.</p>
+              <p style="font-size:15px;color:#333333;margin:0_0_16px;"><strong>Payment Details</strong></p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border:1px_solid_#e0e0e0;border-radius:6px;overflow:hidden;margin-bottom:24px;">
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Payment ID</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${paymentId}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Transaction ID</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${transactionId}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Booking ID</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${bookingId}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Property</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${propertyName}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Check-in</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${checkIn}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Check-out</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${checkOut}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Total Booking Amount</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">₹${totalBookingAmount}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Amount Paid</td><td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#28a745;font-weight:bold;">₹${amountPaid}</td></tr>
+                <tr><td style="padding:12px_16px;background-color:#f8f9fa;font-weight:bold;color:#555555;font-size:13px;">Balance</td><td style="padding:12px_16px;font-size:14px;color:#333333;">₹${balanceAmount}</td></tr>
+              </table>
+              <p style="font-size:15px;color:#333333;margin:0_0_24px;">You can view the full payment details in your vendor portal.</p>
+              <p style="font-size:15px;color:#333333;margin:0_0_24px;"><a href="${portalUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px_24px;background-color:#28a745;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">View in Portal</a></p>
+              <p style="font-size:14px;color:#333333;margin:0;">Best Regards,<br/>Team FarmStayGo</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color:#f8f9fa;padding:16px;text-align:center;font-size:12px;color:#999999;">
+              <a href="${WEBSITE_URL}" style="color:#2d6a4f;text-decoration:none;">${WEBSITE_URL}</a> | <a href="mailto:${SUPPORT_EMAIL}" style="color:#2d6a4f;text-decoration:none;">${SUPPORT_EMAIL}</a>${SUPPORT_PHONE ? ` | ${SUPPORT_PHONE}` : ""}
+            </td>
+          </tr>
+        </table>
       </td>
     </tr>
   </table>
@@ -409,6 +616,96 @@ export const sendPropertySubmittedEmail = async (params: {
   const html = buildPropertySubmittedHtml(params);
 
   await sendEmail(params.email, "Property Submitted Successfully – FarmStayGo", html, HOST_EMAIL);
+};
+
+export const sendAdminNewPropertyNotification = async (params: {
+  vendorName: string;
+  vendorEmail: string;
+  propertyName: string;
+  propertyId: string;
+  submissionDate: string;
+}): Promise<void> => {
+  const html = buildAdminNewPropertyHtml(params);
+
+  await sendEmail(ADMIN_EMAIL, `New Property Listing — ${params.propertyName}`, html, ADMIN_EMAIL);
+};
+
+const buildAdminNewPropertyHtml = ({
+  vendorName,
+  vendorEmail,
+  propertyName,
+  propertyId,
+  submissionDate,
+}: {
+  vendorName: string;
+  vendorEmail: string;
+  propertyName: string;
+  propertyId: string;
+  submissionDate: string;
+}): string => {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Property Listing – FarmStayGo</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4;padding:20px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px_8px_rgba(0,0,0,0.08);">
+          <tr>
+            <td style="background-color:#2d6a4f;padding:24px;text-align:center;">
+              <h1 style="color:#ffffff;margin:0;font-size:22px;">FarmStayGo</h1>
+              <p style="color:#d8f3dc;margin:4px_0_0;font-size:13px;">New Property Listing Submitted</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <p style="font-size:15px;color:#333333;margin:0_0_16px;">Dear Admin,</p>
+              <p style="font-size:15px;color:#333333;margin:0_0_24px;">A new property has been submitted by a vendor and is pending approval.</p>
+              <p style="font-size:15px;color:#333333;margin:0_0_16px;"><strong>Property Details</strong></p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border:1px_solid_#e0e0e0;border-radius:6px;overflow:hidden;margin-bottom:24px;">
+                <tr>
+                  <td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Property Name</td>
+                  <td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${propertyName}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Property ID</td>
+                  <td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${propertyId}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Vendor Name</td>
+                  <td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${vendorName}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px_16px;background-color:#f8f9fa;border-bottom:1px_solid_#e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Vendor Email</td>
+                  <td style="padding:12px_16px;border-bottom:1px_solid_#e0e0e0;font-size:14px;color:#333333;">${vendorEmail}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px_16px;background-color:#f8f9fa;font-weight:bold;color:#555555;font-size:13px;">Submission Date</td>
+                  <td style="padding:12px_16px;font-size:14px;color:#333333;">${submissionDate}</td>
+                </tr>
+              </table>
+              <p style="font-size:15px;color:#333333;margin:0_0_24px;">Please review and approve this property from the admin panel.</p>
+              <p style="font-size:15px;color:#333333;margin:0_0_24px;">
+                <a href="${process.env.PORTAL_URL || "http://localhost:5173"}/admin/property-approvals" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px_24px;background-color:#2d6a4f;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Review Property</a>
+              </p>
+              <p style="font-size:14px;color:#333333;margin:0;">Best Regards,<br/>Team FarmStayGo</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color:#f8f9fa;padding:16px;text-align:center;font-size:12px;color:#999999;">
+              <a href="${WEBSITE_URL}" style="color:#2d6a4f;text-decoration:none;">${WEBSITE_URL}</a> | <a href="mailto:${SUPPORT_EMAIL}" style="color:#2d6a4f;text-decoration:none;">${SUPPORT_EMAIL}</a>${SUPPORT_PHONE ? ` | ${SUPPORT_PHONE}` : ""}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 };
 
 const buildPropertySubmittedHtml = ({
@@ -774,6 +1071,226 @@ export const sendContactMessageNotificationEmail = async (
     html,
     SUPPORT_EMAIL
   );
+};
+
+export const sendSupportTicketNotificationEmail = async (params: {
+  ticketId: string;
+  subject: string;
+  description: string;
+  category: string | null;
+  priority: string;
+  customerName: string;
+  customerEmail: string;
+  adminDashboardUrl: string;
+}): Promise<void> => {
+  const html = buildSupportTicketNotificationHtml(params);
+
+  await sendEmail(
+    SUPPORT_EMAIL,
+    `New Support Ticket — ${params.subject}`,
+    html,
+    SUPPORT_EMAIL
+  );
+};
+
+export const sendSupportTicketConfirmationEmail = async (params: {
+  customerEmail: string;
+  customerName: string;
+  ticketId: string;
+  subject: string;
+  description: string;
+  category: string | null;
+  priority: string;
+  submissionDate: string;
+}): Promise<void> => {
+  const html = buildSupportTicketConfirmationHtml(params);
+
+  await sendEmail(
+    params.customerEmail,
+    `Support Ticket Received — ${params.subject}`,
+    html,
+    SUPPORT_EMAIL
+  );
+};
+
+const buildSupportTicketNotificationHtml = ({
+  ticketId,
+  subject,
+  description,
+  category,
+  priority,
+  customerName,
+  customerEmail,
+  adminDashboardUrl,
+}: {
+  ticketId: string;
+  subject: string;
+  description: string;
+  category: string | null;
+  priority: string;
+  customerName: string;
+  customerEmail: string;
+  adminDashboardUrl: string;
+}): string => {
+  const priorityColors: Record<string, string> = {
+    LOW: "#28a745",
+    MEDIUM: "#ffc107",
+    HIGH: "#fd7e14",
+    URGENT: "#dc3545",
+  };
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Support Ticket – FarmStayGo</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4;padding:20px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+          <tr>
+            <td style="background-color:#dc3545;padding:24px;text-align:center;">
+              <h1 style="color:#ffffff;margin:0;font-size:22px;">FarmStayGo</h1>
+              <p style="color:#f8d7da;margin:4px 0 0;font-size:13px;">New Support Ticket Received</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <p style="font-size:15px;color:#333333;margin:0 0 16px;">Dear Support Team,</p>
+              <p style="font-size:15px;color:#333333;margin:0 0 24px;">A new support ticket has been submitted by a customer.</p>
+              <p style="font-size:15px;color:#333333;margin:0 0 16px;"><strong>Ticket Details</strong></p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;margin-bottom:24px;">
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Ticket ID</td>
+                  <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:#333333;">${ticketId}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Subject</td>
+                  <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:#333333;">${subject}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Category</td>
+                  <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:#333333;">${category || "General"}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Priority</td>
+                  <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:${priorityColors[priority] || "#333333"};font-weight:bold;">${priority}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Customer Name</td>
+                  <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:#333333;">${customerName}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Customer Email</td>
+                  <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:#333333;">${customerEmail}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;font-weight:bold;color:#555555;font-size:13px;">Description</td>
+                  <td style="padding:12px 16px;font-size:14px;color:#333333;">${description}</td>
+                </tr>
+              </table>
+              <p style="font-size:15px;color:#333333;margin:0 0 24px;">Please review and respond to this ticket from the admin panel.</p>
+              <p style="font-size:15px;color:#333333;margin:0 0 24px;">
+                <a href="${adminDashboardUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 24px;background-color:#dc3545;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">View Ticket</a>
+              </p>
+              <p style="font-size:14px;color:#333333;margin:0;">Best Regards,<br/>Team FarmStayGo</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color:#f8f9fa;padding:16px;text-align:center;font-size:12px;color:#999999;">
+              <a href="${WEBSITE_URL}" style="color:#2d6a4f;text-decoration:none;">${WEBSITE_URL}</a> | <a href="mailto:${SUPPORT_EMAIL}" style="color:#2d6a4f;text-decoration:none;">${SUPPORT_EMAIL}</a>${SUPPORT_PHONE ? ` | ${SUPPORT_PHONE}` : ""}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+};
+
+const buildSupportTicketConfirmationHtml = ({
+  customerEmail,
+  customerName,
+  ticketId,
+  subject,
+  description,
+  category,
+  priority,
+  submissionDate,
+}: {
+  customerEmail: string;
+  customerName: string;
+  ticketId: string;
+  subject: string;
+  description: string;
+  category: string | null;
+  priority: string;
+  submissionDate: string;
+}): string => {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support Ticket Received – FarmStayGo</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4;padding:20px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+          <tr>
+            <td style="background-color:#2d6a4f;padding:24px;text-align:center;">
+              <h1 style="color:#ffffff;margin:0;font-size:22px;">FarmStayGo</h1>
+              <p style="color:#d8f3dc;margin:4px 0 0;font-size:13px;">Support Ticket Received</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <p style="font-size:15px;color:#333333;margin:0 0 16px;">Dear ${customerName || "Customer"},</p>
+              <p style="font-size:15px;color:#333333;margin:0 0 24px;">Thank you for contacting FarmStayGo. Your support ticket has been received and our team will get back to you soon.</p>
+              <p style="font-size:15px;color:#333333;margin:0 0 16px;"><strong>Ticket Details</strong></p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;margin-bottom:24px;">
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Ticket ID</td>
+                  <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:#333333;">${ticketId}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Subject</td>
+                  <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:#333333;">${subject}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Category</td>
+                  <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:#333333;">${category || "General"}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:bold;color:#555555;font-size:13px;">Priority</td>
+                  <td style="padding:12px 16px;border-bottom:1px solid #e0e0e0;font-size:14px;color:#333333;">${priority}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 16px;background-color:#f8f9fa;font-weight:bold;color:#555555;font-size:13px;">Submission Date</td>
+                  <td style="padding:12px 16px;font-size:14px;color:#333333;">${submissionDate}</td>
+                </tr>
+              </table>
+              <p style="font-size:15px;color:#333333;margin:0 0 24px;">We typically respond to support tickets within 24 hours. If your issue is urgent, please call us at ${SUPPORT_PHONE || "our support number"}.</p>
+              <p style="font-size:14px;color:#333333;margin:0;">Best Regards,<br/>Team FarmStayGo</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color:#f8f9fa;padding:16px;text-align:center;font-size:12px;color:#999999;">
+              <a href="${WEBSITE_URL}" style="color:#2d6a4f;text-decoration:none;">${WEBSITE_URL}</a> | <a href="mailto:${SUPPORT_EMAIL}" style="color:#2d6a4f;text-decoration:none;">${SUPPORT_EMAIL}</a>${SUPPORT_PHONE ? ` | ${SUPPORT_PHONE}` : ""}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 };
 
 interface ContactMessageParams {
@@ -1249,7 +1766,7 @@ export const sendRatingReceivedAdminEmail = async (params: {
 }): Promise<void> => {
   const html = buildRatingReceivedAdminHtml(params);
 
-  await sendEmail(BOOKING_EMAIL, `New Rating Received — ${params.propertyName}`, html, BOOKING_EMAIL);
+  await sendEmail(HOST_EMAIL, `New Rating Received — ${params.propertyName}`, html, HOST_EMAIL);
 };
 
 const buildRatingReceivedAdminHtml = ({
@@ -1685,7 +2202,7 @@ export const sendEnquiryAdminEmail = async (params: {
 }): Promise<void> => {
   const html = buildEnquiryAdminHtml(params);
 
-  await sendEmail(BOOKING_EMAIL, `New Enquiry Received — ${params.propertyName}`, html, BOOKING_EMAIL);
+  await sendEmail(HOST_EMAIL, `New Enquiry Received — ${params.propertyName}`, html, HOST_EMAIL);
 };
 
 const buildEnquiryAdminHtml = ({

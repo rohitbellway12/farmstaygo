@@ -12,6 +12,7 @@ import type {
 
 import {
   sendPropertySubmittedEmail,
+  sendAdminNewPropertyNotification,
 } from "../services/email.js";
 
 /*
@@ -1083,6 +1084,25 @@ export const submitPropertyForApproval =
         }).catch((error) => {
           console.error(
             "Send property submitted email error:",
+            error
+          );
+        });
+
+        void sendAdminNewPropertyNotification({
+          vendorName: `${submittedProperty.vendor.user.firstName} ${submittedProperty.vendor.user.lastName || ""}`.trim(),
+          vendorEmail: submittedProperty.vendor.user.email,
+          propertyName: submittedProperty.title,
+          propertyId: submittedProperty.id,
+          submissionDate: new Date(
+            submittedProperty.submittedAt
+          ).toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+        }).catch((error) => {
+          console.error(
+            "Send admin new property notification error:",
             error
           );
         });

@@ -12,6 +12,11 @@ import type {
   AuthenticatedRequest,
 } from "../middleware/auth.middleware.js";
 
+import {
+  sendSupportTicketNotificationEmail,
+  sendSupportTicketConfirmationEmail,
+} from "../services/email.js";
+
 interface CreateSupportTicketBody {
   subject?: unknown;
   description?: unknown;
@@ -194,6 +199,36 @@ export const createSupportTicket = async (
           },
         },
       },
+    });
+
+    void sendSupportTicketNotificationEmail({
+      ticketId: ticket.id,
+      subject: ticket.subject,
+      description: ticket.description,
+      category: ticket.category,
+      priority: ticket.priority,
+      customerName: ticket.userName || "Customer",
+      customerEmail: ticket.userEmail,
+      adminDashboardUrl: `${process.env.PORTAL_URL || "http://localhost:5173"}/admin/support`,
+    }).catch((error) => {
+      console.error("Send support ticket notification email error:", error);
+    });
+
+    void sendSupportTicketConfirmationEmail({
+      customerEmail: ticket.userEmail,
+      customerName: ticket.userName || "Customer",
+      ticketId: ticket.id,
+      subject: ticket.subject,
+      description: ticket.description,
+      category: ticket.category,
+      priority: ticket.priority,
+      submissionDate: new Date(ticket.createdAt).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+    }).catch((error) => {
+      console.error("Send support ticket confirmation email error:", error);
     });
 
     return res.status(201).json({

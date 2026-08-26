@@ -28,8 +28,10 @@ import {
   sendBookingConfirmationEmail,
   sendBookingConfirmedAdminEmail,
   sendBookingConfirmedCustomerEmail,
+  sendBookingConfirmedVendorEmail,
   sendPaymentReceivedAdminEmail,
   sendPaymentReceivedCustomerEmail,
+  sendPaymentReceivedVendorEmail,
   sendBookingCancelledCustomerEmail,
   sendBookingRejectedCustomerEmail,
 } from "../services/email.js";
@@ -2329,9 +2331,19 @@ export const approvePayment = async (
               },
             },
             property: {
-              select: {
-                id: true,
-                title: true,
+              include: {
+                vendor: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        email: true,
+                      },
+                    },
+                  },
+                },
               },
             },
           },
@@ -2421,6 +2433,31 @@ export const approvePayment = async (
         error
       );
     });
+
+    if (booking.property.vendor?.user?.email) {
+      void sendPaymentReceivedVendorEmail({
+        vendorEmail: booking.property.vendor.user.email,
+        vendorName: `${booking.property.vendor.user.firstName} ${booking.property.vendor.user.lastName || ""}`.trim(),
+        paymentDate: updatedPayment.createdAt.toISOString().slice(0, 10),
+        paymentId: updatedPayment.id,
+        transactionId: updatedPayment.transactionId || "N/A",
+        bookingId: booking.id,
+        propertyName: booking.property.title,
+        checkIn: booking.checkIn.toISOString().slice(0, 10),
+        checkOut: booking.checkOut.toISOString().slice(0, 10),
+        amountPaid: Number(updatedPayment.amount).toFixed(2),
+        totalBookingAmount: booking.estimatedTotal?.toString() ?? "0",
+        balanceAmount: "0",
+        portalUrl:
+          process.env.PORTAL_URL ||
+          "http://localhost:5173",
+      }).catch((error) => {
+        console.error(
+          "Payment received vendor email error:",
+          error
+        );
+      });
+    }
 
     const totalPaid =
       totalPaidSoFar._sum.amount
@@ -2567,6 +2604,33 @@ export const approvePayment = async (
             error
           );
         });
+
+        if (booking.property.vendor?.user?.email) {
+          void sendBookingConfirmedVendorEmail({
+            vendorEmail: booking.property.vendor.user.email,
+            vendorName: `${booking.property.vendor.user.firstName} ${booking.property.vendor.user.lastName || ""}`.trim(),
+            bookingId: booking.id,
+            guestName: `${booking.user.firstName} ${booking.user.lastName || ""}`.trim(),
+            guestEmail: booking.user.email,
+            guestPhone: booking.guestMobile || "N/A",
+            propertyName: booking.property.title,
+            checkIn: booking.checkIn.toISOString().slice(0, 10),
+            checkOut: booking.checkOut.toISOString().slice(0, 10),
+            nights: booking.totalNights,
+            guests: booking.guests,
+            totalAmount: booking.estimatedTotal?.toString() ?? "0",
+            amountPaid: totalPaid.toFixed(2),
+            balanceAmount: remainingBalance.toFixed(2),
+            portalUrl:
+              process.env.PORTAL_URL ||
+              "http://localhost:5173",
+          }).catch((error) => {
+            console.error(
+              "Booking confirmed vendor email error:",
+              error
+            );
+          });
+        }
       } catch (emailError) {
         console.error(
           "Booking confirmation email error:",
