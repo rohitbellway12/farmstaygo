@@ -78,7 +78,14 @@ export default function SiteHeader() {
 
         if (data?.success && data?.data) {
           let logoUrl = data.data.siteLogoUrl;
-          if (logoUrl && logoUrl.startsWith("http:")) {
+          if (
+            logoUrl &&
+            typeof window !== "undefined" &&
+            window.location.protocol === "https:" &&
+            !logoUrl.includes("localhost") &&
+            !logoUrl.includes("127.0.0.1") &&
+            logoUrl.startsWith("http:")
+          ) {
             logoUrl = logoUrl.replace("http:", "https:");
           }
           setSiteLogoUrl(logoUrl);

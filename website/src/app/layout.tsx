@@ -31,7 +31,12 @@ export async function generateMetadata(): Promise<Metadata> {
         faviconUrl = data.data.siteFaviconUrl || undefined;
         siteName = data.data.siteName || siteName;
 
-        if (faviconUrl && faviconUrl.startsWith("http:")) {
+        if (
+          faviconUrl &&
+          !faviconUrl.includes("localhost") &&
+          !faviconUrl.includes("127.0.0.1") &&
+          faviconUrl.startsWith("http:")
+        ) {
           faviconUrl = faviconUrl.replace("http:", "https:");
         }
       }

@@ -174,8 +174,9 @@ export const getPublicPlatformSettings = async (
       }),
     ]);
 
-    const protocol = req.protocol;
     const host = req.get("host");
+    const isLocalhost = host?.startsWith("localhost") || host?.startsWith("127.0.0.1");
+    const protocol = isLocalhost ? "http" : req.protocol;
     const baseUrl = `${protocol}://${host}`;
 
     const resolveUrl = (url: string | null | undefined): string | null => {
@@ -184,6 +185,9 @@ export const getPublicPlatformSettings = async (
       }
 
       if (url.startsWith("http://") || url.startsWith("https://")) {
+        if (isLocalhost) {
+          return url.replace("https://", "http://");
+        }
         if (url.startsWith("http://")) {
           return url.replace("http://", "https://");
         }

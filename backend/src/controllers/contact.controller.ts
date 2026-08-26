@@ -94,10 +94,17 @@ export const getPublicContactInfo = async (
     const resolveUrl = (url: string | null | undefined): string | null => {
       if (!url) return null;
       if (url.startsWith("http://") || url.startsWith("https://")) {
-        return url;
+        const host = req.get("host") || "localhost:5000";
+        const isLocalhost = host.startsWith("localhost") || host.startsWith("127.0.0.1");
+        if (isLocalhost) {
+          return url.replace("https://", "http://");
+        }
+        return url.replace("http://", "https://");
       }
-      const baseUrl = `${req.protocol}://${req.get("host")}`;
-      return `${baseUrl}${url}`;
+      const host = req.get("host") || "localhost:5000";
+      const isLocalhost = host.startsWith("localhost") || host.startsWith("127.0.0.1");
+      const protocol = isLocalhost ? "http" : req.protocol;
+      return `${protocol}://${host}${url}`;
     };
 
     return res.json({

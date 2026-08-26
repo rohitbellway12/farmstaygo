@@ -90,8 +90,9 @@ export const getPlatformSettings = async (
       getSetting("timezone"),
     ]);
 
-    const protocol = req.protocol;
     const host = req.get("host");
+    const isLocalhost = host?.startsWith("localhost") || host?.startsWith("127.0.0.1");
+    const protocol = isLocalhost ? "http" : req.protocol;
     const baseUrl = `${protocol}://${host}`;
 
     const resolveUrl = (url: string | null | undefined): string | null => {
@@ -100,6 +101,9 @@ export const getPlatformSettings = async (
       }
 
       if (url.startsWith("http://") || url.startsWith("https://")) {
+        if (isLocalhost) {
+          return url.replace("https://", "http://");
+        }
         if (url.startsWith("http://")) {
           return url.replace("http://", "https://");
         }
@@ -273,8 +277,9 @@ export const updatePlatformSettings = async (
       });
     });
 
-    const protocol = req.protocol;
     const host = req.get("host");
+    const isLocalhost = host?.startsWith("localhost") || host?.startsWith("127.0.0.1");
+    const protocol = isLocalhost ? "http" : req.protocol;
     const baseUrl = `${protocol}://${host}`;
 
     const resolveUrl = (url: string | null | undefined): string | null => {
@@ -283,6 +288,9 @@ export const updatePlatformSettings = async (
       }
 
       if (url.startsWith("http://") || url.startsWith("https://")) {
+        if (isLocalhost) {
+          return url.replace("https://", "http://");
+        }
         if (url.startsWith("http://")) {
           return url.replace("http://", "https://");
         }
@@ -567,7 +575,10 @@ const resolveSettingUrl = (
     return url;
   }
 
-  const baseUrl = `${req.protocol}://${req.get("host")}`;
+  const host = req.get("host");
+  const isLocalhost = host?.startsWith("localhost") || host?.startsWith("127.0.0.1");
+  const protocol = isLocalhost ? "http" : req.protocol;
+  const baseUrl = `${protocol}://${host}`;
 
   return `${baseUrl}${url}`;
 };

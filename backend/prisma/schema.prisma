@@ -707,9 +707,9 @@ model RoomAvailabilityBlock {
 
 model Wishlist {
   id         String   @id @default(cuid())
-  userId     Int      @map("user_id")
-  propertyId String   @map("property_id")
-  createdAt  DateTime @default(now()) @map("created_at")
+  userId     Int
+  propertyId String
+  createdAt  DateTime @default(now())
 
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)

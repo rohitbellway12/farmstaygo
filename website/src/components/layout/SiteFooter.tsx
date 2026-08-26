@@ -70,7 +70,12 @@ async function getPublicPlatformSettings() {
     const data = await response.json();
 
     let logoUrl = data?.data?.siteLogoUrl || null;
-    if (logoUrl && logoUrl.startsWith("http:")) {
+    if (
+      logoUrl &&
+      !logoUrl.includes("localhost") &&
+      !logoUrl.includes("127.0.0.1") &&
+      logoUrl.startsWith("http:")
+    ) {
       logoUrl = logoUrl.replace("http:", "https:");
     }
 

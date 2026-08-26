@@ -37,30 +37,29 @@ const toNumber = (
 const buildPublicDisplayTitle = (
   property: WishlistPropertyRecord
 ): string => {
-  const title = property.title.trim();
+  const title = (property?.title || "").trim();
 
   if (title) {
     return title;
   }
 
   const approximateLocation =
-    property.locality ||
-    property.city ||
-    property.state ||
+    property?.locality ||
+    property?.city ||
+    property?.state ||
     "a peaceful destination";
 
-  return `${property.category.name} near ${approximateLocation}`;
+  return `${property?.category?.name || "Property"} near ${approximateLocation}`;
 };
 
 const roomIsPublicReady = (
   roomType: WishlistPropertyRecord["roomTypes"][number]
 ): boolean => {
   return (
-    roomType.isActive &&
-    roomType.totalRooms > 0 &&
-    toNumber(roomType.basePrice) !== null &&
-    Number(roomType.basePrice) > 0 &&
-    roomType.images.length > 0
+    Boolean(roomType?.isActive) &&
+    (roomType?.totalRooms ?? 0) > 0 &&
+    toNumber(roomType?.basePrice) !== null &&
+    Number(roomType?.basePrice) > 0
   );
 };
 
@@ -89,7 +88,7 @@ const getStartingPrice = (
 
   if (supportsEntireProperty(property.bookingType)) {
     const propertyPrice =
-      toNumber(property.basePrice);
+      toNumber(property?.basePrice);
 
     if (
       propertyPrice !== null &&
@@ -100,11 +99,11 @@ const getStartingPrice = (
   }
 
   if (supportsRoomBooking(property.bookingType)) {
-    property.roomTypes
+    (property?.roomTypes || [])
       .filter(roomIsPublicReady)
       .forEach((roomType) => {
         const roomPrice =
-          toNumber(roomType.basePrice);
+          toNumber(roomType?.basePrice);
 
         if (
           roomPrice !== null &&
@@ -125,11 +124,14 @@ const getStartingPrice = (
 const mapWishlistProperty = (
   property: WishlistPropertyRecord
 ) => {
+  const images = Array.isArray(property?.images) ? property.images : [];
+  const roomTypes = Array.isArray(property?.roomTypes) ? property.roomTypes : [];
+
   const coverImage =
-    property.images.find(
-      (image) => image.isCover
+    images.find(
+      (image) => image?.isCover
     ) ||
-    property.images[0] ||
+    images[0] ||
     null;
 
   return {
@@ -139,39 +141,39 @@ const mapWishlistProperty = (
       buildPublicDisplayTitle(property),
 
     shortDescription:
-      property.shortDescription,
+      property.shortDescription || null,
 
     bookingType:
       property.bookingType,
 
     isFeatured:
-      property.isFeatured,
+      Boolean(property.isFeatured),
 
     category:
-      property.category,
+      property.category || null,
 
     location: {
       area:
-        property.locality,
+        property.locality || null,
       city:
-        property.city,
+        property.city || null,
       state:
-        property.state,
+        property.state || null,
       country:
-        property.country,
+        property.country || "India",
     },
 
     capacity: {
       maxGuests:
-        property.maxGuests,
+        property.maxGuests ?? null,
       bedrooms:
-        property.bedrooms,
+        property.bedrooms ?? null,
       bathrooms:
-        property.bathrooms,
+        property.bathrooms ?? null,
       beds:
-        property.beds,
+        property.beds ?? null,
       totalRooms:
-        property.totalRooms,
+        property.totalRooms ?? null,
     },
 
     pricing: {
@@ -191,13 +193,12 @@ const mapWishlistProperty = (
     coverImage,
 
     imageCount:
-      property.images.length,
+      images.length,
 
-    amenityCount:
-      property.amenities.length,
+    amenityCount: 0,
 
     roomTypeCount:
-      property.roomTypes.filter(
+      roomTypes.filter(
         roomIsPublicReady
       ).length,
 
@@ -249,33 +250,25 @@ const wishlistPropertyInclude = {
       sortOrder: true,
     },
   },
-  amenities: {
-    include: {
-      amenity: true,
-    },
-  },
   roomTypes: {
     where: {
       isActive: true,
     },
-    include: {
-      images: {
-        orderBy: [
-          {
-            isCover: "desc",
-          },
-          {
-            sortOrder: "asc",
-          },
-        ],
-        select: {
-          id: true,
-          image: true,
-          altText: true,
-          isCover: true,
-          sortOrder: true,
-        },
-      },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      totalRooms: true,
+      maxAdults: true,
+      maxChildren: true,
+      maxGuests: true,
+      beds: true,
+      bathrooms: true,
+      basePrice: true,
+      weekendPrice: true,
+      isActive: true,
+      sortOrder: true,
     },
   },
 } satisfies Prisma.PropertyInclude;
@@ -299,16 +292,24 @@ export const getWishlist = async (
   res: Response
 ): Promise<Response> => {
   try {
-    if (!req.user) {
+    if (!req.user || !req.user.id) {
       return res.status(401).json({
         success: false,
         message: "Unauthorized",
       });
     }
 
+    const userId = Number(req.user.id);
+    if (isNaN(userId)) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid user authentication token",
+      });
+    }
+
     const wishlists = await prisma.wishlist.findMany({
       where: {
-        userId: req.user.id,
+        userId,
         property: {
           status: PropertyStatus.APPROVED,
           category: {
@@ -327,10 +328,9 @@ export const getWishlist = async (
       },
     });
 
-    const properties = wishlists.map(
-      (item) =>
-        mapWishlistProperty(item.property)
-    );
+    const properties = wishlists
+      .filter((item) => Boolean(item && item.property))
+      .map((item) => mapWishlistProperty(item.property));
 
     return res.status(200).json({
       success: true,
@@ -341,7 +341,8 @@ export const getWishlist = async (
   } catch (error) {
     console.error(
       "Get wishlist error:",
-      error
+      error instanceof Error ? error.message : error,
+      error instanceof Error ? error.stack : ""
     );
 
     return res.status(500).json({
@@ -368,10 +369,18 @@ export const addToWishlist = async (
   res: Response
 ): Promise<Response> => {
   try {
-    if (!req.user) {
+    if (!req.user || !req.user.id) {
       return res.status(401).json({
         success: false,
         message: "Unauthorized",
+      });
+    }
+
+    const userId = Number(req.user.id);
+    if (isNaN(userId)) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid user authentication token",
       });
     }
 
@@ -416,7 +425,7 @@ export const addToWishlist = async (
       await prisma.wishlist.findUnique({
         where: {
           userId_propertyId: {
-            userId: req.user.id,
+            userId,
             propertyId,
           },
         },
@@ -431,7 +440,7 @@ export const addToWishlist = async (
 
     await prisma.wishlist.create({
       data: {
-        userId: req.user.id,
+        userId,
         propertyId,
       },
     });
@@ -470,10 +479,18 @@ export const removeFromWishlist = async (
   res: Response
 ): Promise<Response> => {
   try {
-    if (!req.user) {
+    if (!req.user || !req.user.id) {
       return res.status(401).json({
         success: false,
         message: "Unauthorized",
+      });
+    }
+
+    const userId = Number(req.user.id);
+    if (isNaN(userId)) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid user authentication token",
       });
     }
 
@@ -492,7 +509,7 @@ export const removeFromWishlist = async (
       await prisma.wishlist.findUnique({
         where: {
           userId_propertyId: {
-            userId: req.user.id,
+            userId,
             propertyId,
           },
         },

@@ -35,10 +35,18 @@ const resolveSettingUrl = (
   }
 
   if (url.startsWith("http://") || url.startsWith("https://")) {
-    return url;
+    const host = req.get("host") || "localhost:5000";
+    const isLocalhost = host.startsWith("localhost") || host.startsWith("127.0.0.1");
+    if (isLocalhost) {
+      return url.replace("https://", "http://");
+    }
+    return url.replace("http://", "https://");
   }
 
-  const baseUrl = `${req.protocol}://${req.get("host")}`;
+  const host = req.get("host") || "localhost:5000";
+  const isLocalhost = host.startsWith("localhost") || host.startsWith("127.0.0.1");
+  const protocol = isLocalhost ? "http" : req.protocol;
+  const baseUrl = `${protocol}://${host}`;
 
   return `${baseUrl}${url}`;
 };
