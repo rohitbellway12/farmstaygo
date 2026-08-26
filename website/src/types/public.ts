@@ -351,6 +351,7 @@ export interface PublicContactInfo {
   email: string | null;
   phone: string | null;
   socialLinks: SocialLink[];
+  contactImage?: string | null;
 }
 
 export interface PublicContactInfoResponse {

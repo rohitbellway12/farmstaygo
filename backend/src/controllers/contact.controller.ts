@@ -72,11 +72,11 @@ const getSetting = async (key: string): Promise<string | null> => {
 };
 
 export const getPublicContactInfo = async (
-  _req: Request,
+  req: Request,
   res: Response
 ): Promise<Response> => {
   try {
-    const [email, phone, socialLinks] = await Promise.all([
+    const [email, phone, socialLinks, contactImage] = await Promise.all([
       getSetting("contact_email"),
       getSetting("contact_phone"),
       prisma.socialLink.findMany({
@@ -88,7 +88,17 @@ export const getPublicContactInfo = async (
           url: true,
         },
       }),
+      getSetting("contact_image"),
     ]);
+
+    const resolveUrl = (url: string | null | undefined): string | null => {
+      if (!url) return null;
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        return url;
+      }
+      const baseUrl = `${req.protocol}://${req.get("host")}`;
+      return `${baseUrl}${url}`;
+    };
 
     return res.json({
       success: true,
@@ -97,6 +107,7 @@ export const getPublicContactInfo = async (
         email,
         phone,
         socialLinks,
+        contactImage: resolveUrl(contactImage),
       },
     });
   } catch (error) {

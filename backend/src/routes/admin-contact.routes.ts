@@ -12,6 +12,8 @@ import {
 import {
   getContactSettings,
   updateContactSettings,
+  uploadContactImage,
+  deleteContactImage,
 } from "../controllers/contact-setting.controller.js";
 
 import { authenticate } from "../middleware/auth.middleware.js";
@@ -75,6 +77,16 @@ adminContactRoutes.get(
 adminContactRoutes.put(
   "/contact-settings",
   updateContactSettings
+);
+
+adminContactRoutes.post(
+  "/contact-settings/image",
+  uploadContactImage
+);
+
+adminContactRoutes.delete(
+  "/contact-settings/image",
+  deleteContactImage
 );
 
 export { adminContactRoutes };

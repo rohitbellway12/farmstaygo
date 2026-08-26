@@ -21,6 +21,8 @@ import {
   updateHomeSettings,
   updateSmtpSettings,
   syncEnvSmtpSettings,
+  uploadContactImage,
+  deleteContactImage,
 } from "../../shared/api/contactApi";
 
 import type {
@@ -121,6 +123,11 @@ export default function SettingsPage() {
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [faviconPreview, setFaviconPreview] = useState<string>("");
 
+  const [contactImageFile, setContactImageFile] = useState<File | null>(null);
+  const [contactImagePreview, setContactImagePreview] = useState<string>("");
+  const [uploadingContactImage, setUploadingContactImage] = useState(false);
+  const [deletingContactImage, setDeletingContactImage] = useState(false);
+
   const [paymentForm, setPaymentForm] = useState({
     paymentMethods: ["ONLINE"] as string[],
     razorpayKeyId: "",
@@ -165,6 +172,7 @@ export default function SettingsPage() {
       setPageError("");
       const response = await fetchContactSettings();
       setContactSettings(response.data);
+      setContactImagePreview(response.data.contactImage || "");
       setSocialLinks(
         response.data.socialLinks.length > 0
           ? response.data.socialLinks.map(
@@ -451,6 +459,70 @@ export default function SettingsPage() {
       });
     } finally {
       setSavingContact(false);
+    }
+  };
+
+  const handleUploadContactImage = async () => {
+    if (!contactImageFile) return;
+
+    setUploadingContactImage(true);
+    setPageError("");
+
+    try {
+      const response = await uploadContactImage(contactImageFile);
+      setContactImagePreview(response.data.contactImage || "");
+      setContactImageFile(null);
+      setToast({
+        type: "success",
+        message: "Contact image uploaded successfully.",
+      });
+    } catch (error) {
+      setPageError(
+        getApiErrorMessage(
+          error,
+          "Unable to upload contact image."
+        )
+      );
+      setToast({
+        type: "error",
+        message: getApiErrorMessage(
+          error,
+          "Unable to upload contact image."
+        ),
+      });
+    } finally {
+      setUploadingContactImage(false);
+    }
+  };
+
+  const handleDeleteContactImage = async () => {
+    setDeletingContactImage(true);
+    setPageError("");
+
+    try {
+      await deleteContactImage();
+      setContactImagePreview("");
+      setContactImageFile(null);
+      setToast({
+        type: "success",
+        message: "Contact image removed successfully.",
+      });
+    } catch (error) {
+      setPageError(
+        getApiErrorMessage(
+          error,
+          "Unable to delete contact image."
+        )
+      );
+      setToast({
+        type: "error",
+        message: getApiErrorMessage(
+          error,
+          "Unable to delete contact image."
+        ),
+      });
+    } finally {
+      setDeletingContactImage(false);
     }
   };
 
@@ -936,6 +1008,73 @@ export default function SettingsPage() {
                 >
                   Add Social Link
                 </button>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-extrabold text-text-main">
+                  Contact Page Image
+                </h3>
+                <p className="mt-1 text-sm text-text-muted">
+                  This image is shown in the &quot;For Property Owners&quot; section on the contact page.
+                </p>
+
+                <div className="mt-4">
+                  <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
+                    Upload Image
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setContactImageFile(file);
+                          setContactImagePreview(
+                            URL.createObjectURL(file)
+                          );
+                        }
+                      }}
+                      className={inputClass}
+                    />
+                    {contactImagePreview && (
+                      <div className="mt-2 overflow-hidden rounded border border-border">
+                        <img
+                          src={contactImagePreview}
+                          alt="Contact page preview"
+                          className="h-32 w-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <p className="text-[11px] text-text-soft">
+                      Recommended: 1000x800px. Max 5MB. JPG, PNG or WEBP.
+                    </p>
+                  </label>
+
+                  <div className="mt-4 flex gap-3">
+                    <button
+                      type="button"
+                      onClick={handleUploadContactImage}
+                      disabled={!contactImageFile || uploadingContactImage}
+                      className="h-10 rounded-control bg-primary-700 px-5 text-sm font-bold text-white hover:bg-primary-800 disabled:opacity-60"
+                    >
+                      {uploadingContactImage
+                        ? "Uploading..."
+                        : "Upload Image"}
+                    </button>
+
+                    {contactImagePreview && !contactImageFile && (
+                      <button
+                        type="button"
+                        onClick={handleDeleteContactImage}
+                        disabled={deletingContactImage}
+                        className="h-10 rounded-control border border-danger/30 bg-surface px-5 text-sm font-bold text-danger hover:bg-danger-soft disabled:opacity-60"
+                      >
+                        {deletingContactImage
+                          ? "Removing..."
+                          : "Remove Image"}
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div className="flex justify-end">

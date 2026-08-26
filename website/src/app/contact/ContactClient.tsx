@@ -134,7 +134,11 @@ interface FormErrors {
   message?: string;
 }
 
-export default function ContactClient() {
+interface ContactClientProps {
+  contactImage?: string | null;
+}
+
+export default function ContactClient({ contactImage }: ContactClientProps) {
   const [contactInfo, setContactInfo] =
     useState<PublicContactInfo>({
       email: null,
@@ -624,7 +628,7 @@ export default function ContactClient() {
 
               <div className="relative aspect-video overflow-hidden rounded-xl bg-brand-50">
                 <img
-                  src={getAssetUrl("/storage/hero.png")}
+                  src={contactImage ? getAssetUrl(contactImage) : getAssetUrl("/storage/hero.png")}
                   alt="FarmStay property"
                   className="h-full w-full object-cover"
                 />

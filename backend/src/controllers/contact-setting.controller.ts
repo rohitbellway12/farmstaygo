@@ -1,6 +1,11 @@
-import type { Response } from "express";
+import type { Request, Response } from "express";
 
 import prisma from "../config/database.js";
+import {
+  createSettingsImageUpload,
+  getSettingsImageStoragePath,
+  deletePublicStorageFile,
+} from "../config/upload.js";
 
 import type {
   AuthenticatedRequest,
@@ -18,6 +23,25 @@ interface ContactSettingsBody {
   contactPhone?: unknown;
   socialLinks?: unknown;
 }
+
+const contactImageUpload = createSettingsImageUpload(5);
+
+const resolveSettingUrl = (
+  req: Request | AuthenticatedRequest,
+  url: string | null | undefined
+): string | null => {
+  if (!url) {
+    return null;
+  }
+
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+  return `${baseUrl}${url}`;
+};
 
 const cleanText = (value: unknown): string =>
   typeof value === "string" ? value.trim() : "";
@@ -42,11 +66,11 @@ const upsertSetting = async (
 };
 
 export const getContactSettings = async (
-  _req: AuthenticatedRequest,
+  req: AuthenticatedRequest,
   res: Response
 ): Promise<Response> => {
   try {
-    const [email, phone, socialLinks] = await Promise.all([
+    const [email, phone, socialLinks, contactImage] = await Promise.all([
       prisma.setting
         .findUnique({ where: { key: "contact_email" } })
         .then((s) => s?.value ?? null),
@@ -56,6 +80,9 @@ export const getContactSettings = async (
       prisma.socialLink.findMany({
         orderBy: { sortOrder: "asc" },
       }),
+      prisma.setting
+        .findUnique({ where: { key: "contact_image" } })
+        .then((s) => s?.value ?? null),
     ]);
 
     return res.json({
@@ -66,6 +93,7 @@ export const getContactSettings = async (
         contactEmail: email,
         contactPhone: phone,
         socialLinks,
+        contactImage: resolveSettingUrl(req, contactImage),
       },
     });
   } catch (error) {
@@ -191,6 +219,10 @@ export const updateContactSettings = async (
         orderBy: { sortOrder: "asc" },
       });
 
+    const contactImage = await prisma.setting
+      .findUnique({ where: { key: "contact_image" } })
+      .then((s) => s?.value ?? null);
+
     return res.json({
       success: true,
       message:
@@ -199,6 +231,7 @@ export const updateContactSettings = async (
         contactEmail,
         contactPhone,
         socialLinks: updatedSocialLinks,
+        contactImage: resolveSettingUrl(req, contactImage),
       },
     });
   } catch (error) {
@@ -211,6 +244,104 @@ export const updateContactSettings = async (
       success: false,
       message:
         "Unable to update contact settings",
+    });
+  }
+};
+
+export const uploadContactImage = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  return new Promise((resolve) => {
+    contactImageUpload.single("contactImage")(
+      req,
+      res,
+      async (err) => {
+        if (err) {
+          resolve(
+            res.status(400).json({
+              success: false,
+              message: err.message || "Unable to upload image",
+            })
+          );
+          return;
+        }
+
+        if (!req.file) {
+          resolve(
+            res.status(400).json({
+              success: false,
+              message: "No image file provided",
+            })
+          );
+          return;
+        }
+
+        try {
+          const imagePath = getSettingsImageStoragePath(req.file.filename);
+
+          await prisma.setting.upsert({
+            where: { key: "contact_image" },
+            update: { value: imagePath },
+            create: { key: "contact_image", value: imagePath },
+          });
+
+          resolve(
+            res.json({
+              success: true,
+              message: "Contact image uploaded successfully",
+              data: { contactImage: resolveSettingUrl(req, imagePath) },
+            })
+          );
+        } catch (error) {
+          console.error(
+            "Upload contact image error:",
+            error
+          );
+
+          resolve(
+            res.status(500).json({
+              success: false,
+              message: "Unable to upload contact image",
+            })
+          );
+        }
+      }
+    );
+  });
+};
+
+export const deleteContactImage = async (
+  _req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    const existing = await prisma.setting.findUnique({
+      where: { key: "contact_image" },
+    });
+
+    if (existing?.value) {
+      deletePublicStorageFile(existing.value);
+    }
+
+    await prisma.setting.deleteMany({
+      where: { key: "contact_image" },
+    });
+
+    return res.json({
+      success: true,
+      message: "Contact image removed successfully",
+      data: { contactImage: null },
+    });
+  } catch (error) {
+    console.error(
+      "Delete contact image error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to delete contact image",
     });
   }
 };

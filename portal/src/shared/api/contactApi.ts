@@ -26,6 +26,7 @@ export interface ContactSettings {
   contactEmail: string | null;
   contactPhone: string | null;
   socialLinks: SocialLink[];
+  contactImage?: string | null;
 }
 
 export interface ContactMessagesResponse {
@@ -224,6 +225,28 @@ export async function updateContactSettings(
   const response = await api.put<ContactSettingsResponse>(
     "/admin/contact-settings",
     settings
+  );
+
+  return response.data;
+}
+
+export async function uploadContactImage(
+  file: File
+): Promise<ContactSettingsResponse> {
+  const formData = new FormData();
+  formData.append("contactImage", file);
+
+  const response = await api.post<ContactSettingsResponse>(
+    "/admin/contact-settings/image",
+    formData
+  );
+
+  return response.data;
+}
+
+export async function deleteContactImage(): Promise<ContactSettingsResponse> {
+  const response = await api.delete<ContactSettingsResponse>(
+    "/admin/contact-settings/image"
   );
 
   return response.data;
