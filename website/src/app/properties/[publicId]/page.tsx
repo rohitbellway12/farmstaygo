@@ -421,36 +421,44 @@ export default async function PropertyDetailsPage({
               )}
             </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {property.amenities.length > 0 ? (
-                property.amenities.map((amenity) => (
-                  <div
-                    key={amenity.id}
-                    className="flex min-h-[76px] items-center gap-3 rounded-lg border border-ink-100 bg-white p-4 shadow-[0_8px_20px_rgba(27,58,39,0.05)]"
-                  >
-                    <DetailIcon>
-                      <span className="text-xs font-extrabold">
-                        {getAmenityInitial(
-                          amenity.name
-                        )}
-                      </span>
-                    </DetailIcon>
-                    <div className="min-w-0">
-                      <span className="block truncate font-bold text-ink-800">
-                        {amenity.name}
-                      </span>
-                      <span className="mt-0.5 block text-xs font-semibold capitalize text-ink-500">
-                        {amenity.group.toLowerCase()}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-ink-500">
-                  Amenities will be updated soon.
-                </p>
-              )}
-            </div>
+             <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+               {property.amenities.length > 0 ? (
+                 property.amenities.map((amenity) => (
+                   <div
+                     key={amenity.id}
+                     className="flex min-h-[76px] items-center gap-3 rounded-lg border border-ink-100 bg-white p-4 shadow-[0_8px_20px_rgba(27,58,39,0.05)]"
+                   >
+                     <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">
+                       {amenity.image ? (
+                         <img
+                           src={getAssetUrl(amenity.image)}
+                           alt={amenity.name}
+                           className="h-5 w-5 object-contain"
+                         />
+                       ) : amenity.icon ? (
+                         <span className="text-sm">{amenity.icon}</span>
+                       ) : (
+                         <span className="text-xs font-extrabold">
+                           {getAmenityInitial(amenity.name)}
+                         </span>
+                       )}
+                     </span>
+                     <div className="min-w-0">
+                       <span className="block truncate font-bold text-ink-800">
+                         {amenity.name}
+                       </span>
+                       <span className="mt-0.5 block text-xs font-semibold capitalize text-ink-500">
+                         {amenity.group.toLowerCase()}
+                       </span>
+                     </div>
+                   </div>
+                 ))
+               ) : (
+                 <p className="text-sm text-ink-500">
+                   Amenities will be updated soon.
+                 </p>
+               )}
+             </div>
           </section>
 
           {property.rules.length > 0 && (

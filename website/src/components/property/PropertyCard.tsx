@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useState, useEffect, type KeyboardEvent } from "react";
 
 import { getAssetUrl } from "@/lib/assets";
 import { apiFetch, ApiRequestError } from "@/lib/api";
@@ -63,6 +63,7 @@ export default function PropertyCard({
   href?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const imageUrl = getAssetUrl(
     property.coverImage?.image
   );
@@ -154,7 +155,7 @@ export default function PropertyCard({
   const toggleWishlist = async () => {
     if (!isLoggedIn) {
       router.push(
-        `/login?next=${encodeURIComponent(detailsHref)}`
+        `/login?next=${encodeURIComponent("/wishlist")}`
       );
       return;
     }
@@ -175,6 +176,10 @@ export default function PropertyCard({
           body: JSON.stringify({ propertyId: property.publicId }),
         });
         setIsWishlisted(true);
+
+        if (pathname !== "/wishlist") {
+          router.push("/wishlist");
+        }
       }
     } catch (error) {
       if (error instanceof ApiRequestError) {
@@ -185,58 +190,75 @@ export default function PropertyCard({
     }
   };
 
+  const handleCardClick = () => {
+    router.push(detailsHref);
+  };
+
+  const handleCardKeyDown = (
+    event: React.KeyboardEvent<HTMLElement>
+  ) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      router.push(detailsHref);
+    }
+  };
+
   return (
-    <article className="group overflow-hidden rounded-xl border border-ink-100 bg-white shadow-[0_8px_28px_rgba(27,58,39,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(27,58,39,0.14)]">
-      <Link href={detailsHref} className="block">
-        <div className="relative h-52 overflow-hidden bg-brand-50">
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={property.displayTitle}
-              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <div className="grid h-full place-items-center text-brand-700">
-              <svg
-                viewBox="0 0 24 24"
-                className="h-10 w-10"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.7"
-              >
-                <path d="M3 11.5 12 4l9 7.5" />
-                <path d="M5.5 10.5V20h13v-9.5" />
-                <path d="M9.5 20v-6h5v6" />
-              </svg>
-            </div>
-          )}
+    <article
+      onClick={handleCardClick}
+      onKeyDown={handleCardKeyDown}
+      role="link"
+      tabIndex={0}
+      className="group cursor-pointer overflow-hidden rounded-xl border border-ink-100 bg-white shadow-[0_8px_28px_rgba(27,58,39,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(27,58,39,0.14)]"
+    >
+      <div className="relative h-52 overflow-hidden bg-brand-50">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={property.displayTitle}
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="grid h-full place-items-center text-brand-700">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-10 w-10"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+            >
+              <path d="M3 11.5 12 4l9 7.5" />
+              <path d="M5.5 10.5V20h13v-9.5" />
+              <path d="M9.5 20v-6h5v6" />
+            </svg>
+          </div>
+        )}
 
-          <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-extrabold text-brand-700 shadow-sm">
-            Verified Property
+        <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-extrabold text-brand-700 shadow-sm">
+          Verified Property
+        </span>
+
+        <span className="absolute bottom-3 left-3 rounded-md bg-white/95 px-2.5 py-1 text-[11px] font-extrabold text-brand-700 shadow-sm">
+          {property.category.name}
+        </span>
+
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            toggleWishlist();
+          }}
+          disabled={wishlistLoading}
+          className={`absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/90 shadow-sm transition hover:bg-white ${
+            isWishlisted ? "text-red-500" : "text-ink-700"
+          } disabled:cursor-not-allowed disabled:opacity-60`}
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          <span className={wishlistLoading ? "animate-pulse" : ""}>
+            <HeartIcon filled={isWishlisted} />
           </span>
-
-          <span className="absolute bottom-3 left-3 rounded-md bg-white/95 px-2.5 py-1 text-[11px] font-extrabold text-brand-700 shadow-sm">
-            {property.category.name}
-          </span>
-
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              toggleWishlist();
-            }}
-            disabled={wishlistLoading}
-            className={`absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/90 shadow-sm transition hover:bg-white ${
-              isWishlisted ? "text-red-500" : "text-ink-700"
-            } disabled:cursor-not-allowed disabled:opacity-60`}
-            aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-          >
-            <span className={wishlistLoading ? "animate-pulse" : ""}>
-              <HeartIcon filled={isWishlisted} />
-            </span>
-          </button>
-        </div>
-      </Link>
+        </button>
+      </div>
 
       <div className="p-4">
         <h3 className="line-clamp-1 text-base font-extrabold text-ink-900">
@@ -323,6 +345,7 @@ export default function PropertyCard({
 
         <Link
           href={detailsHref}
+          onClick={(event) => event.stopPropagation()}
           className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand-700 text-[12px] font-extrabold text-white transition hover:bg-brand-800"
         >
           View Details
