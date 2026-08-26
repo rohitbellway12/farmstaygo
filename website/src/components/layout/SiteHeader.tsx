@@ -77,7 +77,11 @@ export default function SiteHeader() {
         }>("/public/settings/platform");
 
         if (data?.success && data?.data) {
-          setSiteLogoUrl(data.data.siteLogoUrl);
+          let logoUrl = data.data.siteLogoUrl;
+          if (logoUrl && logoUrl.startsWith("http:")) {
+            logoUrl = logoUrl.replace("http:", "https:");
+          }
+          setSiteLogoUrl(logoUrl);
         }
       } catch {
         // keep defaults

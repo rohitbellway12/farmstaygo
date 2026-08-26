@@ -100,6 +100,9 @@ export const getPlatformSettings = async (
       }
 
       if (url.startsWith("http://") || url.startsWith("https://")) {
+        if (url.startsWith("http://")) {
+          return url.replace("http://", "https://");
+        }
         return url;
       }
 
@@ -280,6 +283,9 @@ export const updatePlatformSettings = async (
       }
 
       if (url.startsWith("http://") || url.startsWith("https://")) {
+        if (url.startsWith("http://")) {
+          return url.replace("http://", "https://");
+        }
         return url;
       }
 

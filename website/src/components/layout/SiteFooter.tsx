@@ -69,8 +69,13 @@ async function getPublicPlatformSettings() {
 
     const data = await response.json();
 
+    let logoUrl = data?.data?.siteLogoUrl || null;
+    if (logoUrl && logoUrl.startsWith("http:")) {
+      logoUrl = logoUrl.replace("http:", "https:");
+    }
+
     return {
-      siteLogoUrl: data?.data?.siteLogoUrl || null,
+      siteLogoUrl: logoUrl,
     };
   } catch {
     return {
@@ -217,31 +222,21 @@ export default async function SiteFooter() {
         </div>
 
         <div className="mt-20 border-t border-white/10 pt-10">
-          <div className="flex flex-col gap-5 text-[15px] text-white/60 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-3 text-[15px] text-white/60 lg:flex-row lg:items-center lg:justify-between">
             <p>© 2026 FarmStayGo. All rights reserved.</p>
 
-            <div className="flex flex-wrap items-center gap-6">
-              <Link href="/privacy-policy">
-                Privacy
-              </Link>
-
-              <Link href="/terms">
-                Terms
-              </Link>
-            </div>
+            <p className="text-[13px] text-white/50">
+              Designed &amp; Developed by{" "}
+              <a
+                href="https://bellwayinfotech.com/"
+                target="_blank"
+                rel="noreferrer"
+                className="text-white/70 transition hover:text-white"
+              >
+                Bellway Infotech
+              </a>
+            </p>
           </div>
-
-          <p className="mt-4 text-left text-[13px] text-white/50">
-            Designed &amp; Developed by{" "}
-            <a
-              href="https://bellwayinfotech.com/"
-              target="_blank"
-              rel="noreferrer"
-              className="text-white/70 transition hover:text-white"
-            >
-              Bellway Infotech
-            </a>
-          </p>
         </div>
       </div>
     </footer>

@@ -184,6 +184,9 @@ export const getPublicPlatformSettings = async (
       }
 
       if (url.startsWith("http://") || url.startsWith("https://")) {
+        if (url.startsWith("http://")) {
+          return url.replace("http://", "https://");
+        }
         return url;
       }
 

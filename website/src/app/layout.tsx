@@ -30,6 +30,10 @@ export async function generateMetadata(): Promise<Metadata> {
       if (data?.success && data?.data) {
         faviconUrl = data.data.siteFaviconUrl || undefined;
         siteName = data.data.siteName || siteName;
+
+        if (faviconUrl && faviconUrl.startsWith("http:")) {
+          faviconUrl = faviconUrl.replace("http:", "https:");
+        }
       }
     }
   } catch {
