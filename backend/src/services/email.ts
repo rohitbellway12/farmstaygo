@@ -9,6 +9,8 @@ const SMTP_PASS = process.env.MAIL_PASSWORD || "";
 const SMTP_FROM = process.env.MAIL_FROM_ADDRESS || "noreply@farmstaygo.com";
 const SMTP_SECURE = process.env.MAIL_ENCRYPTION === "ssl";
 
+const FROM_ADDRESS = `FarmStayGo <${process.env.MAIL_FROM_ADDRESS || "noreply@farmstaygo.com"}>`;
+
 let cachedSmtpSettings: {
   host: string;
   port: number;
@@ -153,7 +155,7 @@ export const sendBookingConfirmationEmail = async (
     to,
     `Booking Confirmed — ${propertyTitle}`,
     html,
-    CUSTOMER_EMAIL
+    FROM_ADDRESS
   );
 };
 
@@ -301,7 +303,12 @@ export const sendBookingConfirmedVendorEmail = async (params: {
 }): Promise<void> => {
   const html = buildBookingConfirmedVendorHtml(params);
 
-  await sendEmail(params.vendorEmail, `New Booking — ${params.propertyName}`, html, HOST_EMAIL);
+  await sendEmail(
+    params.vendorEmail,
+    `New Booking — ${params.propertyName}`,
+    html,
+    FROM_ADDRESS
+  );
 };
 
 const buildBookingConfirmedVendorHtml = ({
@@ -407,7 +414,12 @@ export const sendPaymentReceivedVendorEmail = async (params: {
 }): Promise<void> => {
   const html = buildPaymentReceivedVendorHtml(params);
 
-  await sendEmail(params.vendorEmail, `Payment Received — ${params.propertyName}`, html, HOST_EMAIL);
+  await sendEmail(
+    params.vendorEmail,
+    `Payment Received — ${params.propertyName}`,
+    html,
+    FROM_ADDRESS
+  );
 };
 
 const buildPaymentReceivedVendorHtml = ({
@@ -504,7 +516,12 @@ export const sendBookingRejectedCustomerEmail = async (params: {
 }): Promise<void> => {
   const html = buildBookingRejectedCustomerHtml(params);
 
-  await sendEmail(params.email || params.firstName, `Booking Rejected — ${params.propertyName}`, html, CUSTOMER_EMAIL);
+  await sendEmail(
+    params.email || params.firstName,
+    `Booking Rejected — ${params.propertyName}`,
+    html,
+    FROM_ADDRESS
+  );
 };
 
 const buildBookingRejectedCustomerHtml = ({
@@ -615,7 +632,12 @@ export const sendPropertySubmittedEmail = async (params: {
 }): Promise<void> => {
   const html = buildPropertySubmittedHtml(params);
 
-  await sendEmail(params.email, "Property Submitted Successfully – FarmStayGo", html, HOST_EMAIL);
+  await sendEmail(
+    params.email,
+    "Property Submitted Successfully – FarmStayGo",
+    html,
+    FROM_ADDRESS
+  );
 };
 
 export const sendAdminNewPropertyNotification = async (params: {
@@ -627,7 +649,12 @@ export const sendAdminNewPropertyNotification = async (params: {
 }): Promise<void> => {
   const html = buildAdminNewPropertyHtml(params);
 
-  await sendEmail(ADMIN_EMAIL, `New Property Listing — ${params.propertyName}`, html, ADMIN_EMAIL);
+  await sendEmail(
+    ADMIN_EMAIL,
+    `New Property Listing — ${params.propertyName}`,
+    html,
+    FROM_ADDRESS
+  );
 };
 
 const buildAdminNewPropertyHtml = ({
@@ -797,7 +824,12 @@ export const sendProfileCompleteEmail = async (params: {
 }): Promise<void> => {
   const html = buildProfileCompleteHtml(params);
 
-  await sendEmail(params.email, "Complete Your Profile – FarmStayGo", html, HOST_EMAIL);
+  await sendEmail(
+    params.email,
+    "Complete Your Profile – FarmStayGo",
+    html,
+    FROM_ADDRESS
+  );
 };
 
 const buildProfileCompleteHtml = ({
@@ -875,7 +907,12 @@ export const sendVerificationPendingEmail = async (params: {
 }): Promise<void> => {
   const html = buildVerificationPendingHtml(params);
 
-  await sendEmail(params.email, "Verification Pending – FarmStayGo", html, HOST_EMAIL);
+  await sendEmail(
+    params.email,
+    "Verification Pending – FarmStayGo",
+    html,
+    FROM_ADDRESS
+  );
 };
 
 const buildVerificationPendingHtml = ({
@@ -968,7 +1005,12 @@ export const sendVerifiedCongratulationEmail = async (params: {
 }): Promise<void> => {
   const html = buildVerifiedCongratulationHtml(params);
 
-  await sendEmail(params.email, "Congratulations! Your FarmStayGo Account is Verified", html, HOST_EMAIL);
+  await sendEmail(
+    params.email,
+    "Congratulations! Your FarmStayGo Account is Verified",
+    html,
+    FROM_ADDRESS
+  );
 };
 
 const buildVerifiedCongratulationHtml = ({
@@ -1069,7 +1111,7 @@ export const sendContactMessageNotificationEmail = async (
     to,
     `New Contact Message — ${contact.subject}`,
     html,
-    SUPPORT_EMAIL
+    FROM_ADDRESS
   );
 };
 
@@ -1089,7 +1131,7 @@ export const sendSupportTicketNotificationEmail = async (params: {
     SUPPORT_EMAIL,
     `New Support Ticket — ${params.subject}`,
     html,
-    SUPPORT_EMAIL
+    FROM_ADDRESS
   );
 };
 
@@ -1109,7 +1151,7 @@ export const sendSupportTicketConfirmationEmail = async (params: {
     params.customerEmail,
     `Support Ticket Received — ${params.subject}`,
     html,
-    SUPPORT_EMAIL
+    FROM_ADDRESS
   );
 };
 
@@ -1450,7 +1492,7 @@ export const sendAccountCreatedEmail = async (params: {
 </body>
 </html>`;
 
-  await sendEmail(params.email, "Welcome to FarmStayGo!", html, CUSTOMER_EMAIL);
+  await sendEmail(params.email, "Welcome to FarmStayGo!", html, FROM_ADDRESS);
 };
 
 export const sendVendorWelcomeEmail = async (params: {
@@ -1463,7 +1505,7 @@ export const sendVendorWelcomeEmail = async (params: {
   const fullName = [params.firstName, params.lastName].filter(Boolean).join(" ");
   const html = buildVendorWelcomeHtml(params);
 
-  await sendEmail(params.email, "Welcome to FarmStayGo — Your Account Has Been Created", html, HOST_EMAIL);
+  await sendEmail(params.email, "Welcome to FarmStayGo — Your Account Has Been Created", html, FROM_ADDRESS);
 };
 
 const buildVendorWelcomeHtml = ({
@@ -1621,7 +1663,7 @@ export const sendBookingCancelledCustomerEmail = async (params: {
 }): Promise<void> => {
   const html = buildBookingCancelledCustomerHtml(params);
 
-  await sendEmail(params.email || params.firstName, `Booking Cancelled — ${params.propertyName}`, html, CUSTOMER_EMAIL);
+  await sendEmail(params.email || params.firstName, `Booking Cancelled — ${params.propertyName}`, html, FROM_ADDRESS);
 };
 
 const buildBookingCancelledCustomerHtml = ({
@@ -1766,7 +1808,7 @@ export const sendRatingReceivedAdminEmail = async (params: {
 }): Promise<void> => {
   const html = buildRatingReceivedAdminHtml(params);
 
-  await sendEmail(HOST_EMAIL, `New Rating Received — ${params.propertyName}`, html, HOST_EMAIL);
+  await sendEmail(HOST_EMAIL, `New Rating Received — ${params.propertyName}`, html, FROM_ADDRESS);
 };
 
 const buildRatingReceivedAdminHtml = ({
@@ -1872,7 +1914,7 @@ export const sendRatingForStayCustomerEmail = async (params: {
 }): Promise<void> => {
   const html = buildRatingForStayCustomerHtml(params);
 
-  await sendEmail(params.email || params.firstName, `Rate Your Stay — ${params.propertyName}`, html, CUSTOMER_EMAIL);
+  await sendEmail(params.email || params.firstName, `Rate Your Stay — ${params.propertyName}`, html, FROM_ADDRESS);
 };
 
 const buildRatingForStayCustomerHtml = ({
@@ -1960,7 +2002,7 @@ export const sendRegistrationSuccessfulCustomerEmail = async (params: {
 }): Promise<void> => {
   const html = buildRegistrationSuccessfulCustomerHtml(params);
 
-  await sendEmail(params.email || params.firstName, `Welcome to FarmStayGo — Registration Successful`, html, CUSTOMER_EMAIL);
+  await sendEmail(params.email || params.firstName, `Welcome to FarmStayGo — Registration Successful`, html, FROM_ADDRESS);
 };
 
 const buildRegistrationSuccessfulCustomerHtml = ({
@@ -2051,7 +2093,7 @@ export const sendPasswordResetEmail = async (params: {
     expiryMinutes: params.expiryMinutes ?? 30,
   });
 
-  await sendEmail(params.email, "Reset Your FarmStayGo Password", html, CUSTOMER_EMAIL);
+  await sendEmail(params.email, "Reset Your FarmStayGo Password", html, FROM_ADDRESS);
 };
 
 export const sendEnquiryReceivedEmail = async (params: {
@@ -2072,7 +2114,7 @@ export const sendEnquiryReceivedEmail = async (params: {
     params.email,
     "Enquiry Received – FarmStayGo",
     html,
-    CUSTOMER_EMAIL
+    FROM_ADDRESS
   );
 };
 
@@ -2202,7 +2244,7 @@ export const sendEnquiryAdminEmail = async (params: {
 }): Promise<void> => {
   const html = buildEnquiryAdminHtml(params);
 
-  await sendEmail(HOST_EMAIL, `New Enquiry Received — ${params.propertyName}`, html, HOST_EMAIL);
+  await sendEmail(HOST_EMAIL, `New Enquiry Received — ${params.propertyName}`, html, FROM_ADDRESS);
 };
 
 const buildEnquiryAdminHtml = ({
@@ -2369,7 +2411,7 @@ export const sendBookingConfirmedAdminEmail = async (params: {
 }): Promise<void> => {
   const html = buildBookingConfirmedAdminHtml(params);
 
-  await sendEmail(BOOKING_EMAIL, `Booking Confirmed — ${params.propertyName}`, html, BOOKING_EMAIL);
+  await sendEmail(BOOKING_EMAIL, `Booking Confirmed — ${params.propertyName}`, html, FROM_ADDRESS);
 };
 
 const buildBookingConfirmedAdminHtml = ({
@@ -2574,7 +2616,7 @@ export const sendBookingConfirmedCustomerEmail = async (params: {
 }): Promise<void> => {
   const html = buildBookingConfirmedCustomerHtml(params);
 
-  await sendEmail(params.email || params.firstName, `Booking Confirmed — ${params.propertyName}`, html, CUSTOMER_EMAIL);
+  await sendEmail(params.email || params.firstName, `Booking Confirmed — ${params.propertyName}`, html, FROM_ADDRESS);
 };
 
 const buildBookingConfirmedCustomerHtml = ({
@@ -2757,7 +2799,7 @@ export const sendPaymentReceivedAdminEmail = async (params: {
 }): Promise<void> => {
   const html = buildPaymentReceivedAdminHtml(params);
 
-  await sendEmail(BOOKING_EMAIL, `Payment Received — ${params.propertyName}`, html, BOOKING_EMAIL);
+  await sendEmail(BOOKING_EMAIL, `Payment Received — ${params.propertyName}`, html, FROM_ADDRESS);
 };
 
 const buildPaymentReceivedAdminHtml = ({
@@ -2933,7 +2975,7 @@ export const sendPaymentReceivedCustomerEmail = async (params: {
 }): Promise<void> => {
   const html = buildPaymentReceivedCustomerHtml(params);
 
-  await sendEmail(params.email || params.firstName, `Payment Received — ${params.propertyName}`, html, CUSTOMER_EMAIL);
+  await sendEmail(params.email || params.firstName, `Payment Received — ${params.propertyName}`, html, FROM_ADDRESS);
 };
 
 const buildPaymentReceivedCustomerHtml = ({
@@ -3067,3 +3109,4 @@ const buildPaymentReceivedCustomerHtml = ({
 </body>
 </html>`;
 };
+
