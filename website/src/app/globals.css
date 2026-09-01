@@ -110,9 +110,21 @@ img {
 }
 
 .home-hero {
-  min-height: 520px;
+  min-height: 320px;
   background-position: center;
   background-size: cover;
+}
+
+@media (min-width: 768px) {
+  .home-hero {
+    min-height: 420px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-hero {
+    min-height: 520px;
+  }
 }
 
 .soft-grid-background {

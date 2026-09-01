@@ -71,6 +71,16 @@ export default function PropertyCard({
       : [];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    const checkTouch = () => {
+      setIsTouchDevice(window.matchMedia('(hover: none)').matches);
+    };
+    checkTouch();
+    window.addEventListener('resize', checkTouch);
+    return () => window.removeEventListener('resize', checkTouch);
+  }, []);
 
   const nextImage = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -259,7 +269,7 @@ export default function PropertyCard({
           </div>
         )}
 
-        {images.length > 1 && isHovered && (
+        {images.length > 1 && (isHovered || isTouchDevice) && (
           <>
             <button
               type="button"

@@ -78,7 +78,8 @@ export const ModelName = {
   SupportTicketReply: 'SupportTicketReply',
   Setting: 'Setting',
   SocialLink: 'SocialLink',
-  Faq: 'Faq'
+  Faq: 'Faq',
+  Review: 'Review'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -587,6 +588,21 @@ export const FaqScalarFieldEnum = {
 } as const
 
 export type FaqScalarFieldEnum = (typeof FaqScalarFieldEnum)[keyof typeof FaqScalarFieldEnum]
+
+
+export const ReviewScalarFieldEnum = {
+  id: 'id',
+  propertyId: 'propertyId',
+  guestName: 'guestName',
+  guestEmail: 'guestEmail',
+  rating: 'rating',
+  comment: 'comment',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ReviewScalarFieldEnum = (typeof ReviewScalarFieldEnum)[keyof typeof ReviewScalarFieldEnum]
 
 
 export const SortOrder = {

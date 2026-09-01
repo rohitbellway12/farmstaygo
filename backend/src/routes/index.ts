@@ -128,6 +128,8 @@ import {
   publicFaqRoutes,
 } from "./faq.routes.js";
 
+import reviewRoutes from "./review.routes.js";
+
 const router = Router();
 
 /*
@@ -563,6 +565,11 @@ router.use(
 router.use(
   "/support",
   publicSupportTicketRoutes
+);
+
+router.use(
+  "/",
+  reviewRoutes
 );
 
 export default router;

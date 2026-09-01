@@ -413,9 +413,10 @@ model Property {
   availabilityBlocks PropertyAvailabilityBlock[]
   bookings           Booking[]
   wishlists          Wishlist[]
-  ruleAssignments    PropertyRuleAssignment[]
+   ruleAssignments    PropertyRuleAssignment[]
+   reviews            Review[]
 
-  @@index([vendorId, status])
+   @@index([vendorId, status])
   @@index([categoryId, status])
   @@index([city, status])
   @@index([status, createdAt])
@@ -982,5 +983,29 @@ model Faq {
 
   @@index([isActive, sortOrder])
   @@map("faqs")
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Review {
+  id         String       @id @default(cuid())
+  propertyId String       @map("property_id")
+  guestName  String       @map("guest_name")
+  guestEmail String       @map("guest_email")
+  rating     Int
+  comment    String
+  status     ReviewStatus @default(APPROVED)
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, status])
+  @@index([status, createdAt])
+  @@map("reviews")
 }
 

@@ -8,6 +8,7 @@ import AvailabilityCalendarClient from "@/components/property/AvailabilityCalend
 import BookingSection from "@/components/property/BookingSection";
 import PropertyMapClient from "@/components/property/PropertyMapClient";
 import PropertyPoliciesModal from "@/components/property/PropertyPoliciesModal";
+import ReviewsSection from "@/components/property/ReviewsSection";
 import type {
   PublicImage,
   PublicPropertyCard,
@@ -322,7 +323,7 @@ export default async function PropertyDetailsPage({
       </section>
 
       <section className="site-container py-6">
-        <div className="grid h-[460px] gap-3 overflow-hidden rounded-xl md:grid-cols-[2fr_1fr]">
+        <div className="grid h-[260px] gap-3 overflow-hidden rounded-xl sm:h-[360px] md:h-[460px] md:grid-cols-[2fr_1fr]">
           {coverImage ? (
             <ImageTile
               image={coverImage}
@@ -570,6 +571,8 @@ export default async function PropertyDetailsPage({
             state={property.location.state}
             country={property.location.country}
           />
+
+          <ReviewsSection propertyId={property.publicId} />
 
           {relatedProperties.length > 0 && (
             <section>

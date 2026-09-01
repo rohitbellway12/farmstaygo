@@ -181,3 +181,8 @@ export type SocialLink = Prisma.SocialLinkModel
  * 
  */
 export type Faq = Prisma.FaqModel
+/**
+ * Model Review
+ * 
+ */
+export type Review = Prisma.ReviewModel

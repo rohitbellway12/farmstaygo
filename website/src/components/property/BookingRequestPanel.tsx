@@ -1024,7 +1024,7 @@ export default function BookingRequestPanel({
         </label>
       )}
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label>
           <span className="mb-2 block text-xs font-extrabold uppercase tracking-wide text-ink-500">
             Check-in
@@ -1083,7 +1083,7 @@ export default function BookingRequestPanel({
         </label>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label>
           <span className="mb-2 block text-xs font-extrabold uppercase tracking-wide text-ink-500">
             Guests

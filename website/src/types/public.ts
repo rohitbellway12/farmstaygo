@@ -403,3 +403,23 @@ export interface PublicFaqsResponse {
   message: string;
   data: PublicFaq[];
 }
+
+export interface PublicReview {
+  id: string;
+  propertyId: string;
+  guestName: string;
+  guestEmail: string;
+  rating: number;
+  comment: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface PublicReviewsResponse {
+  success: boolean;
+  data: {
+    reviews: PublicReview[];
+    averageRating: number;
+    totalReviews: number;
+  };
+}

@@ -1,12 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 
 import { apiFetch, ApiRequestError } from "@/lib/api";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<ResetPasswordLoading />}>
+      <ResetPasswordForm />
+    </Suspense>
+  );
+}
+
+function ResetPasswordLoading() {
+  return (
+    <div className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-ink-50 px-5 py-12">
+      <div className="w-full max-w-md rounded-2xl border border-ink-200 bg-white p-8 text-center shadow-[0_4px_18px_rgba(22,52,35,0.06)]">
+        <div className="mx-auto mb-4 h-12 w-12 animate-pulse rounded-full bg-ink-200" />
+        <div className="mx-auto h-6 w-40 animate-pulse rounded bg-ink-200" />
+      </div>
+    </div>
+  );
+}
+
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";

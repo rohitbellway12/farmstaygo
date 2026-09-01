@@ -90,6 +90,19 @@ export default function RootLayout({
       className={`${inter.variable} h-full scroll-smooth antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-P2WCQ3BMNB"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-P2WCQ3BMNB');
+            `,
+          }}
+        />
+      </head>
       <body
         className="flex min-h-full flex-col bg-white text-ink-900"
         suppressHydrationWarning

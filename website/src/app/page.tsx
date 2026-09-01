@@ -302,7 +302,7 @@ export default async function Home() {
                     <Link
                       key={category.id}
                       href={`/properties?category=${category.slug}`}
-                      className="group w-[48%] text-center sm:w-[30%] lg:w-[19%] xl:w-[13%]"
+                      className="group w-[48%] text-center sm:w-[30%] md:w-[22%] lg:w-[19%] xl:w-[13%]"
                     >
                       <span className="mx-auto grid h-20 w-20 place-items-center overflow-hidden rounded-full bg-brand-50 text-brand-700 ring-1 ring-brand-100 transition group-hover:-translate-y-1 group-hover:bg-brand-100">
                         {imageUrl ? (
