@@ -492,6 +492,224 @@ export default function KycBankPage() {
           )}
         </form>
       )}
+
+      <section className="rounded-dashboard-large border border-border bg-surface p-5 shadow-dashboard">
+        <h2 className="text-lg font-extrabold text-text-main">
+          Bank Account Details
+        </h2>
+        <p className="mt-1 text-sm text-text-muted">
+          Manage your bank account for payouts and
+          bank transfer payments.
+        </p>
+
+        <BankDetailsForm />
+      </section>
     </div>
+  );
+}
+
+function BankDetailsForm() {
+  const [bankDetails, setBankDetails] = useState<{
+    bankAccountName: string;
+    bankAccountNumber: string;
+    bankIfscCode: string;
+  }>({
+    bankAccountName: "",
+    bankAccountNumber: "",
+    bankIfscCode: "",
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<
+    Record<string, string>
+  >({});
+
+  const loadBankDetails = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await api.get<{
+        success: boolean;
+        data: {
+          bankAccountName: string | null;
+          bankAccountNumber: string | null;
+          bankIfscCode: string | null;
+        };
+      }>("/vendor/bank-details");
+
+      const data = response.data.data;
+      setBankDetails({
+        bankAccountName: data.bankAccountName || "",
+        bankAccountNumber: data.bankAccountNumber || "",
+        bankIfscCode: data.bankIfscCode || "",
+      });
+    } catch {
+      setError("Unable to load bank details.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadBankDetails();
+  }, [loadBankDetails]);
+
+  const updateField = (
+    field: keyof typeof bankDetails,
+    value: string
+  ) => {
+    setBankDetails((current) => ({
+      ...current,
+      [field]: value,
+    }));
+    setFieldErrors((current) => ({
+      ...current,
+      [field]: "",
+    }));
+    setMessage("");
+    setError("");
+  };
+
+  const handleSubmit = async (
+    event: FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+    setSaving(true);
+    setError("");
+    setMessage("");
+    setFieldErrors({});
+
+    try {
+      const response = await api.put<{
+        success: boolean;
+        message: string;
+      }>("/vendor/bank-details", {
+        bankAccountName: bankDetails.bankAccountName.trim(),
+        bankAccountNumber: bankDetails.bankAccountNumber.trim(),
+        bankIfscCode: bankDetails.bankIfscCode.trim().toUpperCase(),
+      });
+
+      setMessage(response.data.message);
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        const apiErrors =
+          err.response?.data?.errors;
+        if (apiErrors) {
+          setFieldErrors(apiErrors);
+        }
+        setError(
+          err.response?.data?.message ||
+            "Unable to update bank details."
+        );
+      } else {
+        setError("Unable to update bank details.");
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="mt-5 space-y-3">
+        <div className="h-11 animate-pulse rounded bg-surface-soft" />
+        <div className="h-11 animate-pulse rounded bg-surface-soft" />
+        <div className="h-11 animate-pulse rounded bg-surface-soft" />
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-5 space-y-5">
+      <div className="grid gap-5 md:grid-cols-2">
+        <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
+          Account Holder Name *
+          <input
+            type="text"
+            value={bankDetails.bankAccountName}
+            onChange={(e) =>
+              updateField(
+                "bankAccountName",
+                e.target.value
+              )
+            }
+            placeholder="Name as per bank account"
+            className="h-11 w-full rounded-control border border-border bg-surface px-3.5 text-sm text-text-main outline-none focus:border-primary-400 focus:ring-4 focus:ring-primary-100"
+          />
+          {fieldErrors.bankAccountName && (
+            <span className="text-xs font-bold text-red-600">
+              {fieldErrors.bankAccountName}
+            </span>
+          )}
+        </label>
+
+        <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary">
+          Bank Account Number *
+          <input
+            type="text"
+            value={bankDetails.bankAccountNumber}
+            onChange={(e) =>
+              updateField(
+                "bankAccountNumber",
+                e.target.value
+              )
+            }
+            placeholder="Enter bank account number"
+            className="h-11 w-full rounded-control border border-border bg-surface px-3.5 text-sm text-text-main outline-none focus:border-primary-400 focus:ring-4 focus:ring-primary-100"
+          />
+          {fieldErrors.bankAccountNumber && (
+            <span className="text-xs font-bold text-red-600">
+              {fieldErrors.bankAccountNumber}
+            </span>
+          )}
+        </label>
+
+        <label className="grid gap-1.5 text-xs font-extrabold text-text-secondary md:col-span-2">
+          IFSC Code *
+          <input
+            type="text"
+            value={bankDetails.bankIfscCode}
+            onChange={(e) =>
+              updateField(
+                "bankIfscCode",
+                e.target.value.toUpperCase()
+              )
+            }
+            placeholder="e.g. SBIN0001234"
+            maxLength={11}
+            className="h-11 w-full rounded-control border border-border bg-surface px-3.5 text-sm text-text-main outline-none focus:border-primary-400 focus:ring-4 focus:ring-primary-100"
+          />
+          {fieldErrors.bankIfscCode && (
+            <span className="text-xs font-bold text-red-600">
+              {fieldErrors.bankIfscCode}
+            </span>
+          )}
+        </label>
+      </div>
+
+      {message && (
+        <div className="rounded-control border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
+          {message}
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-control border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+          {error}
+        </div>
+      )}
+
+      <div className="flex justify-end">
+        <button
+          type="submit"
+          disabled={saving}
+          className="inline-flex h-11 items-center justify-center rounded-control bg-primary-700 px-5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {saving ? "Saving..." : "Save Bank Details"}
+        </button>
+      </div>
+    </form>
   );
 }

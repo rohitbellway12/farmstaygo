@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { apiFetch } from "@/lib/api";
+import { getAssetUrl } from "@/lib/assets";
 
 interface BlogPost {
   id: string;
@@ -38,7 +39,7 @@ export async function generateMetadata({
 
     return {
       title: post.metaTitle || post.title,
-      description: post.metaDescription || post.excerpt || undefined,
+      description: post.metaDescription || post.description || undefined,
     };
   } catch {
     return {
@@ -97,7 +98,7 @@ export default async function BlogPostPage({
         {post.imageUrl && (
           <div className="mx-auto max-w-3xl h-64 overflow-hidden lg:h-80">
             <img
-              src={post.imageUrl}
+              src={getAssetUrl(post.imageUrl)}
               alt={post.title}
               className="h-full w-full object-cover"
             />

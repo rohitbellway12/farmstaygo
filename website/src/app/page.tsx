@@ -44,7 +44,7 @@ interface BlogPost {
   id: string;
   title: string;
   slug: string;
-  excerpt: string | null;
+  description: string | null;
   imageUrl: string | null;
   isPublished: boolean;
   author: string | null;
@@ -487,7 +487,7 @@ export default async function Home() {
                   {post.imageUrl && (
                     <div className="h-48 overflow-hidden">
                       <img
-                        src={post.imageUrl}
+                        src={getAssetUrl(post.imageUrl)}
                         alt={post.title}
                         className="h-full w-full object-cover transition duration-500 hover:scale-105"
                       />
@@ -504,9 +504,9 @@ export default async function Home() {
                       </Link>
                     </h3>
 
-                    {post.excerpt && (
+                    {post.description && (
                       <p className="mt-2 line-clamp-2 text-sm text-ink-500">
-                        {post.excerpt}
+                        {post.description}
                       </p>
                     )}
 

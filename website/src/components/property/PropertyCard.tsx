@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { useState, useEffect, type KeyboardEvent } from "react";
+import { useState, useEffect, useRef, type KeyboardEvent } from "react";
 
 import { getAssetUrl } from "@/lib/assets";
 import { apiFetch, ApiRequestError } from "@/lib/api";
@@ -64,9 +64,30 @@ export default function PropertyCard({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const imageUrl = getAssetUrl(
-    property.coverImage?.image
-  );
+  const images = property.images && property.images.length > 0
+    ? property.images
+    : property.coverImage
+      ? [property.coverImage]
+      : [];
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const nextImage = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const goToImage = (event: React.MouseEvent, index: number) => {
+    event.stopPropagation();
+    setCurrentImageIndex(index);
+  };
+
+  const imageUrl = getAssetUrl(images[currentImageIndex]?.image);
 
   const location = [
     property.location.area,
@@ -211,11 +232,15 @@ export default function PropertyCard({
       tabIndex={0}
       className="group cursor-pointer overflow-hidden rounded-xl border border-ink-100 bg-white shadow-[0_8px_28px_rgba(27,58,39,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(27,58,39,0.14)]"
     >
-      <div className="relative h-52 overflow-hidden bg-brand-50">
+      <div
+        className="relative h-52 overflow-hidden bg-brand-50"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         {imageUrl ? (
           <img
             src={imageUrl}
-            alt={property.displayTitle}
+            alt={images[currentImageIndex]?.altText || property.displayTitle}
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
           />
         ) : (
@@ -231,6 +256,49 @@ export default function PropertyCard({
               <path d="M5.5 10.5V20h13v-9.5" />
               <path d="M9.5 20v-6h5v6" />
             </svg>
+          </div>
+        )}
+
+        {images.length > 1 && isHovered && (
+          <>
+            <button
+              type="button"
+              onClick={prevImage}
+              className="absolute left-2 top-1/2 -translate-y-1/2 grid h-8 w-8 place-items-center rounded-full bg-white/90 shadow-md transition hover:bg-white"
+              aria-label="Previous image"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4 text-ink-700" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={nextImage}
+              className="absolute right-2 top-1/2 -translate-y-1/2 grid h-8 w-8 place-items-center rounded-full bg-white/90 shadow-md transition hover:bg-white"
+              aria-label="Next image"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4 text-ink-700" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
+          </>
+        )}
+
+        {images.length > 1 && (
+          <div className="absolute bottom-10 left-1/2 flex -translate-x-1/2 gap-1.5">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={(e) => goToImage(e, index)}
+                className={`h-2 w-2 rounded-full transition ${
+                  index === currentImageIndex
+                    ? "bg-white"
+                    : "bg-white/50 hover:bg-white/75"
+                }`}
+                aria-label={`View image ${index + 1}`}
+              />
+            ))}
           </div>
         )}
 

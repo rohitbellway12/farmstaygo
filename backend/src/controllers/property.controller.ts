@@ -29,6 +29,8 @@ interface PropertyBasicInfoBody {
   bathrooms?: unknown;
   beds?: unknown;
   totalRooms?: unknown;
+  cancellationPolicy?: unknown;
+  termsConditions?: unknown;
 }
 
 /*
@@ -971,6 +973,16 @@ export const updatePropertyBasicInfo = async (
     if (description !== undefined) {
       updateData.description =
         cleanOptionalString(description);
+    }
+
+    if (body.cancellationPolicy !== undefined) {
+      updateData.cancellationPolicy =
+        cleanOptionalString(body.cancellationPolicy);
+    }
+
+    if (body.termsConditions !== undefined) {
+      updateData.termsConditions =
+        cleanOptionalString(body.termsConditions);
     }
 
     const capacityValidation =

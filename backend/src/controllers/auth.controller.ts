@@ -643,6 +643,9 @@ export const forgotPassword = async (
     return res.status(200).json({
       success: true,
       message: "Password reset link sent to your email",
+      data: {
+        resetLink,
+      },
     });
   } catch (error) {
     console.error("Forgot password error:", error);

@@ -43,6 +43,14 @@ function getNextMonthDateKey(dateKey: string): string {
   );
 }
 
+function getFirstOfMonthDateKey(dateKey: string): string {
+  const date = parseDateKey(dateKey);
+
+  return localDateKey(
+    new Date(date.getFullYear(), date.getMonth(), 1)
+  );
+}
+
 function parseDateKey(dateKey: string): Date {
   return new Date(`${dateKey}T00:00:00`);
 }
@@ -173,22 +181,31 @@ function getDayStatus(
   };
 }
 
+const STORAGE_KEY = "farmstay_booking_dates";
+
 export default function AvailabilityCalendarClient({
   publicId,
   bookingType,
   initialCheckIn,
+  onDateSelect,
 }: {
   publicId: string;
   bookingType: PropertyBookingType;
   initialCheckIn?: string;
+  onDateSelect?: (checkIn: string, checkOut: string) => void;
 }) {
   const today = useMemo(
     () => localDateKey(new Date()),
     []
   );
 
+  const firstOfMonth = useMemo(
+    () => getFirstOfMonthDateKey(today),
+    [today]
+  );
+
   const [startDate, setStartDate] =
-    useState(initialCheckIn || today);
+    useState(firstOfMonth);
 
   const [availability, setAvailability] =
     useState<
@@ -203,10 +220,49 @@ export default function AvailabilityCalendarClient({
   const [isOpen, setIsOpen] =
     useState(false);
 
+  const [selectedCheckIn, setSelectedCheckIn] =
+    useState<string | null>(null);
+  const [selectedCheckOut, setSelectedCheckOut] =
+    useState<string | null>(null);
+
   const rangeEnd = useMemo(
     () => getNextMonthDateKey(startDate),
     [startDate]
   );
+
+  const handleDateClick = (date: string) => {
+    if (!selectedCheckIn || selectedCheckOut) {
+      setSelectedCheckIn(date);
+      setSelectedCheckOut(null);
+    } else if (date > selectedCheckIn) {
+      setSelectedCheckOut(date);
+    } else {
+      setSelectedCheckIn(date);
+      setSelectedCheckOut(null);
+    }
+  };
+
+  const handleConfirmDates = () => {
+    if (selectedCheckIn && selectedCheckOut && onDateSelect) {
+      onDateSelect(selectedCheckIn, selectedCheckOut);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ checkIn: selectedCheckIn, checkOut: selectedCheckOut }));
+      setIsOpen(false);
+    }
+  };
+
+  const handleOpenModal = () => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        const { checkIn: storedCheckIn, checkOut: storedCheckOut } = JSON.parse(stored);
+        if (storedCheckIn) setSelectedCheckIn(storedCheckIn);
+        if (storedCheckOut) setSelectedCheckOut(storedCheckOut);
+      } catch {
+        // ignore
+      }
+    }
+    setIsOpen(true);
+  };
 
   useEffect(() => {
     const controller =
@@ -311,7 +367,7 @@ export default function AvailabilityCalendarClient({
 
           <button
             type="button"
-            onClick={() => setIsOpen(true)}
+            onClick={handleOpenModal}
             className="h-11 rounded-lg bg-brand-700 px-5 text-sm font-extrabold text-white transition hover:bg-brand-800"
           >
             Check Availability
@@ -414,68 +470,115 @@ export default function AvailabilityCalendarClient({
                 )}
 
                 {!loading && !error && (
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                    {nights.map((night) => {
-                      const status = getDayStatus(
-                        night,
-                        bookingType
-                      );
-
-                      return (
-                        <article
-                          key={night.date}
-                          className={`min-h-[116px] rounded-lg border p-3 ${getStatusClasses(
-                            status.status
-                          )}`}
-                        >
-                          <div className="flex items-center justify-between gap-3">
-                            <strong className="text-sm">
-                              {formatShortDate(
-                                night.date
-                              )}
-                            </strong>
-                            <span
-                              className={`h-2.5 w-2.5 rounded-full ${getDotClasses(
-                                status.status
-                              )}`}
-                            />
-                          </div>
-
-                          <div className="mt-3 space-y-1.5 text-xs font-extrabold">
-                            {status.fullText && (
-                              <div>
-                                {status.fullText}
-                              </div>
-                            )}
-                            {status.roomText && (
-                              <div>
-                                {status.roomText}
-                              </div>
-                            )}
-                            {status.totalRoomCount > 0 && (
-                              <div>
-                                {status.roomCount} free /{" "}
-                                {status.bookedRoomCount} booked /{" "}
-                                {status.totalRoomCount} total rooms
-                              </div>
-                            )}
-                          </div>
-
-                          {night.roomTypes.length > 0 && (
-                            <div className="mt-3 text-[11px] font-semibold leading-4 opacity-80">
-                              {night.roomTypes
-                                .slice(0, 2)
-                                .map(
-                                  (roomType) =>
-                                    `${roomType.name}: ${roomType.availableRooms}/${roomType.totalRooms}`
-                                )
-                                .join(" | ")}
-                            </div>
+                  <>
+                    {selectedCheckIn && (
+                      <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-brand-200 bg-brand-50 px-4 py-3">
+                        <div className="text-sm font-bold text-brand-800">
+                          {selectedCheckOut ? (
+                            <>
+                              Selected: {formatShortDate(selectedCheckIn)} → {formatShortDate(selectedCheckOut)}
+                            </>
+                          ) : (
+                            <>Check-in: {formatShortDate(selectedCheckIn)} - Click another date for check-out</>
                           )}
-                        </article>
-                      );
-                    })}
-                  </div>
+                        </div>
+                        {selectedCheckIn && selectedCheckOut && (
+                          <button
+                            type="button"
+                            onClick={handleConfirmDates}
+                            className="ml-auto h-9 rounded-lg bg-brand-700 px-4 text-sm font-extrabold text-white hover:bg-brand-800"
+                          >
+                            Use These Dates
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                      {nights.map((night) => {
+                        const status = getDayStatus(
+                          night,
+                          bookingType
+                        );
+
+                        const isSelected =
+                          night.date === selectedCheckIn ||
+                          night.date === selectedCheckOut;
+                        const isInRange =
+                          selectedCheckIn &&
+                          selectedCheckOut &&
+                          night.date > selectedCheckIn &&
+                          night.date < selectedCheckOut;
+                        const isClickable =
+                          status.status !== "unavailable";
+
+                        return (
+                          <article
+                            key={night.date}
+                            onClick={() =>
+                              isClickable && handleDateClick(night.date)
+                            }
+                            className={`min-h-[116px] rounded-lg border p-3 transition-all ${
+                              isSelected
+                                ? "ring-2 ring-brand-500 ring-offset-2"
+                                : isInRange
+                                  ? "ring-1 ring-brand-300"
+                                  : ""
+                            } ${getStatusClasses(status.status)} ${
+                              isClickable
+                                ? "cursor-pointer hover:shadow-md"
+                                : "cursor-not-allowed opacity-60"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <strong className="text-sm">
+                                {formatShortDate(
+                                  night.date
+                                )}
+                              </strong>
+                              <span
+                                className={`h-2.5 w-2.5 rounded-full ${getDotClasses(
+                                  status.status
+                                )}`}
+                              />
+                            </div>
+
+                            <div className="mt-3 space-y-1.5 text-xs font-extrabold">
+                              {status.fullText && (
+                                <div>
+                                  {status.fullText}
+                                </div>
+                              )}
+                              {status.roomText && (
+                                <div>
+                                  {status.roomText}
+                                </div>
+                              )}
+                              {status.totalRoomCount > 0 && (
+                                <div>
+                                  {status.roomCount} free /{" "}
+                                  {status.bookedRoomCount} booked /{" "}
+                                  {status.totalRoomCount} total rooms
+                                </div>
+                              )}
+                            </div>
+
+                            {night.roomTypes.length > 0 && (
+                              <div className="mt-3 text-[11px] font-semibold leading-4 opacity-80">
+                                {night.roomTypes
+                                  .slice(0, 2)
+                                  .map(
+                                    (roomType) =>
+                                      `${roomType.name}: ${roomType.availableRooms}/${roomType.totalRooms}`
+                                  )
+                                  .join(" | ")}
+                              </div>
+                            )}
+                          </article>
+                        );
+                      })}
+                    </div>
+                  </>
                 )}
               </div>
             </div>

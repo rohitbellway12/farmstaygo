@@ -2,6 +2,10 @@ import type { Request, Response } from "express";
 
 import prisma from "../config/database.js";
 
+import {
+  getBlogImageStoragePath,
+} from "../config/upload.js";
+
 import type {
   AuthenticatedRequest,
 } from "../middleware/auth.middleware.js";
@@ -9,7 +13,6 @@ import type {
 interface BlogPostBody {
   title?: unknown;
   slug?: unknown;
-  excerpt?: unknown;
   description?: unknown;
   content?: unknown;
   imageUrl?: unknown;
@@ -80,7 +83,6 @@ const validateBlogBody = (body: BlogPostBody) => {
     values: {
       title,
       slug,
-      excerpt: cleanOptionalText(body.excerpt),
       description: cleanOptionalText(body.description),
       content,
       imageUrl: cleanOptionalText(body.imageUrl),
@@ -534,6 +536,45 @@ export const toggleBlogPostPublish = async (
     return res.status(500).json({
       success: false,
       message: "Unable to toggle blog post publish status",
+    });
+  }
+};
+
+export const uploadBlogImage = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No image file provided",
+      });
+    }
+
+    const imageUrl = getBlogImageStoragePath(req.file.filename);
+
+    return res.status(200).json({
+      success: true,
+      message: "Image uploaded successfully",
+      data: {
+        imageUrl,
+        filename: req.file.filename,
+      },
+    });
+  } catch (error) {
+    console.error("Upload blog image error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to upload image",
     });
   }
 };

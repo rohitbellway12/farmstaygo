@@ -94,6 +94,8 @@ export type PropertyMinAggregateOutputType = {
   checkOutTime: string | null
   minimumStay: number | null
   instantBook: boolean | null
+  cancellationPolicy: string | null
+  termsConditions: string | null
   rejectionReason: string | null
   isFeatured: boolean | null
   submittedAt: Date | null
@@ -136,6 +138,8 @@ export type PropertyMaxAggregateOutputType = {
   checkOutTime: string | null
   minimumStay: number | null
   instantBook: boolean | null
+  cancellationPolicy: string | null
+  termsConditions: string | null
   rejectionReason: string | null
   isFeatured: boolean | null
   submittedAt: Date | null
@@ -178,6 +182,8 @@ export type PropertyCountAggregateOutputType = {
   checkOutTime: number
   minimumStay: number
   instantBook: number
+  cancellationPolicy: number
+  termsConditions: number
   rejectionReason: number
   isFeatured: number
   submittedAt: number
@@ -256,6 +262,8 @@ export type PropertyMinAggregateInputType = {
   checkOutTime?: true
   minimumStay?: true
   instantBook?: true
+  cancellationPolicy?: true
+  termsConditions?: true
   rejectionReason?: true
   isFeatured?: true
   submittedAt?: true
@@ -298,6 +306,8 @@ export type PropertyMaxAggregateInputType = {
   checkOutTime?: true
   minimumStay?: true
   instantBook?: true
+  cancellationPolicy?: true
+  termsConditions?: true
   rejectionReason?: true
   isFeatured?: true
   submittedAt?: true
@@ -340,6 +350,8 @@ export type PropertyCountAggregateInputType = {
   checkOutTime?: true
   minimumStay?: true
   instantBook?: true
+  cancellationPolicy?: true
+  termsConditions?: true
   rejectionReason?: true
   isFeatured?: true
   submittedAt?: true
@@ -469,6 +481,8 @@ export type PropertyGroupByOutputType = {
   checkOutTime: string | null
   minimumStay: number
   instantBook: boolean
+  cancellationPolicy: string | null
+  termsConditions: string | null
   rejectionReason: string | null
   isFeatured: boolean
   submittedAt: Date | null
@@ -534,6 +548,8 @@ export type PropertyWhereInput = {
   checkOutTime?: Prisma.StringNullableFilter<"Property"> | string | null
   minimumStay?: Prisma.IntFilter<"Property"> | number
   instantBook?: Prisma.BoolFilter<"Property"> | boolean
+  cancellationPolicy?: Prisma.StringNullableFilter<"Property"> | string | null
+  termsConditions?: Prisma.StringNullableFilter<"Property"> | string | null
   rejectionReason?: Prisma.StringNullableFilter<"Property"> | string | null
   isFeatured?: Prisma.BoolFilter<"Property"> | boolean
   submittedAt?: Prisma.DateTimeNullableFilter<"Property"> | Date | string | null
@@ -585,6 +601,8 @@ export type PropertyOrderByWithRelationInput = {
   checkOutTime?: Prisma.SortOrderInput | Prisma.SortOrder
   minimumStay?: Prisma.SortOrder
   instantBook?: Prisma.SortOrder
+  cancellationPolicy?: Prisma.SortOrderInput | Prisma.SortOrder
+  termsConditions?: Prisma.SortOrderInput | Prisma.SortOrder
   rejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -639,6 +657,8 @@ export type PropertyWhereUniqueInput = Prisma.AtLeast<{
   checkOutTime?: Prisma.StringNullableFilter<"Property"> | string | null
   minimumStay?: Prisma.IntFilter<"Property"> | number
   instantBook?: Prisma.BoolFilter<"Property"> | boolean
+  cancellationPolicy?: Prisma.StringNullableFilter<"Property"> | string | null
+  termsConditions?: Prisma.StringNullableFilter<"Property"> | string | null
   rejectionReason?: Prisma.StringNullableFilter<"Property"> | string | null
   isFeatured?: Prisma.BoolFilter<"Property"> | boolean
   submittedAt?: Prisma.DateTimeNullableFilter<"Property"> | Date | string | null
@@ -690,6 +710,8 @@ export type PropertyOrderByWithAggregationInput = {
   checkOutTime?: Prisma.SortOrderInput | Prisma.SortOrder
   minimumStay?: Prisma.SortOrder
   instantBook?: Prisma.SortOrder
+  cancellationPolicy?: Prisma.SortOrderInput | Prisma.SortOrder
+  termsConditions?: Prisma.SortOrderInput | Prisma.SortOrder
   rejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -740,6 +762,8 @@ export type PropertyScalarWhereWithAggregatesInput = {
   checkOutTime?: Prisma.StringNullableWithAggregatesFilter<"Property"> | string | null
   minimumStay?: Prisma.IntWithAggregatesFilter<"Property"> | number
   instantBook?: Prisma.BoolWithAggregatesFilter<"Property"> | boolean
+  cancellationPolicy?: Prisma.StringNullableWithAggregatesFilter<"Property"> | string | null
+  termsConditions?: Prisma.StringNullableWithAggregatesFilter<"Property"> | string | null
   rejectionReason?: Prisma.StringNullableWithAggregatesFilter<"Property"> | string | null
   isFeatured?: Prisma.BoolWithAggregatesFilter<"Property"> | boolean
   submittedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Property"> | Date | string | null
@@ -780,6 +804,8 @@ export type PropertyCreateInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -831,6 +857,8 @@ export type PropertyUncheckedCreateInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -878,6 +906,8 @@ export type PropertyUpdateInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -929,6 +959,8 @@ export type PropertyUncheckedUpdateInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -978,6 +1010,8 @@ export type PropertyCreateManyInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -1018,6 +1052,8 @@ export type PropertyUpdateManyMutationInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1060,6 +1096,8 @@ export type PropertyUncheckedUpdateManyInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1112,6 +1150,8 @@ export type PropertyCountOrderByAggregateInput = {
   checkOutTime?: Prisma.SortOrder
   minimumStay?: Prisma.SortOrder
   instantBook?: Prisma.SortOrder
+  cancellationPolicy?: Prisma.SortOrder
+  termsConditions?: Prisma.SortOrder
   rejectionReason?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
@@ -1171,6 +1211,8 @@ export type PropertyMaxOrderByAggregateInput = {
   checkOutTime?: Prisma.SortOrder
   minimumStay?: Prisma.SortOrder
   instantBook?: Prisma.SortOrder
+  cancellationPolicy?: Prisma.SortOrder
+  termsConditions?: Prisma.SortOrder
   rejectionReason?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
@@ -1213,6 +1255,8 @@ export type PropertyMinOrderByAggregateInput = {
   checkOutTime?: Prisma.SortOrder
   minimumStay?: Prisma.SortOrder
   instantBook?: Prisma.SortOrder
+  cancellationPolicy?: Prisma.SortOrder
+  termsConditions?: Prisma.SortOrder
   rejectionReason?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
@@ -1465,6 +1509,8 @@ export type PropertyCreateWithoutVendorInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -1514,6 +1560,8 @@ export type PropertyUncheckedCreateWithoutVendorInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -1592,6 +1640,8 @@ export type PropertyScalarWhereInput = {
   checkOutTime?: Prisma.StringNullableFilter<"Property"> | string | null
   minimumStay?: Prisma.IntFilter<"Property"> | number
   instantBook?: Prisma.BoolFilter<"Property"> | boolean
+  cancellationPolicy?: Prisma.StringNullableFilter<"Property"> | string | null
+  termsConditions?: Prisma.StringNullableFilter<"Property"> | string | null
   rejectionReason?: Prisma.StringNullableFilter<"Property"> | string | null
   isFeatured?: Prisma.BoolFilter<"Property"> | boolean
   submittedAt?: Prisma.DateTimeNullableFilter<"Property"> | Date | string | null
@@ -1632,6 +1682,8 @@ export type PropertyCreateWithoutCategoryInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -1681,6 +1733,8 @@ export type PropertyUncheckedCreateWithoutCategoryInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -1754,6 +1808,8 @@ export type PropertyCreateWithoutAmenitiesInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -1804,6 +1860,8 @@ export type PropertyUncheckedCreateWithoutAmenitiesInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -1866,6 +1924,8 @@ export type PropertyUpdateWithoutAmenitiesInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1916,6 +1976,8 @@ export type PropertyUncheckedUpdateWithoutAmenitiesInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1962,6 +2024,8 @@ export type PropertyCreateWithoutRuleAssignmentsInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2012,6 +2076,8 @@ export type PropertyUncheckedCreateWithoutRuleAssignmentsInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2074,6 +2140,8 @@ export type PropertyUpdateWithoutRuleAssignmentsInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2124,6 +2192,8 @@ export type PropertyUncheckedUpdateWithoutRuleAssignmentsInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2170,6 +2240,8 @@ export type PropertyCreateWithoutImagesInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2220,6 +2292,8 @@ export type PropertyUncheckedCreateWithoutImagesInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2282,6 +2356,8 @@ export type PropertyUpdateWithoutImagesInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2332,6 +2408,8 @@ export type PropertyUncheckedUpdateWithoutImagesInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2378,6 +2456,8 @@ export type PropertyCreateWithoutRoomTypesInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2428,6 +2508,8 @@ export type PropertyUncheckedCreateWithoutRoomTypesInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2490,6 +2572,8 @@ export type PropertyUpdateWithoutRoomTypesInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2540,6 +2624,8 @@ export type PropertyUncheckedUpdateWithoutRoomTypesInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2586,6 +2672,8 @@ export type PropertyCreateWithoutAvailabilityBlocksInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2636,6 +2724,8 @@ export type PropertyUncheckedCreateWithoutAvailabilityBlocksInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2698,6 +2788,8 @@ export type PropertyUpdateWithoutAvailabilityBlocksInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2748,6 +2840,8 @@ export type PropertyUncheckedUpdateWithoutAvailabilityBlocksInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2794,6 +2888,8 @@ export type PropertyCreateWithoutWishlistsInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2844,6 +2940,8 @@ export type PropertyUncheckedCreateWithoutWishlistsInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2906,6 +3004,8 @@ export type PropertyUpdateWithoutWishlistsInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2956,6 +3056,8 @@ export type PropertyUncheckedUpdateWithoutWishlistsInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3002,6 +3104,8 @@ export type PropertyCreateWithoutBookingsInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -3052,6 +3156,8 @@ export type PropertyUncheckedCreateWithoutBookingsInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -3114,6 +3220,8 @@ export type PropertyUpdateWithoutBookingsInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3164,6 +3272,8 @@ export type PropertyUncheckedUpdateWithoutBookingsInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3211,6 +3321,8 @@ export type PropertyCreateManyVendorInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -3251,6 +3363,8 @@ export type PropertyUpdateWithoutVendorInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3300,6 +3414,8 @@ export type PropertyUncheckedUpdateWithoutVendorInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3348,6 +3464,8 @@ export type PropertyUncheckedUpdateManyWithoutVendorInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3389,6 +3507,8 @@ export type PropertyCreateManyCategoryInput = {
   checkOutTime?: string | null
   minimumStay?: number
   instantBook?: boolean
+  cancellationPolicy?: string | null
+  termsConditions?: string | null
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -3429,6 +3549,8 @@ export type PropertyUpdateWithoutCategoryInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3478,6 +3600,8 @@ export type PropertyUncheckedUpdateWithoutCategoryInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3526,6 +3650,8 @@ export type PropertyUncheckedUpdateManyWithoutCategoryInput = {
   checkOutTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   minimumStay?: Prisma.IntFieldUpdateOperationsInput | number
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3653,6 +3779,8 @@ export type PropertySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   checkOutTime?: boolean
   minimumStay?: boolean
   instantBook?: boolean
+  cancellationPolicy?: boolean
+  termsConditions?: boolean
   rejectionReason?: boolean
   isFeatured?: boolean
   submittedAt?: boolean
@@ -3705,6 +3833,8 @@ export type PropertySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   checkOutTime?: boolean
   minimumStay?: boolean
   instantBook?: boolean
+  cancellationPolicy?: boolean
+  termsConditions?: boolean
   rejectionReason?: boolean
   isFeatured?: boolean
   submittedAt?: boolean
@@ -3749,6 +3879,8 @@ export type PropertySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   checkOutTime?: boolean
   minimumStay?: boolean
   instantBook?: boolean
+  cancellationPolicy?: boolean
+  termsConditions?: boolean
   rejectionReason?: boolean
   isFeatured?: boolean
   submittedAt?: boolean
@@ -3793,6 +3925,8 @@ export type PropertySelectScalar = {
   checkOutTime?: boolean
   minimumStay?: boolean
   instantBook?: boolean
+  cancellationPolicy?: boolean
+  termsConditions?: boolean
   rejectionReason?: boolean
   isFeatured?: boolean
   submittedAt?: boolean
@@ -3801,7 +3935,7 @@ export type PropertySelectScalar = {
   updatedAt?: boolean
 }
 
-export type PropertyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "vendorId" | "categoryId" | "title" | "slug" | "shortDescription" | "description" | "bookingType" | "status" | "maxGuests" | "bedrooms" | "bathrooms" | "beds" | "totalRooms" | "addressLine1" | "addressLine2" | "landmark" | "locality" | "city" | "state" | "country" | "postalCode" | "latitude" | "longitude" | "basePrice" | "weekendPrice" | "cleaningFee" | "securityDeposit" | "reservationAmount" | "checkInTime" | "checkOutTime" | "minimumStay" | "instantBook" | "rejectionReason" | "isFeatured" | "submittedAt" | "approvedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["property"]>
+export type PropertyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "vendorId" | "categoryId" | "title" | "slug" | "shortDescription" | "description" | "bookingType" | "status" | "maxGuests" | "bedrooms" | "bathrooms" | "beds" | "totalRooms" | "addressLine1" | "addressLine2" | "landmark" | "locality" | "city" | "state" | "country" | "postalCode" | "latitude" | "longitude" | "basePrice" | "weekendPrice" | "cleaningFee" | "securityDeposit" | "reservationAmount" | "checkInTime" | "checkOutTime" | "minimumStay" | "instantBook" | "cancellationPolicy" | "termsConditions" | "rejectionReason" | "isFeatured" | "submittedAt" | "approvedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["property"]>
 export type PropertyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
   category?: boolean | Prisma.PropertyCategoryDefaultArgs<ExtArgs>
@@ -3909,8 +4043,16 @@ export type $PropertyPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     /**
      * *
      *    * |--------------------------------------------------------------------------
-     *    * | Administration
+     *    * | Policies
      *    * |--------------------------------------------------------------------------
+     */
+    cancellationPolicy: string | null
+    termsConditions: string | null
+    /**
+     * *
+     *     * |--------------------------------------------------------------------------
+     *     * | Administration
+     *     * |--------------------------------------------------------------------------
      */
     rejectionReason: string | null
     isFeatured: boolean
@@ -4383,6 +4525,8 @@ export interface PropertyFieldRefs {
   readonly checkOutTime: Prisma.FieldRef<"Property", 'String'>
   readonly minimumStay: Prisma.FieldRef<"Property", 'Int'>
   readonly instantBook: Prisma.FieldRef<"Property", 'Boolean'>
+  readonly cancellationPolicy: Prisma.FieldRef<"Property", 'String'>
+  readonly termsConditions: Prisma.FieldRef<"Property", 'String'>
   readonly rejectionReason: Prisma.FieldRef<"Property", 'String'>
   readonly isFeatured: Prisma.FieldRef<"Property", 'Boolean'>
   readonly submittedAt: Prisma.FieldRef<"Property", 'DateTime'>

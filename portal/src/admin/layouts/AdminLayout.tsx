@@ -543,6 +543,7 @@ export default function AdminLayout() {
   const auth = getAuth();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [sidebarCounts, setSidebarCounts] =
     useState<AdminSidebarCounts>({
@@ -701,7 +702,7 @@ const currentTitle = useMemo(() => {
     navigate("/admin/login", { replace: true });
   };
 
-  const SidebarContent = () => (
+  const SidebarContent = ({ collapsed = false }: { collapsed?: boolean }) => (
     <div className="flex h-full flex-col bg-sidebar-bg">
       <div className="flex h-[67px] items-center border-b border-border px-5">
         <button
@@ -731,9 +732,11 @@ const currentTitle = useMemo(() => {
             </span>
           )}
 
-          <span className="text-left">
-            <strong className="sr-only">Administration</strong>
-          </span>
+          {!collapsed && (
+            <span className="text-left">
+              <strong className="sr-only">Administration</strong>
+            </span>
+          )}
         </button>
 
         <button
@@ -758,9 +761,11 @@ const currentTitle = useMemo(() => {
         <div className="space-y-4">
           {menuGroups.map((group) => (
             <div key={group.title}>
-              <p className="px-3 pb-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-text-soft">
-                {group.title}
-              </p>
+              {!collapsed && (
+                <p className="px-3 pb-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-text-soft">
+                  {group.title}
+                </p>
+              )}
 
               <div className="space-y-1">
                 {group.items.map((item) => (
@@ -768,9 +773,11 @@ const currentTitle = useMemo(() => {
                     key={item.path}
                     to={item.path}
                     end={item.end}
+                    title={collapsed ? item.label : undefined}
                     className={({ isActive }) =>
                       [
                         "group flex min-h-[37px] items-center gap-3 rounded-[9px] px-3 text-[12px] font-semibold transition",
+                        collapsed && "justify-center px-2",
                         isActive
                           ? "bg-sidebar-active text-primary-700"
                           : "text-text-secondary hover:bg-sidebar-hover hover:text-primary-700",
@@ -789,25 +796,29 @@ const currentTitle = useMemo(() => {
                           {item.icon}
                         </span>
 
-                        <span className="min-w-0 flex-1 truncate">
-                          {item.label}
-                        </span>
+                        {!collapsed && (
+                          <>
+                            <span className="min-w-0 flex-1 truncate">
+                              {item.label}
+                            </span>
 
-                        {(item.badge ||
-                          (item.badgeKey &&
-                            sidebarCounts[item.badgeKey] > 0)) && (
-                          <span
-                            className={
-                              item.badgeType === "danger"
-                                ? "rounded-full bg-danger-soft px-2 py-0.5 text-[9px] font-extrabold text-danger"
-                                : "rounded-full bg-success-soft px-2 py-0.5 text-[9px] font-extrabold text-success"
-                            }
-                          >
-                            {item.badge ||
-                              (item.badgeKey
-                                ? sidebarCounts[item.badgeKey]
-                                : "")}
-                          </span>
+                            {(item.badge ||
+                              (item.badgeKey &&
+                                sidebarCounts[item.badgeKey] > 0)) && (
+                              <span
+                                className={
+                                  item.badgeType === "danger"
+                                    ? "rounded-full bg-danger-soft px-2 py-0.5 text-[9px] font-extrabold text-danger"
+                                    : "rounded-full bg-success-soft px-2 py-0.5 text-[9px] font-extrabold text-success"
+                                }
+                              >
+                                {item.badge ||
+                                  (item.badgeKey
+                                    ? sidebarCounts[item.badgeKey]
+                                    : "")}
+                              </span>
+                            )}
+                          </>
                         )}
                       </>
                     )}
@@ -823,8 +834,8 @@ const currentTitle = useMemo(() => {
 
   return (
     <div className="min-h-screen bg-dashboard-bg">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[224px] border-r border-border bg-sidebar-bg lg:block">
-        <SidebarContent />
+      <aside className={`fixed inset-y-0 left-0 z-40 hidden border-r border-border bg-sidebar-bg transition-all duration-300 lg:block ${sidebarCollapsed ? "w-[68px]" : "w-[224px]"}`}>
+        <SidebarContent collapsed={sidebarCollapsed} />
       </aside>
 
       {sidebarOpen && (
@@ -840,10 +851,13 @@ const currentTitle = useMemo(() => {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <SidebarContent />
+        <SidebarContent collapsed={false} />
       </aside>
 
-      <div className="min-h-screen lg:pl-[224px]">
+      <div
+        className="min-h-screen transition-all duration-300"
+        style={{ paddingLeft: sidebarCollapsed ? "68px" : "224px" }}
+      >
         <header className="sticky top-0 z-30 flex h-[67px] items-center border-b border-border bg-header-bg px-4 shadow-dashboard-header sm:px-5">
           <button
             type="button"
@@ -866,6 +880,7 @@ const currentTitle = useMemo(() => {
           <div className="hidden lg:block">
             <button
               type="button"
+              onClick={() => setSidebarCollapsed((prev) => !prev)}
               className="rounded-lg p-2 text-text-muted hover:bg-surface-muted"
             >
               <svg

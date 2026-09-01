@@ -227,6 +227,7 @@ export default function VendorLayout() {
   const auth = getAuth();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [siteLogoUrl, setSiteLogoUrl] = useState<string | null>(null);
   const [siteName, setSiteName] = useState("");
@@ -348,7 +349,7 @@ export default function VendorLayout() {
     navigate("/vendor/login", { replace: true });
   };
 
-  const SidebarContent = () => (
+  const SidebarContent = ({ collapsed = false }: { collapsed?: boolean }) => (
     <div className="flex h-full flex-col bg-sidebar-bg">
       <div className="flex h-[67px] items-center border-b border-border px-5">
         <button
@@ -374,9 +375,11 @@ export default function VendorLayout() {
             </span>
           )}
 
-          <span className="text-left">
-            <strong className="sr-only">Vendor Portal</strong>
-          </span>
+          {!collapsed && (
+            <span className="text-left">
+              <strong className="sr-only">Vendor Portal</strong>
+            </span>
+          )}
         </button>
 
         <button
@@ -405,9 +408,11 @@ export default function VendorLayout() {
 
             return (
               <div key={group.key}>
-                <p className="px-3 pb-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-text-soft">
-                  {group.label}
-                </p>
+                {!collapsed && (
+                  <p className="px-3 pb-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-text-soft">
+                    {group.label}
+                  </p>
+                )}
 
                 <div className="space-y-1">
                   {groupItems.map((item) => {
@@ -421,11 +426,13 @@ export default function VendorLayout() {
                         key={item.path}
                         to={item.path}
                         end={item.end}
+                        title={collapsed ? item.label : undefined}
                         className={({ isActive }) => {
                           const active = isActive || isRoomRoute;
 
                           return [
                             "group flex min-h-[37px] items-center gap-3 rounded-[9px] px-3 text-[12px] font-semibold transition",
+                            collapsed && "justify-center px-2",
                             active
                               ? "bg-sidebar-active text-primary-700"
                               : "text-text-secondary hover:bg-sidebar-hover hover:text-primary-700",
@@ -447,42 +454,46 @@ export default function VendorLayout() {
                                 {item.icon}
                               </span>
 
-                              <span className="min-w-0 flex-1 truncate">
-                                {item.label}
-                              </span>
+                              {!collapsed && (
+                                <>
+                                  <span className="min-w-0 flex-1 truncate">
+                                    {item.label}
+                                  </span>
 
-                              {item.badge && (
-                                <span
-                                  className={
-                                    item.badgeType === "danger"
-                                      ? "rounded-full bg-danger-soft px-2 py-0.5 text-[9px] font-extrabold text-danger"
-                                      : item.badgeType === "info"
-                                        ? "rounded-full bg-info-soft px-2 py-0.5 text-[9px] font-extrabold text-info"
-                                        : "rounded-full bg-success-soft px-2 py-0.5 text-[9px] font-extrabold text-success"
-                                  }
-                                >
-                                  {item.badge}
-                                </span>
-                              )}
+                                  {item.badge && (
+                                    <span
+                                      className={
+                                        item.badgeType === "danger"
+                                          ? "rounded-full bg-danger-soft px-2 py-0.5 text-[9px] font-extrabold text-danger"
+                                          : item.badgeType === "info"
+                                            ? "rounded-full bg-info-soft px-2 py-0.5 text-[9px] font-extrabold text-info"
+                                            : "rounded-full bg-success-soft px-2 py-0.5 text-[9px] font-extrabold text-success"
+                                      }
+                                    >
+                                      {item.badge}
+                                    </span>
+                                  )}
 
-                              {item.verified && (
-                                <span
-                                  className={
-                                    active
-                                      ? "grid h-5 w-5 place-items-center rounded-md bg-primary-50 text-primary-700"
-                                      : "grid h-5 w-5 place-items-center rounded-md bg-success-soft text-success"
-                                  }
-                                >
-                                  <svg
-                                    viewBox="0 0 24 24"
-                                    className="h-3.5 w-3.5"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2.5"
-                                  >
-                                    <path d="m5 12 4 4L19 6" />
-                                  </svg>
-                                </span>
+                                  {item.verified && (
+                                    <span
+                                      className={
+                                        active
+                                          ? "grid h-5 w-5 place-items-center rounded-md bg-primary-50 text-primary-700"
+                                          : "grid h-5 w-5 place-items-center rounded-md bg-success-soft text-success"
+                                      }
+                                    >
+                                      <svg
+                                        viewBox="0 0 24 24"
+                                        className="h-3.5 w-3.5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2.5"
+                                      >
+                                        <path d="m5 12 4 4L19 6" />
+                                      </svg>
+                                    </span>
+                                  )}
+                                </>
                               )}
                             </>
                           );
@@ -501,8 +512,8 @@ export default function VendorLayout() {
 
   return (
     <div className="min-h-screen bg-dashboard-bg">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[240px] border-r border-border bg-sidebar-bg lg:block">
-        <SidebarContent />
+      <aside className={`fixed inset-y-0 left-0 z-40 hidden border-r border-border bg-sidebar-bg transition-all duration-300 lg:block ${sidebarCollapsed ? "w-[68px]" : "w-[240px]"}`}>
+        <SidebarContent collapsed={sidebarCollapsed} />
       </aside>
 
       {sidebarOpen && (
@@ -519,10 +530,13 @@ export default function VendorLayout() {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <SidebarContent />
+        <SidebarContent collapsed={false} />
       </aside>
 
-      <div className="min-h-screen lg:pl-[240px]">
+      <div
+        className="min-h-screen transition-all duration-300"
+        style={{ paddingLeft: sidebarCollapsed ? "68px" : "240px" }}
+      >
         <header className="sticky top-0 z-30 flex h-[67px] items-center border-b border-border bg-header-bg px-4 shadow-dashboard-header sm:px-6">
           <button
             type="button"
@@ -539,8 +553,9 @@ export default function VendorLayout() {
 
           <button
             type="button"
+            onClick={() => setSidebarCollapsed((prev) => !prev)}
             className="hidden rounded-lg p-2 text-text-muted hover:bg-surface-muted lg:block"
-            aria-label="Menu"
+            aria-label="Toggle sidebar"
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M4 6h16" />
@@ -548,23 +563,6 @@ export default function VendorLayout() {
               <path d="M4 18h16" />
             </svg>
           </button>
-
-          <div className="relative ml-2 hidden w-full max-w-[500px] md:block">
-            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-soft">
-              <svg viewBox="0 0 24 24" className="h-[19px] w-[19px]" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <circle cx="11" cy="11" r="7" />
-                <path d="m20 20-3.5-3.5" />
-              </svg>
-            </span>
-            <input
-              type="search"
-              placeholder="Search bookings, properties, guests..."
-              className="h-10 w-full rounded-control border border-border bg-surface px-10 pr-12 text-sm text-text-main outline-none placeholder:text-text-soft focus:border-primary-300 focus:ring-4 focus:ring-primary-100"
-            />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md border border-border bg-surface-muted px-2 py-0.5 text-xs font-bold text-text-soft">
-              ⌘ K
-            </span>
-          </div>
 
           <span className="truncate text-base font-bold text-text-main md:hidden">{currentTitle}</span>
 

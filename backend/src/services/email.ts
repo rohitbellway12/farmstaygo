@@ -116,6 +116,7 @@ export const sendEmail = async (
     to,
     subject,
     html,
+    text: html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim(),
   });
 };
 
@@ -1617,7 +1618,7 @@ const buildPasswordResetHtml = ({
               </p>
               <p style="font-size:13px;color:#888888;margin:0 0 24px;">
                 Or copy and paste this link into your browser:<br />
-                <a href="${resetLink}" style="color:#2d6a4f;text-decoration:none;word-break:break-all;">${resetLink}</a>
+                <a href="${resetLink}" target="_blank" rel="noopener noreferrer" style="color:#2d6a4f;text-decoration:none;word-break:break-all;">${resetLink}</a>
               </p>
               <p style="font-size:13px;color:#888888;margin:0 0 24px;">
                 This password reset link will expire in ${expiryMinutes} minutes for security reasons.

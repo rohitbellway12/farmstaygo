@@ -2733,6 +2733,8 @@ export const PropertyScalarFieldEnum = {
   checkOutTime: 'checkOutTime',
   minimumStay: 'minimumStay',
   instantBook: 'instantBook',
+  cancellationPolicy: 'cancellationPolicy',
+  termsConditions: 'termsConditions',
   rejectionReason: 'rejectionReason',
   isFeatured: 'isFeatured',
   submittedAt: 'submittedAt',

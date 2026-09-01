@@ -2309,6 +2309,14 @@ const mapPublicPropertyCard = (
 
     coverImage,
 
+    images: property.images.map((image) => ({
+      id: image.id,
+      image: image.image,
+      altText: image.altText,
+      isCover: image.isCover,
+      sortOrder: image.sortOrder,
+    })),
+
     imageCount:
       property.images.length,
 
@@ -2507,6 +2515,12 @@ const mapPublicPropertyDetail = (
       property.ruleAssignments.map(
         (assignment) => assignment.rule
       ),
+
+    cancellationPolicy:
+      property.cancellationPolicy,
+
+    termsConditions:
+      property.termsConditions,
 
     roomTypes:
       property.roomTypes

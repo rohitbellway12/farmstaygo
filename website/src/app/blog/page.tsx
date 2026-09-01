@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { apiFetch } from "@/lib/api";
+import { getAssetUrl } from "@/lib/assets";
 
 export const metadata: Metadata = {
   title: "FarmStayGo Blog | Farmhouses, Getaways & Travel Tips in Indore",
@@ -13,7 +14,8 @@ interface BlogPost {
   id: string;
   title: string;
   slug: string;
-  excerpt: string | null;
+  excerpt?: string | null;
+  description: string | null;
   imageUrl: string | null;
   isPublished: boolean;
   author: string | null;
@@ -64,7 +66,7 @@ export default async function BlogPage() {
                 {post.imageUrl && (
                   <div className="h-48 overflow-hidden">
                     <img
-                      src={post.imageUrl}
+                      src={getAssetUrl(post.imageUrl)}
                       alt={post.title}
                       className="h-full w-full object-cover"
                     />
@@ -81,11 +83,11 @@ export default async function BlogPage() {
                     </Link>
                   </h2>
 
-                  {post.excerpt && (
-                    <p className="mt-2 line-clamp-2 text-sm text-ink-500">
-                      {post.excerpt}
-                    </p>
-                  )}
+                   {post.description && (
+                     <p className="mt-2 line-clamp-2 text-sm text-ink-500">
+                       {post.description}
+                     </p>
+                   )}
 
                   <div className="mt-4 flex items-center justify-between text-xs text-ink-400">
                     <span>

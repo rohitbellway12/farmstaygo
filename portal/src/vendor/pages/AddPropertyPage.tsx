@@ -1,4 +1,24 @@
 import axios from "axios";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import {
+  Alignment,
+  AutoLink,
+  BlockQuote,
+  Bold,
+  ClassicEditor,
+  Essentials,
+  Heading,
+  Italic,
+  Link as CkLink,
+  List,
+  MediaEmbed,
+  Paragraph,
+  Table,
+  TableToolbar,
+  Underline,
+  Undo,
+} from "ckeditor5";
+import "ckeditor5/ckeditor5.css";
 import {
   useCallback,
   useEffect,
@@ -19,6 +39,108 @@ import {
 import api from "../../shared/api/api";
 import { getAssetUrl } from "../../shared/config/assets";
 import PropertyFinalSteps from "../components/PropertyFinalSteps";
+
+/*
+|--------------------------------------------------------------------------
+| Rich Text Editor
+|--------------------------------------------------------------------------
+*/
+
+function RichTextEditor({
+  value,
+  onChange,
+  placeholder,
+  disabled,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="overflow-hidden rounded-control border border-border">
+      <CKEditor
+        editor={ClassicEditor}
+        data={value}
+        disabled={disabled}
+        config={{
+          licenseKey: "GPL",
+          placeholder: placeholder || "",
+          plugins: [
+            Alignment,
+            AutoLink,
+            BlockQuote,
+            Bold,
+            CkLink,
+            Essentials,
+            Heading,
+            Italic,
+            List,
+            MediaEmbed,
+            Paragraph,
+            Table,
+            TableToolbar,
+            Underline,
+            Undo,
+          ],
+          toolbar: [
+            "undo",
+            "redo",
+            "|",
+            "heading",
+            "|",
+            "bold",
+            "italic",
+            "underline",
+            "|",
+            "alignment",
+            "link",
+            "bulletedList",
+            "numberedList",
+            "blockQuote",
+            "|",
+            "insertTable",
+            "mediaEmbed",
+          ],
+          heading: {
+            options: [
+              {
+                model: "paragraph",
+                title: "Paragraph",
+                class: "ck-heading_paragraph",
+              },
+              {
+                model: "heading2",
+                view: "h2",
+                title: "Heading 2",
+                class: "ck-heading_heading2",
+              },
+              {
+                model: "heading3",
+                view: "h3",
+                title: "Heading 3",
+                class: "ck-heading_heading3",
+              },
+            ],
+          },
+          table: {
+            contentToolbar: [
+              "tableColumn",
+              "tableRow",
+              "mergeTableCells",
+            ],
+          },
+        }}
+        onChange={(
+          _event,
+          editor: { getData: () => string }
+        ) => {
+          onChange(editor.getData());
+        }}
+      />
+    </div>
+  );
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -92,6 +214,8 @@ interface PropertyDetails {
   bathrooms: number | null;
   beds: number | null;
   totalRooms: number | null;
+  cancellationPolicy: string | null;
+  termsConditions: string | null;
 
    addressLine1: string | null;
   addressLine2: string | null;
@@ -136,6 +260,8 @@ interface PropertyFormState {
   bathrooms: string;
   beds: string;
   totalRooms: string;
+  cancellationPolicy: string;
+  termsConditions: string;
 }
 
 interface PropertyLocationFormState {
@@ -183,6 +309,8 @@ const emptyForm: PropertyFormState = {
   bathrooms: "",
   beds: "",
   totalRooms: "",
+  cancellationPolicy: "",
+  termsConditions: "",
 };
 
 const emptyLocationForm: PropertyLocationFormState = {
@@ -769,6 +897,12 @@ const editingBlocked = useMemo(() => {
               property.totalRooms !== null
                 ? String(property.totalRooms)
                 : "",
+
+            cancellationPolicy:
+              property.cancellationPolicy || "",
+
+            termsConditions:
+              property.termsConditions || "",
           });
 
           setLocationForm({
@@ -1912,6 +2046,11 @@ const validateLocationForm = (): boolean => {
         totalRooms: form.totalRooms
           ? Number(form.totalRooms)
           : null,
+
+        cancellationPolicy:
+          form.cancellationPolicy.trim(),
+        termsConditions:
+          form.termsConditions.trim(),
       };
 
      if (propertyId) {
@@ -3138,6 +3277,54 @@ const handleMovePropertyImage =
                 />
               </label>
             ))}
+          </div>
+        </section>
+
+        {/* Cancellation Policy & Terms */}
+
+        <section className="rounded-dashboard-large border border-border bg-surface p-5 shadow-dashboard sm:p-6">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.12em] text-primary-700">
+              Policies
+            </p>
+
+            <h2 className="mt-1 text-xl font-extrabold text-text-main">
+              Cancellation Policy & Terms
+            </h2>
+
+            <p className="mt-2 text-sm text-text-muted">
+              Define your own cancellation policy and terms & conditions for this property. Each vendor can set their own policies.
+            </p>
+          </div>
+
+          <div className="mt-5 space-y-5">
+            <div>
+              <span className="mb-2 block text-sm font-bold text-text-secondary">
+                Cancellation Policy
+              </span>
+              <RichTextEditor
+                value={form.cancellationPolicy}
+                onChange={(value) =>
+                  updateForm("cancellationPolicy", value)
+                }
+                placeholder="Example: Free cancellation up to 48 hours before check-in. 50% refund for cancellations made 7 days before check-in. No refund for cancellations less than 48 hours before check-in."
+                disabled={editingBlocked}
+              />
+            </div>
+
+            <div>
+              <span className="mb-2 block text-sm font-bold text-text-secondary">
+                Terms & Conditions
+              </span>
+              <RichTextEditor
+                value={form.termsConditions}
+                onChange={(value) =>
+                  updateForm("termsConditions", value)
+                }
+                placeholder="Example: Check-in time is 2 PM and check-out is 11 AM. No smoking inside the property. Pets are not allowed. Quiet hours are from 10 PM to 7 AM."
+                disabled={editingBlocked}
+              />
+            </div>
           </div>
         </section>
 

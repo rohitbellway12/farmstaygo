@@ -52,14 +52,6 @@ export default function VendorLoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [showForgotPassword, setShowForgotPassword] =
-    useState(false);
-  const [forgotEmail, setForgotEmail] = useState("");
-  const [forgotMessage, setForgotMessage] =
-    useState("");
-  const [forgotLoading, setForgotLoading] =
-    useState(false);
-
   useEffect(() => {
     const auth = getAuth();
 
@@ -119,43 +111,6 @@ export default function VendorLoginPage() {
       }
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleForgotPassword = async (
-    event: FormEvent<HTMLFormElement>
-  ) => {
-    event.preventDefault();
-
-    setForgotMessage("");
-    setForgotLoading(true);
-
-    try {
-      await api.post("/auth/forgot-password", {
-        email: forgotEmail.trim(),
-      });
-
-      setForgotMessage(
-        "Password reset link sent to your email. Please check your inbox."
-      );
-      setForgotEmail("");
-    } catch (requestError) {
-      if (
-        axios.isAxiosError<{
-          message?: string;
-        }>(requestError)
-      ) {
-        setForgotMessage(
-          requestError.response?.data?.message ||
-            "Unable to send reset link. Please try again."
-        );
-      } else {
-        setForgotMessage(
-          "Something went wrong. Please try again."
-        );
-      }
-    } finally {
-      setForgotLoading(false);
     }
   };
 
@@ -314,15 +269,12 @@ export default function VendorLoginPage() {
                     Password
                   </label>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowForgotPassword(true)
-                    }
+                  <Link
+                    to="/forgot-password"
                     className="text-xs font-semibold text-emerald-700 transition hover:text-emerald-800"
                   >
                     Forgot password?
-                  </button>
+                  </Link>
                 </div>
 
                 <div className="relative">
@@ -396,84 +348,6 @@ export default function VendorLoginPage() {
         </div>
       </section>
 
-      {showForgotPassword && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_20px_70px_rgba(15,70,52,0.08)] sm:p-9">
-            <div className="mb-6">
-              <h3 className="text-xl font-bold text-slate-900">
-                Reset Password
-              </h3>
-              <p className="mt-1 text-sm text-slate-500">
-                Enter your email and we'll send you a
-                reset link.
-              </p>
-            </div>
-
-            {forgotMessage && (
-              <div
-                className={`mb-4 rounded-xl px-4 py-3 text-sm font-semibold ${
-                  forgotMessage.toLowerCase().includes("sent")
-                    ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
-                    : "border border-red-200 bg-red-50 text-red-700"
-                }`}
-              >
-                {forgotMessage}
-              </div>
-            )}
-
-            <form
-              onSubmit={handleForgotPassword}
-              className="space-y-4"
-            >
-              <div>
-                <label
-                  htmlFor="forgot-email"
-                  className="mb-2 block text-sm font-semibold text-slate-700"
-                >
-                  Email address
-                </label>
-                <input
-                  id="forgot-email"
-                  type="email"
-                  value={forgotEmail}
-                  onChange={(event) =>
-                    setForgotEmail(
-                      event.target.value
-                    )
-                  }
-                  placeholder="Enter your email"
-                  autoComplete="email"
-                  required
-                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowForgotPassword(false);
-                    setForgotMessage("");
-                    setForgotEmail("");
-                  }}
-                  className="h-11 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={forgotLoading}
-                  className="h-11 rounded-xl bg-[#17634b] px-5 text-sm font-bold text-white transition hover:bg-[#104c39] focus:outline-none focus:ring-4 focus:ring-emerald-600/20 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {forgotLoading
-                    ? "Sending..."
-                    : "Send Reset Link"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </main>
   );
 }

@@ -107,6 +107,7 @@ export interface PublicPropertyCard {
   };
 
   coverImage: PublicImage | null;
+  images: PublicImage[];
   imageCount: number;
   amenityCount: number;
   roomTypeCount: number;
@@ -311,6 +312,8 @@ export interface PublicPropertyDetail
   amenities: PublicAmenity[];
   rules: PublicPropertyRule[];
   roomTypes: PublicRoomType[];
+  cancellationPolicy: string | null;
+  termsConditions: string | null;
 
   availability: PublicPropertyCard["availability"] & {
     dateRange: {

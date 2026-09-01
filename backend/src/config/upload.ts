@@ -16,7 +16,8 @@ export type PublicUploadFolder =
   | "properties"
   | "profiles"
   | "cms"
-  | "settings";
+  | "settings"
+  | "blog";
 
 /*
 |--------------------------------------------------------------------------
@@ -670,6 +671,67 @@ export const getSettingsImageStoragePath = (
   fileName: string
 ): string => {
   return `/storage/settings/${fileName}`;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Blog Image Upload
+|--------------------------------------------------------------------------
+|
+| Blog post images are stored inside:
+| storage/public/blog/
+|
+*/
+
+export const createBlogImageUpload = (
+  maxFileSizeMB = 5
+) => {
+  const uploadDirectory = ensureUploadDirectory("blog");
+
+  const storage = multer.diskStorage({
+    destination: (_request, _file, callback) => {
+      callback(null, uploadDirectory);
+    },
+    filename: (_request, file, callback) => {
+      callback(null, createSafeFileName(file.originalname));
+    },
+  });
+
+  return multer({
+    storage,
+    limits: {
+      fileSize: maxFileSizeMB * 1024 * 1024,
+      files: 1,
+    },
+    fileFilter: (_request, file, callback) => {
+      const extension = path
+        .extname(file.originalname)
+        .toLowerCase();
+
+      const isValidMimeType =
+        allowedImageMimeTypes.includes(file.mimetype);
+
+      const isValidExtension =
+        allowedImageExtensions.includes(extension);
+
+      if (!isValidMimeType || !isValidExtension) {
+        callback(
+          new Error(
+            "Only JPG, JPEG, PNG, WEBP and SVG images are allowed"
+          )
+        );
+        return;
+      }
+
+      callback(null, true);
+    },
+  });
+};
+
+export const getBlogImageStoragePath = (
+  fileName: string
+): string => {
+  return `/storage/blog/${fileName}`;
 };
 
 /*

@@ -9,6 +9,7 @@ import {
   updateBlogPost,
   deleteBlogPost,
   toggleBlogPostPublish,
+  uploadBlogImage,
 } from "../controllers/blog.controller.js";
 
 import {
@@ -18,6 +19,10 @@ import {
 import {
   allowRoles,
 } from "../middleware/role.middleware.js";
+
+import {
+  createBlogImageUpload,
+} from "../config/upload.js";
 
 const blogRoutes = Router();
 
@@ -66,6 +71,12 @@ adminBlogRoutes.delete(
 adminBlogRoutes.patch(
   "/:id/publish",
   toggleBlogPostPublish
+);
+
+adminBlogRoutes.post(
+  "/upload-image",
+  createBlogImageUpload().single("image"),
+  uploadBlogImage
 );
 
 export {

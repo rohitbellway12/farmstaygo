@@ -108,8 +108,16 @@ function getAuthToken(): string {
 
 export default function BookingRequestPanel({
   property,
+  checkIn,
+  checkOut,
+  onCheckInChange,
+  onCheckOutChange,
 }: {
   property: PublicPropertyDetail;
+  checkIn: string;
+  checkOut: string;
+  onCheckInChange: (value: string) => void;
+  onCheckOutChange: (value: string) => void;
 }) {
   const router = useRouter();
 
@@ -143,11 +151,7 @@ export default function BookingRequestPanel({
       property.roomTypes[0]?.id || ""
     );
 
-  const [checkIn, setCheckIn] =
-    useState(today);
-
-  const [checkOut, setCheckOut] =
-    useState(tomorrow);
+  
 
   const [guests, setGuests] =
     useState("1");
@@ -1032,11 +1036,11 @@ export default function BookingRequestPanel({
             onChange={(event) => {
               const nextCheckIn =
                 event.target.value;
-              setCheckIn(nextCheckIn);
+              onCheckInChange(nextCheckIn);
               if (
                 checkOut <= nextCheckIn
               ) {
-                setCheckOut(
+                onCheckOutChange(
                   localDateKey(
                     addDays(
                       new Date(
@@ -1072,9 +1076,7 @@ export default function BookingRequestPanel({
             }
             value={checkOut}
             onChange={(event) =>
-              setCheckOut(
-                event.target.value
-              )
+              onCheckOutChange(event.target.value)
             }
             className="h-11 w-full rounded-lg border border-ink-200 px-3 text-sm font-bold text-ink-800 outline-none focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
           />

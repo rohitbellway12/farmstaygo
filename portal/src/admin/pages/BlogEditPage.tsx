@@ -58,11 +58,11 @@ import {
 } from "react-router-dom";
 
 import api from "../../shared/api/api";
+import { backendBaseUrl } from "../../shared/config/app";
 
 interface BlogForm {
   title: string;
   slug: string;
-  excerpt: string;
   description: string;
   content: string;
   imageUrl: string;
@@ -77,7 +77,6 @@ interface BlogForm {
 const emptyForm: BlogForm = {
   title: "",
   slug: "",
-  excerpt: "",
   description: "",
   content: "",
   imageUrl: "",
@@ -130,15 +129,27 @@ export default function BlogEditPage() {
     }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setForm((prev) => ({ ...prev, imageUrl: reader.result as string }));
-    };
-    reader.readAsDataURL(file);
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const response = await api.post<{ success: boolean; data: { imageUrl: string } }>(
+        "/admin/blog/upload-image",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      setForm((prev) => ({ ...prev, imageUrl: response.data.data.imageUrl }));
+    } catch (err) {
+      console.error("Image upload failed:", err);
+    }
   };
 
   const validate = () => {
@@ -174,7 +185,6 @@ export default function BlogEditPage() {
       const payload = {
         title: form.title,
         slug: form.slug,
-        excerpt: form.excerpt || null,
         description: form.description || null,
         content: form.content,
         imageUrl: form.imageUrl || null,
@@ -304,84 +314,59 @@ export default function BlogEditPage() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1">
-                Excerpt
-              </label>
-              <input
-                type="text"
-                name="excerpt"
-                value={form.excerpt}
-                onChange={handleChange}
-                className="w-full rounded-control border border-border bg-surface-soft px-3 py-2 text-sm text-text-main outline-none focus:border-primary-300 focus:ring-4 focus:ring-primary-100"
-                placeholder="Short description of the post"
-              />
-            </div>
+             <div>
+               <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1">
+                 Description
+               </label>
+               <textarea
+                 name="description"
+                 value={form.description}
+                 onChange={handleChange}
+                 rows={3}
+                 className="w-full rounded-control border border-border bg-surface-soft px-3 py-2 text-sm text-text-main outline-none focus:border-primary-300 focus:ring-4 focus:ring-primary-100"
+                 placeholder="A brief description of the blog post"
+               />
+             </div>
 
-            <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1">
-                Description
-              </label>
-              <textarea
-                name="description"
-                value={form.description}
-                onChange={handleChange}
-                rows={3}
-                className="w-full rounded-control border border-border bg-surface-soft px-3 py-2 text-sm text-text-main outline-none focus:border-primary-300 focus:ring-4 focus:ring-primary-100"
-                placeholder="A brief description of the blog post"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1">
-                Image
-              </label>
-              <div className="flex items-center gap-4">
-                <label className="flex cursor-pointer items-center gap-2 rounded-control border border-border bg-surface-soft px-4 py-2 text-sm font-semibold text-text-secondary hover:bg-surface-muted">
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" x2="12" y1="3" y2="15" />
-                  </svg>
-                  Upload Image
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageChange}
-                  />
-                </label>
-                {form.imageUrl && (
-                  <div className="flex items-center gap-2">
-                    <img
-                      src={form.imageUrl}
-                      alt="Preview"
-                      className="h-12 w-12 rounded-lg object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setForm((prev) => ({ ...prev, imageUrl: "" }))}
-                      className="text-xs font-bold text-danger hover:text-red-700"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                )}
-              </div>
-              <p className="mt-1 text-xs text-text-muted">
-                Or paste an image URL below
-              </p>
-              <input
-                type="text"
-                name="imageUrl"
-                value={form.imageUrl}
-                onChange={handleChange}
-                className="mt-1 w-full rounded-control border border-border bg-surface-soft px-3 py-2 text-sm text-text-main outline-none focus:border-primary-300 focus:ring-4 focus:ring-primary-100"
-                placeholder="https://example.com/image.jpg"
-              />
-            </div>
-          </div>
-        </div>
+             <div>
+               <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1">
+                 Image
+               </label>
+               <div className="flex items-center gap-4">
+                 <label className="flex cursor-pointer items-center gap-2 rounded-control border border-border bg-surface-soft px-4 py-2 text-sm font-semibold text-text-secondary hover:bg-surface-muted">
+                   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                     <polyline points="17 8 12 3 7 8" />
+                     <line x1="12" x2="12" y1="3" y2="15" />
+                   </svg>
+                   Upload Image
+                   <input
+                     type="file"
+                     accept="image/*"
+                     className="hidden"
+                     onChange={handleImageChange}
+                   />
+                 </label>
+                  {form.imageUrl && (
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={form.imageUrl.startsWith("http") ? form.imageUrl : `${backendBaseUrl}${form.imageUrl}`}
+                        alt="Preview"
+                        className="h-12 w-12 rounded-lg object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setForm((prev) => ({ ...prev, imageUrl: "" }))}
+                        className="text-xs font-bold text-danger hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+               </div>
+             </div>
+           </div>
+         </div>
 
         <div className="rounded-dashboard-card border border-border bg-surface p-5 shadow-dashboard-card">
           <h2 className="text-sm font-extrabold text-text-main mb-4">
