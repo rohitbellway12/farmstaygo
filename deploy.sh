@@ -32,7 +32,13 @@ echo ">>> Generating Prisma client..."
 npx prisma generate
 
 echo ">>> Running Prisma migrations..."
+# Ensure the production database matches schema before app startup.
+# If the DB is missing columns like cancellationPolicy/termsConditions,
+# this command will fail early instead of serving a broken API.
 npx prisma migrate deploy
+
+# Verify prisma schema matches database after migration.
+npx prisma validate
 
 echo ">>> Building backend..."
 npm run build
