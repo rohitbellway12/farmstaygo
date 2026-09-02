@@ -40,6 +40,7 @@ export type RoomAvailabilityBlockMinAggregateOutputType = {
   date: Date | null
   blockedRooms: number | null
   note: string | null
+  calendarImportId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -50,6 +51,7 @@ export type RoomAvailabilityBlockMaxAggregateOutputType = {
   date: Date | null
   blockedRooms: number | null
   note: string | null
+  calendarImportId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -60,6 +62,7 @@ export type RoomAvailabilityBlockCountAggregateOutputType = {
   date: number
   blockedRooms: number
   note: number
+  calendarImportId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -80,6 +83,7 @@ export type RoomAvailabilityBlockMinAggregateInputType = {
   date?: true
   blockedRooms?: true
   note?: true
+  calendarImportId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -90,6 +94,7 @@ export type RoomAvailabilityBlockMaxAggregateInputType = {
   date?: true
   blockedRooms?: true
   note?: true
+  calendarImportId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -100,6 +105,7 @@ export type RoomAvailabilityBlockCountAggregateInputType = {
   date?: true
   blockedRooms?: true
   note?: true
+  calendarImportId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -197,6 +203,7 @@ export type RoomAvailabilityBlockGroupByOutputType = {
   date: Date
   blockedRooms: number
   note: string | null
+  calendarImportId: string | null
   createdAt: Date
   updatedAt: Date
   _count: RoomAvailabilityBlockCountAggregateOutputType | null
@@ -230,9 +237,11 @@ export type RoomAvailabilityBlockWhereInput = {
   date?: Prisma.DateTimeFilter<"RoomAvailabilityBlock"> | Date | string
   blockedRooms?: Prisma.IntFilter<"RoomAvailabilityBlock"> | number
   note?: Prisma.StringNullableFilter<"RoomAvailabilityBlock"> | string | null
+  calendarImportId?: Prisma.StringNullableFilter<"RoomAvailabilityBlock"> | string | null
   createdAt?: Prisma.DateTimeFilter<"RoomAvailabilityBlock"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RoomAvailabilityBlock"> | Date | string
   roomType?: Prisma.XOR<Prisma.RoomTypeScalarRelationFilter, Prisma.RoomTypeWhereInput>
+  calendarImport?: Prisma.XOR<Prisma.CalendarImportNullableScalarRelationFilter, Prisma.CalendarImportWhereInput> | null
 }
 
 export type RoomAvailabilityBlockOrderByWithRelationInput = {
@@ -241,9 +250,11 @@ export type RoomAvailabilityBlockOrderByWithRelationInput = {
   date?: Prisma.SortOrder
   blockedRooms?: Prisma.SortOrder
   note?: Prisma.SortOrderInput | Prisma.SortOrder
+  calendarImportId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   roomType?: Prisma.RoomTypeOrderByWithRelationInput
+  calendarImport?: Prisma.CalendarImportOrderByWithRelationInput
 }
 
 export type RoomAvailabilityBlockWhereUniqueInput = Prisma.AtLeast<{
@@ -256,9 +267,11 @@ export type RoomAvailabilityBlockWhereUniqueInput = Prisma.AtLeast<{
   date?: Prisma.DateTimeFilter<"RoomAvailabilityBlock"> | Date | string
   blockedRooms?: Prisma.IntFilter<"RoomAvailabilityBlock"> | number
   note?: Prisma.StringNullableFilter<"RoomAvailabilityBlock"> | string | null
+  calendarImportId?: Prisma.StringNullableFilter<"RoomAvailabilityBlock"> | string | null
   createdAt?: Prisma.DateTimeFilter<"RoomAvailabilityBlock"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RoomAvailabilityBlock"> | Date | string
   roomType?: Prisma.XOR<Prisma.RoomTypeScalarRelationFilter, Prisma.RoomTypeWhereInput>
+  calendarImport?: Prisma.XOR<Prisma.CalendarImportNullableScalarRelationFilter, Prisma.CalendarImportWhereInput> | null
 }, "id" | "roomTypeId_date">
 
 export type RoomAvailabilityBlockOrderByWithAggregationInput = {
@@ -267,6 +280,7 @@ export type RoomAvailabilityBlockOrderByWithAggregationInput = {
   date?: Prisma.SortOrder
   blockedRooms?: Prisma.SortOrder
   note?: Prisma.SortOrderInput | Prisma.SortOrder
+  calendarImportId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.RoomAvailabilityBlockCountOrderByAggregateInput
@@ -285,6 +299,7 @@ export type RoomAvailabilityBlockScalarWhereWithAggregatesInput = {
   date?: Prisma.DateTimeWithAggregatesFilter<"RoomAvailabilityBlock"> | Date | string
   blockedRooms?: Prisma.IntWithAggregatesFilter<"RoomAvailabilityBlock"> | number
   note?: Prisma.StringNullableWithAggregatesFilter<"RoomAvailabilityBlock"> | string | null
+  calendarImportId?: Prisma.StringNullableWithAggregatesFilter<"RoomAvailabilityBlock"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"RoomAvailabilityBlock"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"RoomAvailabilityBlock"> | Date | string
 }
@@ -297,6 +312,7 @@ export type RoomAvailabilityBlockCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   roomType: Prisma.RoomTypeCreateNestedOneWithoutAvailabilityBlocksInput
+  calendarImport?: Prisma.CalendarImportCreateNestedOneWithoutRoomBlocksInput
 }
 
 export type RoomAvailabilityBlockUncheckedCreateInput = {
@@ -305,6 +321,7 @@ export type RoomAvailabilityBlockUncheckedCreateInput = {
   date: Date | string
   blockedRooms: number
   note?: string | null
+  calendarImportId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -317,6 +334,7 @@ export type RoomAvailabilityBlockUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   roomType?: Prisma.RoomTypeUpdateOneRequiredWithoutAvailabilityBlocksNestedInput
+  calendarImport?: Prisma.CalendarImportUpdateOneWithoutRoomBlocksNestedInput
 }
 
 export type RoomAvailabilityBlockUncheckedUpdateInput = {
@@ -325,6 +343,7 @@ export type RoomAvailabilityBlockUncheckedUpdateInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   blockedRooms?: Prisma.IntFieldUpdateOperationsInput | number
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  calendarImportId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -335,6 +354,7 @@ export type RoomAvailabilityBlockCreateManyInput = {
   date: Date | string
   blockedRooms: number
   note?: string | null
+  calendarImportId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -354,6 +374,7 @@ export type RoomAvailabilityBlockUncheckedUpdateManyInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   blockedRooms?: Prisma.IntFieldUpdateOperationsInput | number
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  calendarImportId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -379,6 +400,7 @@ export type RoomAvailabilityBlockCountOrderByAggregateInput = {
   date?: Prisma.SortOrder
   blockedRooms?: Prisma.SortOrder
   note?: Prisma.SortOrder
+  calendarImportId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -393,6 +415,7 @@ export type RoomAvailabilityBlockMaxOrderByAggregateInput = {
   date?: Prisma.SortOrder
   blockedRooms?: Prisma.SortOrder
   note?: Prisma.SortOrder
+  calendarImportId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -403,6 +426,7 @@ export type RoomAvailabilityBlockMinOrderByAggregateInput = {
   date?: Prisma.SortOrder
   blockedRooms?: Prisma.SortOrder
   note?: Prisma.SortOrder
+  calendarImportId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -453,6 +477,48 @@ export type RoomAvailabilityBlockUncheckedUpdateManyWithoutRoomTypeNestedInput =
   deleteMany?: Prisma.RoomAvailabilityBlockScalarWhereInput | Prisma.RoomAvailabilityBlockScalarWhereInput[]
 }
 
+export type RoomAvailabilityBlockCreateNestedManyWithoutCalendarImportInput = {
+  create?: Prisma.XOR<Prisma.RoomAvailabilityBlockCreateWithoutCalendarImportInput, Prisma.RoomAvailabilityBlockUncheckedCreateWithoutCalendarImportInput> | Prisma.RoomAvailabilityBlockCreateWithoutCalendarImportInput[] | Prisma.RoomAvailabilityBlockUncheckedCreateWithoutCalendarImportInput[]
+  connectOrCreate?: Prisma.RoomAvailabilityBlockCreateOrConnectWithoutCalendarImportInput | Prisma.RoomAvailabilityBlockCreateOrConnectWithoutCalendarImportInput[]
+  createMany?: Prisma.RoomAvailabilityBlockCreateManyCalendarImportInputEnvelope
+  connect?: Prisma.RoomAvailabilityBlockWhereUniqueInput | Prisma.RoomAvailabilityBlockWhereUniqueInput[]
+}
+
+export type RoomAvailabilityBlockUncheckedCreateNestedManyWithoutCalendarImportInput = {
+  create?: Prisma.XOR<Prisma.RoomAvailabilityBlockCreateWithoutCalendarImportInput, Prisma.RoomAvailabilityBlockUncheckedCreateWithoutCalendarImportInput> | Prisma.RoomAvailabilityBlockCreateWithoutCalendarImportInput[] | Prisma.RoomAvailabilityBlockUncheckedCreateWithoutCalendarImportInput[]
+  connectOrCreate?: Prisma.RoomAvailabilityBlockCreateOrConnectWithoutCalendarImportInput | Prisma.RoomAvailabilityBlockCreateOrConnectWithoutCalendarImportInput[]
+  createMany?: Prisma.RoomAvailabilityBlockCreateManyCalendarImportInputEnvelope
+  connect?: Prisma.RoomAvailabilityBlockWhereUniqueInput | Prisma.RoomAvailabilityBlockWhereUniqueInput[]
+}
+
+export type RoomAvailabilityBlockUpdateManyWithoutCalendarImportNestedInput = {
+  create?: Prisma.XOR<Prisma.RoomAvailabilityBlockCreateWithoutCalendarImportInput, Prisma.RoomAvailabilityBlockUncheckedCreateWithoutCalendarImportInput> | Prisma.RoomAvailabilityBlockCreateWithoutCalendarImportInput[] | Prisma.RoomAvailabilityBlockUncheckedCreateWithoutCalendarImportInput[]
+  connectOrCreate?: Prisma.RoomAvailabilityBlockCreateOrConnectWithoutCalendarImportInput | Prisma.RoomAvailabilityBlockCreateOrConnectWithoutCalendarImportInput[]
+  upsert?: Prisma.RoomAvailabilityBlockUpsertWithWhereUniqueWithoutCalendarImportInput | Prisma.RoomAvailabilityBlockUpsertWithWhereUniqueWithoutCalendarImportInput[]
+  createMany?: Prisma.RoomAvailabilityBlockCreateManyCalendarImportInputEnvelope
+  set?: Prisma.RoomAvailabilityBlockWhereUniqueInput | Prisma.RoomAvailabilityBlockWhereUniqueInput[]
+  disconnect?: Prisma.RoomAvailabilityBlockWhereUniqueInput | Prisma.RoomAvailabilityBlockWhereUniqueInput[]
+  delete?: Prisma.RoomAvailabilityBlockWhereUniqueInput | Prisma.RoomAvailabilityBlockWhereUniqueInput[]
+  connect?: Prisma.RoomAvailabilityBlockWhereUniqueInput | Prisma.RoomAvailabilityBlockWhereUniqueInput[]
+  update?: Prisma.RoomAvailabilityBlockUpdateWithWhereUniqueWithoutCalendarImportInput | Prisma.RoomAvailabilityBlockUpdateWithWhereUniqueWithoutCalendarImportInput[]
+  updateMany?: Prisma.RoomAvailabilityBlockUpdateManyWithWhereWithoutCalendarImportInput | Prisma.RoomAvailabilityBlockUpdateManyWithWhereWithoutCalendarImportInput[]
+  deleteMany?: Prisma.RoomAvailabilityBlockScalarWhereInput | Prisma.RoomAvailabilityBlockScalarWhereInput[]
+}
+
+export type RoomAvailabilityBlockUncheckedUpdateManyWithoutCalendarImportNestedInput = {
+  create?: Prisma.XOR<Prisma.RoomAvailabilityBlockCreateWithoutCalendarImportInput, Prisma.RoomAvailabilityBlockUncheckedCreateWithoutCalendarImportInput> | Prisma.RoomAvailabilityBlockCreateWithoutCalendarImportInput[] | Prisma.RoomAvailabilityBlockUncheckedCreateWithoutCalendarImportInput[]
+  connectOrCreate?: Prisma.RoomAvailabilityBlockCreateOrConnectWithoutCalendarImportInput | Prisma.RoomAvailabilityBlockCreateOrConnectWithoutCalendarImportInput[]
+  upsert?: Prisma.RoomAvailabilityBlockUpsertWithWhereUniqueWithoutCalendarImportInput | Prisma.RoomAvailabilityBlockUpsertWithWhereUniqueWithoutCalendarImportInput[]
+  createMany?: Prisma.RoomAvailabilityBlockCreateManyCalendarImportInputEnvelope
+  set?: Prisma.RoomAvailabilityBlockWhereUniqueInput | Prisma.RoomAvailabilityBlockWhereUniqueInput[]
+  disconnect?: Prisma.RoomAvailabilityBlockWhereUniqueInput | Prisma.RoomAvailabilityBlockWhereUniqueInput[]
+  delete?: Prisma.RoomAvailabilityBlockWhereUniqueInput | Prisma.RoomAvailabilityBlockWhereUniqueInput[]
+  connect?: Prisma.RoomAvailabilityBlockWhereUniqueInput | Prisma.RoomAvailabilityBlockWhereUniqueInput[]
+  update?: Prisma.RoomAvailabilityBlockUpdateWithWhereUniqueWithoutCalendarImportInput | Prisma.RoomAvailabilityBlockUpdateWithWhereUniqueWithoutCalendarImportInput[]
+  updateMany?: Prisma.RoomAvailabilityBlockUpdateManyWithWhereWithoutCalendarImportInput | Prisma.RoomAvailabilityBlockUpdateManyWithWhereWithoutCalendarImportInput[]
+  deleteMany?: Prisma.RoomAvailabilityBlockScalarWhereInput | Prisma.RoomAvailabilityBlockScalarWhereInput[]
+}
+
 export type RoomAvailabilityBlockCreateWithoutRoomTypeInput = {
   id?: string
   date: Date | string
@@ -460,6 +526,7 @@ export type RoomAvailabilityBlockCreateWithoutRoomTypeInput = {
   note?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  calendarImport?: Prisma.CalendarImportCreateNestedOneWithoutRoomBlocksInput
 }
 
 export type RoomAvailabilityBlockUncheckedCreateWithoutRoomTypeInput = {
@@ -467,6 +534,7 @@ export type RoomAvailabilityBlockUncheckedCreateWithoutRoomTypeInput = {
   date: Date | string
   blockedRooms: number
   note?: string | null
+  calendarImportId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -506,8 +574,55 @@ export type RoomAvailabilityBlockScalarWhereInput = {
   date?: Prisma.DateTimeFilter<"RoomAvailabilityBlock"> | Date | string
   blockedRooms?: Prisma.IntFilter<"RoomAvailabilityBlock"> | number
   note?: Prisma.StringNullableFilter<"RoomAvailabilityBlock"> | string | null
+  calendarImportId?: Prisma.StringNullableFilter<"RoomAvailabilityBlock"> | string | null
   createdAt?: Prisma.DateTimeFilter<"RoomAvailabilityBlock"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RoomAvailabilityBlock"> | Date | string
+}
+
+export type RoomAvailabilityBlockCreateWithoutCalendarImportInput = {
+  id?: string
+  date: Date | string
+  blockedRooms: number
+  note?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  roomType: Prisma.RoomTypeCreateNestedOneWithoutAvailabilityBlocksInput
+}
+
+export type RoomAvailabilityBlockUncheckedCreateWithoutCalendarImportInput = {
+  id?: string
+  roomTypeId: string
+  date: Date | string
+  blockedRooms: number
+  note?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type RoomAvailabilityBlockCreateOrConnectWithoutCalendarImportInput = {
+  where: Prisma.RoomAvailabilityBlockWhereUniqueInput
+  create: Prisma.XOR<Prisma.RoomAvailabilityBlockCreateWithoutCalendarImportInput, Prisma.RoomAvailabilityBlockUncheckedCreateWithoutCalendarImportInput>
+}
+
+export type RoomAvailabilityBlockCreateManyCalendarImportInputEnvelope = {
+  data: Prisma.RoomAvailabilityBlockCreateManyCalendarImportInput | Prisma.RoomAvailabilityBlockCreateManyCalendarImportInput[]
+  skipDuplicates?: boolean
+}
+
+export type RoomAvailabilityBlockUpsertWithWhereUniqueWithoutCalendarImportInput = {
+  where: Prisma.RoomAvailabilityBlockWhereUniqueInput
+  update: Prisma.XOR<Prisma.RoomAvailabilityBlockUpdateWithoutCalendarImportInput, Prisma.RoomAvailabilityBlockUncheckedUpdateWithoutCalendarImportInput>
+  create: Prisma.XOR<Prisma.RoomAvailabilityBlockCreateWithoutCalendarImportInput, Prisma.RoomAvailabilityBlockUncheckedCreateWithoutCalendarImportInput>
+}
+
+export type RoomAvailabilityBlockUpdateWithWhereUniqueWithoutCalendarImportInput = {
+  where: Prisma.RoomAvailabilityBlockWhereUniqueInput
+  data: Prisma.XOR<Prisma.RoomAvailabilityBlockUpdateWithoutCalendarImportInput, Prisma.RoomAvailabilityBlockUncheckedUpdateWithoutCalendarImportInput>
+}
+
+export type RoomAvailabilityBlockUpdateManyWithWhereWithoutCalendarImportInput = {
+  where: Prisma.RoomAvailabilityBlockScalarWhereInput
+  data: Prisma.XOR<Prisma.RoomAvailabilityBlockUpdateManyMutationInput, Prisma.RoomAvailabilityBlockUncheckedUpdateManyWithoutCalendarImportInput>
 }
 
 export type RoomAvailabilityBlockCreateManyRoomTypeInput = {
@@ -515,6 +630,7 @@ export type RoomAvailabilityBlockCreateManyRoomTypeInput = {
   date: Date | string
   blockedRooms: number
   note?: string | null
+  calendarImportId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -526,6 +642,7 @@ export type RoomAvailabilityBlockUpdateWithoutRoomTypeInput = {
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  calendarImport?: Prisma.CalendarImportUpdateOneWithoutRoomBlocksNestedInput
 }
 
 export type RoomAvailabilityBlockUncheckedUpdateWithoutRoomTypeInput = {
@@ -533,12 +650,54 @@ export type RoomAvailabilityBlockUncheckedUpdateWithoutRoomTypeInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   blockedRooms?: Prisma.IntFieldUpdateOperationsInput | number
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  calendarImportId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type RoomAvailabilityBlockUncheckedUpdateManyWithoutRoomTypeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blockedRooms?: Prisma.IntFieldUpdateOperationsInput | number
+  note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  calendarImportId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type RoomAvailabilityBlockCreateManyCalendarImportInput = {
+  id?: string
+  roomTypeId: string
+  date: Date | string
+  blockedRooms: number
+  note?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type RoomAvailabilityBlockUpdateWithoutCalendarImportInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blockedRooms?: Prisma.IntFieldUpdateOperationsInput | number
+  note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  roomType?: Prisma.RoomTypeUpdateOneRequiredWithoutAvailabilityBlocksNestedInput
+}
+
+export type RoomAvailabilityBlockUncheckedUpdateWithoutCalendarImportInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  roomTypeId?: Prisma.StringFieldUpdateOperationsInput | string
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blockedRooms?: Prisma.IntFieldUpdateOperationsInput | number
+  note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type RoomAvailabilityBlockUncheckedUpdateManyWithoutCalendarImportInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  roomTypeId?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   blockedRooms?: Prisma.IntFieldUpdateOperationsInput | number
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -554,9 +713,11 @@ export type RoomAvailabilityBlockSelect<ExtArgs extends runtime.Types.Extensions
   date?: boolean
   blockedRooms?: boolean
   note?: boolean
+  calendarImportId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   roomType?: boolean | Prisma.RoomTypeDefaultArgs<ExtArgs>
+  calendarImport?: boolean | Prisma.RoomAvailabilityBlock$calendarImportArgs<ExtArgs>
 }, ExtArgs["result"]["roomAvailabilityBlock"]>
 
 export type RoomAvailabilityBlockSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -565,9 +726,11 @@ export type RoomAvailabilityBlockSelectCreateManyAndReturn<ExtArgs extends runti
   date?: boolean
   blockedRooms?: boolean
   note?: boolean
+  calendarImportId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   roomType?: boolean | Prisma.RoomTypeDefaultArgs<ExtArgs>
+  calendarImport?: boolean | Prisma.RoomAvailabilityBlock$calendarImportArgs<ExtArgs>
 }, ExtArgs["result"]["roomAvailabilityBlock"]>
 
 export type RoomAvailabilityBlockSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -576,9 +739,11 @@ export type RoomAvailabilityBlockSelectUpdateManyAndReturn<ExtArgs extends runti
   date?: boolean
   blockedRooms?: boolean
   note?: boolean
+  calendarImportId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   roomType?: boolean | Prisma.RoomTypeDefaultArgs<ExtArgs>
+  calendarImport?: boolean | Prisma.RoomAvailabilityBlock$calendarImportArgs<ExtArgs>
 }, ExtArgs["result"]["roomAvailabilityBlock"]>
 
 export type RoomAvailabilityBlockSelectScalar = {
@@ -587,25 +752,30 @@ export type RoomAvailabilityBlockSelectScalar = {
   date?: boolean
   blockedRooms?: boolean
   note?: boolean
+  calendarImportId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type RoomAvailabilityBlockOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "roomTypeId" | "date" | "blockedRooms" | "note" | "createdAt" | "updatedAt", ExtArgs["result"]["roomAvailabilityBlock"]>
+export type RoomAvailabilityBlockOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "roomTypeId" | "date" | "blockedRooms" | "note" | "calendarImportId" | "createdAt" | "updatedAt", ExtArgs["result"]["roomAvailabilityBlock"]>
 export type RoomAvailabilityBlockInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   roomType?: boolean | Prisma.RoomTypeDefaultArgs<ExtArgs>
+  calendarImport?: boolean | Prisma.RoomAvailabilityBlock$calendarImportArgs<ExtArgs>
 }
 export type RoomAvailabilityBlockIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   roomType?: boolean | Prisma.RoomTypeDefaultArgs<ExtArgs>
+  calendarImport?: boolean | Prisma.RoomAvailabilityBlock$calendarImportArgs<ExtArgs>
 }
 export type RoomAvailabilityBlockIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   roomType?: boolean | Prisma.RoomTypeDefaultArgs<ExtArgs>
+  calendarImport?: boolean | Prisma.RoomAvailabilityBlock$calendarImportArgs<ExtArgs>
 }
 
 export type $RoomAvailabilityBlockPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "RoomAvailabilityBlock"
   objects: {
     roomType: Prisma.$RoomTypePayload<ExtArgs>
+    calendarImport: Prisma.$CalendarImportPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -613,6 +783,7 @@ export type $RoomAvailabilityBlockPayload<ExtArgs extends runtime.Types.Extensio
     date: Date
     blockedRooms: number
     note: string | null
+    calendarImportId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["roomAvailabilityBlock"]>
@@ -1010,6 +1181,7 @@ readonly fields: RoomAvailabilityBlockFieldRefs;
 export interface Prisma__RoomAvailabilityBlockClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   roomType<T extends Prisma.RoomTypeDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RoomTypeDefaultArgs<ExtArgs>>): Prisma.Prisma__RoomTypeClient<runtime.Types.Result.GetResult<Prisma.$RoomTypePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  calendarImport<T extends Prisma.RoomAvailabilityBlock$calendarImportArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RoomAvailabilityBlock$calendarImportArgs<ExtArgs>>): Prisma.Prisma__CalendarImportClient<runtime.Types.Result.GetResult<Prisma.$CalendarImportPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1044,6 +1216,7 @@ export interface RoomAvailabilityBlockFieldRefs {
   readonly date: Prisma.FieldRef<"RoomAvailabilityBlock", 'DateTime'>
   readonly blockedRooms: Prisma.FieldRef<"RoomAvailabilityBlock", 'Int'>
   readonly note: Prisma.FieldRef<"RoomAvailabilityBlock", 'String'>
+  readonly calendarImportId: Prisma.FieldRef<"RoomAvailabilityBlock", 'String'>
   readonly createdAt: Prisma.FieldRef<"RoomAvailabilityBlock", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"RoomAvailabilityBlock", 'DateTime'>
 }
@@ -1444,6 +1617,25 @@ export type RoomAvailabilityBlockDeleteManyArgs<ExtArgs extends runtime.Types.Ex
    * Limit how many RoomAvailabilityBlocks to delete.
    */
   limit?: number
+}
+
+/**
+ * RoomAvailabilityBlock.calendarImport
+ */
+export type RoomAvailabilityBlock$calendarImportArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CalendarImport
+   */
+  select?: Prisma.CalendarImportSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CalendarImport
+   */
+  omit?: Prisma.CalendarImportOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CalendarImportInclude<ExtArgs> | null
+  where?: Prisma.CalendarImportWhereInput
 }
 
 /**

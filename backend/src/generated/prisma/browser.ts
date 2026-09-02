@@ -162,3 +162,8 @@ export type Faq = Prisma.FaqModel
  * 
  */
 export type Review = Prisma.ReviewModel
+/**
+ * Model CalendarImport
+ * 
+ */
+export type CalendarImport = Prisma.CalendarImportModel

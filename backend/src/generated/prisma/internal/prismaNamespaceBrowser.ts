@@ -79,7 +79,8 @@ export const ModelName = {
   Setting: 'Setting',
   SocialLink: 'SocialLink',
   Faq: 'Faq',
-  Review: 'Review'
+  Review: 'Review',
+  CalendarImport: 'CalendarImport'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -401,6 +402,7 @@ export const PropertyAvailabilityBlockScalarFieldEnum = {
   propertyId: 'propertyId',
   date: 'date',
   note: 'note',
+  calendarImportId: 'calendarImportId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -414,6 +416,7 @@ export const RoomAvailabilityBlockScalarFieldEnum = {
   date: 'date',
   blockedRooms: 'blockedRooms',
   note: 'note',
+  calendarImportId: 'calendarImportId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -603,6 +606,21 @@ export const ReviewScalarFieldEnum = {
 } as const
 
 export type ReviewScalarFieldEnum = (typeof ReviewScalarFieldEnum)[keyof typeof ReviewScalarFieldEnum]
+
+
+export const CalendarImportScalarFieldEnum = {
+  id: 'id',
+  propertyId: 'propertyId',
+  name: 'name',
+  url: 'url',
+  isActive: 'isActive',
+  lastSyncAt: 'lastSyncAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CalendarImportScalarFieldEnum = (typeof CalendarImportScalarFieldEnum)[keyof typeof CalendarImportScalarFieldEnum]
 
 
 export const SortOrder = {

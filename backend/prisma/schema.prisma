@@ -410,8 +410,9 @@ model Property {
   amenities          PropertyAmenity[]
   images             PropertyImage[]
   roomTypes          RoomType[]
-  availabilityBlocks PropertyAvailabilityBlock[]
-  bookings           Booking[]
+   availabilityBlocks PropertyAvailabilityBlock[]
+   calendarImports     CalendarImport[]
+   bookings           Booking[]
   wishlists          Wishlist[]
    ruleAssignments    PropertyRuleAssignment[]
    reviews            Review[]
@@ -666,14 +667,16 @@ model RoomImage {
  */
 
 model PropertyAvailabilityBlock {
-  id         String   @id @default(cuid())
-  propertyId String
-  date       DateTime @db.Date
-  note       String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  propertyId         String
+  date               DateTime @db.Date
+  note               String?
+  calendarImportId   String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  property        Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  calendarImport  CalendarImport? @relation(fields: [calendarImportId], references: [id], onDelete: SetNull)
 
   @@unique([propertyId, date])
   @@index([date])
@@ -701,15 +704,17 @@ model PropertyAvailabilityBlock {
  */
 
 model RoomAvailabilityBlock {
-  id           String   @id @default(cuid())
-  roomTypeId   String
-  date         DateTime @db.Date
-  blockedRooms Int
-  note       String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id               String   @id @default(cuid())
+  roomTypeId       String
+  date             DateTime @db.Date
+  blockedRooms     Int
+  note             String?
+  calendarImportId String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  roomType RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  roomType       RoomType        @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  calendarImport CalendarImport? @relation(fields: [calendarImportId], references: [id], onDelete: SetNull)
 
   @@unique([roomTypeId, date])
   @@index([date])
@@ -1004,8 +1009,39 @@ model Review {
 
   property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
-  @@index([propertyId, status])
-  @@index([status, createdAt])
-  @@map("reviews")
+   @@index([propertyId, status])
+   @@index([status, createdAt])
+   @@map("reviews")
+}
+
+/**
+|--------------------------------------------------------------------------
+| Calendar Imports (External iCal / ICS Sync)
+|--------------------------------------------------------------------------
+|
+| Stores external iCal/ICS calendar URLs that FarmStayGo periodically
+| fetches to block dates imported from platforms like Airbnb, Booking.com,
+| VRBO, etc.
+|
+*/
+
+model CalendarImport {
+  id         String    @id @default(cuid())
+  propertyId String
+  name       String    // e.g. "Airbnb", "Booking.com", "VRBO"
+  url        String    @db.Text // the secret iCal URL
+  isActive   Boolean   @default(true)
+  lastSyncAt DateTime?
+  lastError  String?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  property        Property                 @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyBlocks  PropertyAvailabilityBlock[]
+  roomBlocks      RoomAvailabilityBlock[]
+
+  @@index([propertyId, isActive])
+  @@map("calendar_imports")
 }
 

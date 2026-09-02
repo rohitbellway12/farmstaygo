@@ -43,6 +43,10 @@ import {
   vendorAvailabilityRoutes,
 } from "./availability.routes.js";
 
+import {
+  vendorCalendarRoutes,
+} from "./calendar-sync.routes.js";
+
 const vendorPropertyRoutes = Router();
 
 const propertyImageUpload =
@@ -75,6 +79,21 @@ vendorPropertyRoutes.use(
 vendorPropertyRoutes.use(
   "/:propertyId/availability",
   vendorAvailabilityRoutes
+);
+
+/*
+|--------------------------------------------------------------------------
+| Vendor Calendar Sync Routes
+|--------------------------------------------------------------------------
+|
+| Base URL:
+| /api/vendor/properties/:propertyId/calendar-imports
+|
+*/
+
+vendorPropertyRoutes.use(
+  "/:propertyId/calendar-imports",
+  vendorCalendarRoutes
 );
 
 /*

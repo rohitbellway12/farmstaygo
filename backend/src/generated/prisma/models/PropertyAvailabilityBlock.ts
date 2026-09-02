@@ -29,6 +29,7 @@ export type PropertyAvailabilityBlockMinAggregateOutputType = {
   propertyId: string | null
   date: Date | null
   note: string | null
+  calendarImportId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -38,6 +39,7 @@ export type PropertyAvailabilityBlockMaxAggregateOutputType = {
   propertyId: string | null
   date: Date | null
   note: string | null
+  calendarImportId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -47,6 +49,7 @@ export type PropertyAvailabilityBlockCountAggregateOutputType = {
   propertyId: number
   date: number
   note: number
+  calendarImportId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -58,6 +61,7 @@ export type PropertyAvailabilityBlockMinAggregateInputType = {
   propertyId?: true
   date?: true
   note?: true
+  calendarImportId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -67,6 +71,7 @@ export type PropertyAvailabilityBlockMaxAggregateInputType = {
   propertyId?: true
   date?: true
   note?: true
+  calendarImportId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -76,6 +81,7 @@ export type PropertyAvailabilityBlockCountAggregateInputType = {
   propertyId?: true
   date?: true
   note?: true
+  calendarImportId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -158,6 +164,7 @@ export type PropertyAvailabilityBlockGroupByOutputType = {
   propertyId: string
   date: Date
   note: string | null
+  calendarImportId: string | null
   createdAt: Date
   updatedAt: Date
   _count: PropertyAvailabilityBlockCountAggregateOutputType | null
@@ -188,9 +195,11 @@ export type PropertyAvailabilityBlockWhereInput = {
   propertyId?: Prisma.StringFilter<"PropertyAvailabilityBlock"> | string
   date?: Prisma.DateTimeFilter<"PropertyAvailabilityBlock"> | Date | string
   note?: Prisma.StringNullableFilter<"PropertyAvailabilityBlock"> | string | null
+  calendarImportId?: Prisma.StringNullableFilter<"PropertyAvailabilityBlock"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PropertyAvailabilityBlock"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PropertyAvailabilityBlock"> | Date | string
   property?: Prisma.XOR<Prisma.PropertyScalarRelationFilter, Prisma.PropertyWhereInput>
+  calendarImport?: Prisma.XOR<Prisma.CalendarImportNullableScalarRelationFilter, Prisma.CalendarImportWhereInput> | null
 }
 
 export type PropertyAvailabilityBlockOrderByWithRelationInput = {
@@ -198,9 +207,11 @@ export type PropertyAvailabilityBlockOrderByWithRelationInput = {
   propertyId?: Prisma.SortOrder
   date?: Prisma.SortOrder
   note?: Prisma.SortOrderInput | Prisma.SortOrder
+  calendarImportId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   property?: Prisma.PropertyOrderByWithRelationInput
+  calendarImport?: Prisma.CalendarImportOrderByWithRelationInput
 }
 
 export type PropertyAvailabilityBlockWhereUniqueInput = Prisma.AtLeast<{
@@ -212,9 +223,11 @@ export type PropertyAvailabilityBlockWhereUniqueInput = Prisma.AtLeast<{
   propertyId?: Prisma.StringFilter<"PropertyAvailabilityBlock"> | string
   date?: Prisma.DateTimeFilter<"PropertyAvailabilityBlock"> | Date | string
   note?: Prisma.StringNullableFilter<"PropertyAvailabilityBlock"> | string | null
+  calendarImportId?: Prisma.StringNullableFilter<"PropertyAvailabilityBlock"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PropertyAvailabilityBlock"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PropertyAvailabilityBlock"> | Date | string
   property?: Prisma.XOR<Prisma.PropertyScalarRelationFilter, Prisma.PropertyWhereInput>
+  calendarImport?: Prisma.XOR<Prisma.CalendarImportNullableScalarRelationFilter, Prisma.CalendarImportWhereInput> | null
 }, "id" | "propertyId_date">
 
 export type PropertyAvailabilityBlockOrderByWithAggregationInput = {
@@ -222,6 +235,7 @@ export type PropertyAvailabilityBlockOrderByWithAggregationInput = {
   propertyId?: Prisma.SortOrder
   date?: Prisma.SortOrder
   note?: Prisma.SortOrderInput | Prisma.SortOrder
+  calendarImportId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.PropertyAvailabilityBlockCountOrderByAggregateInput
@@ -237,6 +251,7 @@ export type PropertyAvailabilityBlockScalarWhereWithAggregatesInput = {
   propertyId?: Prisma.StringWithAggregatesFilter<"PropertyAvailabilityBlock"> | string
   date?: Prisma.DateTimeWithAggregatesFilter<"PropertyAvailabilityBlock"> | Date | string
   note?: Prisma.StringNullableWithAggregatesFilter<"PropertyAvailabilityBlock"> | string | null
+  calendarImportId?: Prisma.StringNullableWithAggregatesFilter<"PropertyAvailabilityBlock"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"PropertyAvailabilityBlock"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"PropertyAvailabilityBlock"> | Date | string
 }
@@ -248,6 +263,7 @@ export type PropertyAvailabilityBlockCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   property: Prisma.PropertyCreateNestedOneWithoutAvailabilityBlocksInput
+  calendarImport?: Prisma.CalendarImportCreateNestedOneWithoutPropertyBlocksInput
 }
 
 export type PropertyAvailabilityBlockUncheckedCreateInput = {
@@ -255,6 +271,7 @@ export type PropertyAvailabilityBlockUncheckedCreateInput = {
   propertyId: string
   date: Date | string
   note?: string | null
+  calendarImportId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -266,6 +283,7 @@ export type PropertyAvailabilityBlockUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   property?: Prisma.PropertyUpdateOneRequiredWithoutAvailabilityBlocksNestedInput
+  calendarImport?: Prisma.CalendarImportUpdateOneWithoutPropertyBlocksNestedInput
 }
 
 export type PropertyAvailabilityBlockUncheckedUpdateInput = {
@@ -273,6 +291,7 @@ export type PropertyAvailabilityBlockUncheckedUpdateInput = {
   propertyId?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  calendarImportId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -282,6 +301,7 @@ export type PropertyAvailabilityBlockCreateManyInput = {
   propertyId: string
   date: Date | string
   note?: string | null
+  calendarImportId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -299,6 +319,7 @@ export type PropertyAvailabilityBlockUncheckedUpdateManyInput = {
   propertyId?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  calendarImportId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -323,6 +344,7 @@ export type PropertyAvailabilityBlockCountOrderByAggregateInput = {
   propertyId?: Prisma.SortOrder
   date?: Prisma.SortOrder
   note?: Prisma.SortOrder
+  calendarImportId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -332,6 +354,7 @@ export type PropertyAvailabilityBlockMaxOrderByAggregateInput = {
   propertyId?: Prisma.SortOrder
   date?: Prisma.SortOrder
   note?: Prisma.SortOrder
+  calendarImportId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -341,6 +364,7 @@ export type PropertyAvailabilityBlockMinOrderByAggregateInput = {
   propertyId?: Prisma.SortOrder
   date?: Prisma.SortOrder
   note?: Prisma.SortOrder
+  calendarImportId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -387,18 +411,62 @@ export type PropertyAvailabilityBlockUncheckedUpdateManyWithoutPropertyNestedInp
   deleteMany?: Prisma.PropertyAvailabilityBlockScalarWhereInput | Prisma.PropertyAvailabilityBlockScalarWhereInput[]
 }
 
+export type PropertyAvailabilityBlockCreateNestedManyWithoutCalendarImportInput = {
+  create?: Prisma.XOR<Prisma.PropertyAvailabilityBlockCreateWithoutCalendarImportInput, Prisma.PropertyAvailabilityBlockUncheckedCreateWithoutCalendarImportInput> | Prisma.PropertyAvailabilityBlockCreateWithoutCalendarImportInput[] | Prisma.PropertyAvailabilityBlockUncheckedCreateWithoutCalendarImportInput[]
+  connectOrCreate?: Prisma.PropertyAvailabilityBlockCreateOrConnectWithoutCalendarImportInput | Prisma.PropertyAvailabilityBlockCreateOrConnectWithoutCalendarImportInput[]
+  createMany?: Prisma.PropertyAvailabilityBlockCreateManyCalendarImportInputEnvelope
+  connect?: Prisma.PropertyAvailabilityBlockWhereUniqueInput | Prisma.PropertyAvailabilityBlockWhereUniqueInput[]
+}
+
+export type PropertyAvailabilityBlockUncheckedCreateNestedManyWithoutCalendarImportInput = {
+  create?: Prisma.XOR<Prisma.PropertyAvailabilityBlockCreateWithoutCalendarImportInput, Prisma.PropertyAvailabilityBlockUncheckedCreateWithoutCalendarImportInput> | Prisma.PropertyAvailabilityBlockCreateWithoutCalendarImportInput[] | Prisma.PropertyAvailabilityBlockUncheckedCreateWithoutCalendarImportInput[]
+  connectOrCreate?: Prisma.PropertyAvailabilityBlockCreateOrConnectWithoutCalendarImportInput | Prisma.PropertyAvailabilityBlockCreateOrConnectWithoutCalendarImportInput[]
+  createMany?: Prisma.PropertyAvailabilityBlockCreateManyCalendarImportInputEnvelope
+  connect?: Prisma.PropertyAvailabilityBlockWhereUniqueInput | Prisma.PropertyAvailabilityBlockWhereUniqueInput[]
+}
+
+export type PropertyAvailabilityBlockUpdateManyWithoutCalendarImportNestedInput = {
+  create?: Prisma.XOR<Prisma.PropertyAvailabilityBlockCreateWithoutCalendarImportInput, Prisma.PropertyAvailabilityBlockUncheckedCreateWithoutCalendarImportInput> | Prisma.PropertyAvailabilityBlockCreateWithoutCalendarImportInput[] | Prisma.PropertyAvailabilityBlockUncheckedCreateWithoutCalendarImportInput[]
+  connectOrCreate?: Prisma.PropertyAvailabilityBlockCreateOrConnectWithoutCalendarImportInput | Prisma.PropertyAvailabilityBlockCreateOrConnectWithoutCalendarImportInput[]
+  upsert?: Prisma.PropertyAvailabilityBlockUpsertWithWhereUniqueWithoutCalendarImportInput | Prisma.PropertyAvailabilityBlockUpsertWithWhereUniqueWithoutCalendarImportInput[]
+  createMany?: Prisma.PropertyAvailabilityBlockCreateManyCalendarImportInputEnvelope
+  set?: Prisma.PropertyAvailabilityBlockWhereUniqueInput | Prisma.PropertyAvailabilityBlockWhereUniqueInput[]
+  disconnect?: Prisma.PropertyAvailabilityBlockWhereUniqueInput | Prisma.PropertyAvailabilityBlockWhereUniqueInput[]
+  delete?: Prisma.PropertyAvailabilityBlockWhereUniqueInput | Prisma.PropertyAvailabilityBlockWhereUniqueInput[]
+  connect?: Prisma.PropertyAvailabilityBlockWhereUniqueInput | Prisma.PropertyAvailabilityBlockWhereUniqueInput[]
+  update?: Prisma.PropertyAvailabilityBlockUpdateWithWhereUniqueWithoutCalendarImportInput | Prisma.PropertyAvailabilityBlockUpdateWithWhereUniqueWithoutCalendarImportInput[]
+  updateMany?: Prisma.PropertyAvailabilityBlockUpdateManyWithWhereWithoutCalendarImportInput | Prisma.PropertyAvailabilityBlockUpdateManyWithWhereWithoutCalendarImportInput[]
+  deleteMany?: Prisma.PropertyAvailabilityBlockScalarWhereInput | Prisma.PropertyAvailabilityBlockScalarWhereInput[]
+}
+
+export type PropertyAvailabilityBlockUncheckedUpdateManyWithoutCalendarImportNestedInput = {
+  create?: Prisma.XOR<Prisma.PropertyAvailabilityBlockCreateWithoutCalendarImportInput, Prisma.PropertyAvailabilityBlockUncheckedCreateWithoutCalendarImportInput> | Prisma.PropertyAvailabilityBlockCreateWithoutCalendarImportInput[] | Prisma.PropertyAvailabilityBlockUncheckedCreateWithoutCalendarImportInput[]
+  connectOrCreate?: Prisma.PropertyAvailabilityBlockCreateOrConnectWithoutCalendarImportInput | Prisma.PropertyAvailabilityBlockCreateOrConnectWithoutCalendarImportInput[]
+  upsert?: Prisma.PropertyAvailabilityBlockUpsertWithWhereUniqueWithoutCalendarImportInput | Prisma.PropertyAvailabilityBlockUpsertWithWhereUniqueWithoutCalendarImportInput[]
+  createMany?: Prisma.PropertyAvailabilityBlockCreateManyCalendarImportInputEnvelope
+  set?: Prisma.PropertyAvailabilityBlockWhereUniqueInput | Prisma.PropertyAvailabilityBlockWhereUniqueInput[]
+  disconnect?: Prisma.PropertyAvailabilityBlockWhereUniqueInput | Prisma.PropertyAvailabilityBlockWhereUniqueInput[]
+  delete?: Prisma.PropertyAvailabilityBlockWhereUniqueInput | Prisma.PropertyAvailabilityBlockWhereUniqueInput[]
+  connect?: Prisma.PropertyAvailabilityBlockWhereUniqueInput | Prisma.PropertyAvailabilityBlockWhereUniqueInput[]
+  update?: Prisma.PropertyAvailabilityBlockUpdateWithWhereUniqueWithoutCalendarImportInput | Prisma.PropertyAvailabilityBlockUpdateWithWhereUniqueWithoutCalendarImportInput[]
+  updateMany?: Prisma.PropertyAvailabilityBlockUpdateManyWithWhereWithoutCalendarImportInput | Prisma.PropertyAvailabilityBlockUpdateManyWithWhereWithoutCalendarImportInput[]
+  deleteMany?: Prisma.PropertyAvailabilityBlockScalarWhereInput | Prisma.PropertyAvailabilityBlockScalarWhereInput[]
+}
+
 export type PropertyAvailabilityBlockCreateWithoutPropertyInput = {
   id?: string
   date: Date | string
   note?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  calendarImport?: Prisma.CalendarImportCreateNestedOneWithoutPropertyBlocksInput
 }
 
 export type PropertyAvailabilityBlockUncheckedCreateWithoutPropertyInput = {
   id?: string
   date: Date | string
   note?: string | null
+  calendarImportId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -437,14 +505,60 @@ export type PropertyAvailabilityBlockScalarWhereInput = {
   propertyId?: Prisma.StringFilter<"PropertyAvailabilityBlock"> | string
   date?: Prisma.DateTimeFilter<"PropertyAvailabilityBlock"> | Date | string
   note?: Prisma.StringNullableFilter<"PropertyAvailabilityBlock"> | string | null
+  calendarImportId?: Prisma.StringNullableFilter<"PropertyAvailabilityBlock"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PropertyAvailabilityBlock"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PropertyAvailabilityBlock"> | Date | string
+}
+
+export type PropertyAvailabilityBlockCreateWithoutCalendarImportInput = {
+  id?: string
+  date: Date | string
+  note?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  property: Prisma.PropertyCreateNestedOneWithoutAvailabilityBlocksInput
+}
+
+export type PropertyAvailabilityBlockUncheckedCreateWithoutCalendarImportInput = {
+  id?: string
+  propertyId: string
+  date: Date | string
+  note?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type PropertyAvailabilityBlockCreateOrConnectWithoutCalendarImportInput = {
+  where: Prisma.PropertyAvailabilityBlockWhereUniqueInput
+  create: Prisma.XOR<Prisma.PropertyAvailabilityBlockCreateWithoutCalendarImportInput, Prisma.PropertyAvailabilityBlockUncheckedCreateWithoutCalendarImportInput>
+}
+
+export type PropertyAvailabilityBlockCreateManyCalendarImportInputEnvelope = {
+  data: Prisma.PropertyAvailabilityBlockCreateManyCalendarImportInput | Prisma.PropertyAvailabilityBlockCreateManyCalendarImportInput[]
+  skipDuplicates?: boolean
+}
+
+export type PropertyAvailabilityBlockUpsertWithWhereUniqueWithoutCalendarImportInput = {
+  where: Prisma.PropertyAvailabilityBlockWhereUniqueInput
+  update: Prisma.XOR<Prisma.PropertyAvailabilityBlockUpdateWithoutCalendarImportInput, Prisma.PropertyAvailabilityBlockUncheckedUpdateWithoutCalendarImportInput>
+  create: Prisma.XOR<Prisma.PropertyAvailabilityBlockCreateWithoutCalendarImportInput, Prisma.PropertyAvailabilityBlockUncheckedCreateWithoutCalendarImportInput>
+}
+
+export type PropertyAvailabilityBlockUpdateWithWhereUniqueWithoutCalendarImportInput = {
+  where: Prisma.PropertyAvailabilityBlockWhereUniqueInput
+  data: Prisma.XOR<Prisma.PropertyAvailabilityBlockUpdateWithoutCalendarImportInput, Prisma.PropertyAvailabilityBlockUncheckedUpdateWithoutCalendarImportInput>
+}
+
+export type PropertyAvailabilityBlockUpdateManyWithWhereWithoutCalendarImportInput = {
+  where: Prisma.PropertyAvailabilityBlockScalarWhereInput
+  data: Prisma.XOR<Prisma.PropertyAvailabilityBlockUpdateManyMutationInput, Prisma.PropertyAvailabilityBlockUncheckedUpdateManyWithoutCalendarImportInput>
 }
 
 export type PropertyAvailabilityBlockCreateManyPropertyInput = {
   id?: string
   date: Date | string
   note?: string | null
+  calendarImportId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -455,18 +569,57 @@ export type PropertyAvailabilityBlockUpdateWithoutPropertyInput = {
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  calendarImport?: Prisma.CalendarImportUpdateOneWithoutPropertyBlocksNestedInput
 }
 
 export type PropertyAvailabilityBlockUncheckedUpdateWithoutPropertyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  calendarImportId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type PropertyAvailabilityBlockUncheckedUpdateManyWithoutPropertyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  calendarImportId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type PropertyAvailabilityBlockCreateManyCalendarImportInput = {
+  id?: string
+  propertyId: string
+  date: Date | string
+  note?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type PropertyAvailabilityBlockUpdateWithoutCalendarImportInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  property?: Prisma.PropertyUpdateOneRequiredWithoutAvailabilityBlocksNestedInput
+}
+
+export type PropertyAvailabilityBlockUncheckedUpdateWithoutCalendarImportInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  propertyId?: Prisma.StringFieldUpdateOperationsInput | string
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type PropertyAvailabilityBlockUncheckedUpdateManyWithoutCalendarImportInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  propertyId?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -480,9 +633,11 @@ export type PropertyAvailabilityBlockSelect<ExtArgs extends runtime.Types.Extens
   propertyId?: boolean
   date?: boolean
   note?: boolean
+  calendarImportId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   property?: boolean | Prisma.PropertyDefaultArgs<ExtArgs>
+  calendarImport?: boolean | Prisma.PropertyAvailabilityBlock$calendarImportArgs<ExtArgs>
 }, ExtArgs["result"]["propertyAvailabilityBlock"]>
 
 export type PropertyAvailabilityBlockSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -490,9 +645,11 @@ export type PropertyAvailabilityBlockSelectCreateManyAndReturn<ExtArgs extends r
   propertyId?: boolean
   date?: boolean
   note?: boolean
+  calendarImportId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   property?: boolean | Prisma.PropertyDefaultArgs<ExtArgs>
+  calendarImport?: boolean | Prisma.PropertyAvailabilityBlock$calendarImportArgs<ExtArgs>
 }, ExtArgs["result"]["propertyAvailabilityBlock"]>
 
 export type PropertyAvailabilityBlockSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -500,9 +657,11 @@ export type PropertyAvailabilityBlockSelectUpdateManyAndReturn<ExtArgs extends r
   propertyId?: boolean
   date?: boolean
   note?: boolean
+  calendarImportId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   property?: boolean | Prisma.PropertyDefaultArgs<ExtArgs>
+  calendarImport?: boolean | Prisma.PropertyAvailabilityBlock$calendarImportArgs<ExtArgs>
 }, ExtArgs["result"]["propertyAvailabilityBlock"]>
 
 export type PropertyAvailabilityBlockSelectScalar = {
@@ -510,31 +669,37 @@ export type PropertyAvailabilityBlockSelectScalar = {
   propertyId?: boolean
   date?: boolean
   note?: boolean
+  calendarImportId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type PropertyAvailabilityBlockOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "propertyId" | "date" | "note" | "createdAt" | "updatedAt", ExtArgs["result"]["propertyAvailabilityBlock"]>
+export type PropertyAvailabilityBlockOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "propertyId" | "date" | "note" | "calendarImportId" | "createdAt" | "updatedAt", ExtArgs["result"]["propertyAvailabilityBlock"]>
 export type PropertyAvailabilityBlockInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   property?: boolean | Prisma.PropertyDefaultArgs<ExtArgs>
+  calendarImport?: boolean | Prisma.PropertyAvailabilityBlock$calendarImportArgs<ExtArgs>
 }
 export type PropertyAvailabilityBlockIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   property?: boolean | Prisma.PropertyDefaultArgs<ExtArgs>
+  calendarImport?: boolean | Prisma.PropertyAvailabilityBlock$calendarImportArgs<ExtArgs>
 }
 export type PropertyAvailabilityBlockIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   property?: boolean | Prisma.PropertyDefaultArgs<ExtArgs>
+  calendarImport?: boolean | Prisma.PropertyAvailabilityBlock$calendarImportArgs<ExtArgs>
 }
 
 export type $PropertyAvailabilityBlockPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "PropertyAvailabilityBlock"
   objects: {
     property: Prisma.$PropertyPayload<ExtArgs>
+    calendarImport: Prisma.$CalendarImportPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     propertyId: string
     date: Date
     note: string | null
+    calendarImportId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["propertyAvailabilityBlock"]>
@@ -932,6 +1097,7 @@ readonly fields: PropertyAvailabilityBlockFieldRefs;
 export interface Prisma__PropertyAvailabilityBlockClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   property<T extends Prisma.PropertyDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PropertyDefaultArgs<ExtArgs>>): Prisma.Prisma__PropertyClient<runtime.Types.Result.GetResult<Prisma.$PropertyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  calendarImport<T extends Prisma.PropertyAvailabilityBlock$calendarImportArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PropertyAvailabilityBlock$calendarImportArgs<ExtArgs>>): Prisma.Prisma__CalendarImportClient<runtime.Types.Result.GetResult<Prisma.$CalendarImportPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -965,6 +1131,7 @@ export interface PropertyAvailabilityBlockFieldRefs {
   readonly propertyId: Prisma.FieldRef<"PropertyAvailabilityBlock", 'String'>
   readonly date: Prisma.FieldRef<"PropertyAvailabilityBlock", 'DateTime'>
   readonly note: Prisma.FieldRef<"PropertyAvailabilityBlock", 'String'>
+  readonly calendarImportId: Prisma.FieldRef<"PropertyAvailabilityBlock", 'String'>
   readonly createdAt: Prisma.FieldRef<"PropertyAvailabilityBlock", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"PropertyAvailabilityBlock", 'DateTime'>
 }
@@ -1365,6 +1532,25 @@ export type PropertyAvailabilityBlockDeleteManyArgs<ExtArgs extends runtime.Type
    * Limit how many PropertyAvailabilityBlocks to delete.
    */
   limit?: number
+}
+
+/**
+ * PropertyAvailabilityBlock.calendarImport
+ */
+export type PropertyAvailabilityBlock$calendarImportArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CalendarImport
+   */
+  select?: Prisma.CalendarImportSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CalendarImport
+   */
+  omit?: Prisma.CalendarImportOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CalendarImportInclude<ExtArgs> | null
+  where?: Prisma.CalendarImportWhereInput
 }
 
 /**

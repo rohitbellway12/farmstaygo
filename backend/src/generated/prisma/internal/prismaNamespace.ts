@@ -412,7 +412,8 @@ export const ModelName = {
   Setting: 'Setting',
   SocialLink: 'SocialLink',
   Faq: 'Faq',
-  Review: 'Review'
+  Review: 'Review',
+  CalendarImport: 'CalendarImport'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -428,7 +429,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "vendor" | "vendorCommission" | "propertyCategory" | "serviceCity" | "cmsPage" | "blogPost" | "amenity" | "property" | "propertyAmenity" | "propertyRule" | "propertyRuleAssignment" | "propertyImage" | "roomType" | "roomAmenity" | "roomImage" | "propertyAvailabilityBlock" | "roomAvailabilityBlock" | "wishlist" | "booking" | "payment" | "notification" | "contactMessage" | "supportTicket" | "supportTicketReply" | "setting" | "socialLink" | "faq" | "review"
+    modelProps: "user" | "vendor" | "vendorCommission" | "propertyCategory" | "serviceCity" | "cmsPage" | "blogPost" | "amenity" | "property" | "propertyAmenity" | "propertyRule" | "propertyRuleAssignment" | "propertyImage" | "roomType" | "roomAmenity" | "roomImage" | "propertyAvailabilityBlock" | "roomAvailabilityBlock" | "wishlist" | "booking" | "payment" | "notification" | "contactMessage" | "supportTicket" | "supportTicketReply" | "setting" | "socialLink" | "faq" | "review" | "calendarImport"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2578,6 +2579,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CalendarImport: {
+      payload: Prisma.$CalendarImportPayload<ExtArgs>
+      fields: Prisma.CalendarImportFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CalendarImportFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarImportPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CalendarImportFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarImportPayload>
+        }
+        findFirst: {
+          args: Prisma.CalendarImportFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarImportPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CalendarImportFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarImportPayload>
+        }
+        findMany: {
+          args: Prisma.CalendarImportFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarImportPayload>[]
+        }
+        create: {
+          args: Prisma.CalendarImportCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarImportPayload>
+        }
+        createMany: {
+          args: Prisma.CalendarImportCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CalendarImportCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarImportPayload>[]
+        }
+        delete: {
+          args: Prisma.CalendarImportDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarImportPayload>
+        }
+        update: {
+          args: Prisma.CalendarImportUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarImportPayload>
+        }
+        deleteMany: {
+          args: Prisma.CalendarImportDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CalendarImportUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CalendarImportUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarImportPayload>[]
+        }
+        upsert: {
+          args: Prisma.CalendarImportUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarImportPayload>
+        }
+        aggregate: {
+          args: Prisma.CalendarImportAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCalendarImport>
+        }
+        groupBy: {
+          args: Prisma.CalendarImportGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CalendarImportGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CalendarImportCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CalendarImportCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2920,6 +2995,7 @@ export const PropertyAvailabilityBlockScalarFieldEnum = {
   propertyId: 'propertyId',
   date: 'date',
   note: 'note',
+  calendarImportId: 'calendarImportId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -2933,6 +3009,7 @@ export const RoomAvailabilityBlockScalarFieldEnum = {
   date: 'date',
   blockedRooms: 'blockedRooms',
   note: 'note',
+  calendarImportId: 'calendarImportId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -3122,6 +3199,21 @@ export const ReviewScalarFieldEnum = {
 } as const
 
 export type ReviewScalarFieldEnum = (typeof ReviewScalarFieldEnum)[keyof typeof ReviewScalarFieldEnum]
+
+
+export const CalendarImportScalarFieldEnum = {
+  id: 'id',
+  propertyId: 'propertyId',
+  name: 'name',
+  url: 'url',
+  isActive: 'isActive',
+  lastSyncAt: 'lastSyncAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CalendarImportScalarFieldEnum = (typeof CalendarImportScalarFieldEnum)[keyof typeof CalendarImportScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -3607,6 +3699,7 @@ export type GlobalOmitConfig = {
   socialLink?: Prisma.SocialLinkOmit
   faq?: Prisma.FaqOmit
   review?: Prisma.ReviewOmit
+  calendarImport?: Prisma.CalendarImportOmit
 }
 
 /* Types for Logging */

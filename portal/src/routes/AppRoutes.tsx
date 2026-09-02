@@ -52,6 +52,7 @@ import ManageRoomsPage from "../vendor/pages/ManageRoomsPage";
 import RoomInventoryPage from "../vendor/pages/RoomInventoryPage";
 import RoomFormPage from "../vendor/pages/RoomFormPage";
 import AvailabilityCalendarPage from "../vendor/pages/AvailabilityCalendarPage";
+import CalendarSyncPage from "../vendor/pages/CalendarSyncPage";
 import KycBankPage from "../vendor/pages/KycBankPage";
 import VendorSettingsPage from "../vendor/pages/VendorSettingsPage";
 import VendorSupportPage from "../vendor/pages/VendorSupportPage";
@@ -354,12 +355,19 @@ export default function AppRoutes() {
             element={<VendorBookingsPage />}
           />
 
-         <Route
-  path="calendar"
-  element={
-    <AvailabilityCalendarPage />
-  }
-/>
+          <Route
+            path="calendar"
+            element={
+              <AvailabilityCalendarPage />
+            }
+          />
+
+          <Route
+            path="calendar-sync"
+            element={
+              <CalendarSyncPage />
+            }
+          />
 
           <Route
             path="pricing"

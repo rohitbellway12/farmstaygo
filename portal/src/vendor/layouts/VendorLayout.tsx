@@ -101,6 +101,19 @@ const menuItems: MenuItem[] = [
     ),
   },
   {
+    group: "operations",
+    label: "Calendar Sync",
+    path: "/vendor/calendar-sync",
+    icon: (
+      <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M3 12a9 9 0 1 1 18 0 9 9 0 0 1-18 0Z" />
+        <path d="M12 8v4l2 2" />
+        <path d="M17 8l5 4-5 8" />
+        <path d="M2 12h20" />
+      </svg>
+    ),
+  },
+  {
     group: "money",
     label: "Earnings",
     path: "/vendor/earnings",
@@ -183,6 +196,7 @@ const pageTitles: Record<string, string> = {
   "/vendor/rooms": "Manage Rooms",
   "/vendor/bookings": "Bookings",
   "/vendor/calendar": "Calendar",
+  "/vendor/calendar-sync": "Calendar Sync",
   "/vendor/pricing": "Pricing",
   "/vendor/earnings": "Earnings",
   "/vendor/payouts": "Payouts",
