@@ -28,23 +28,9 @@ CREATE INDEX IF NOT EXISTS "reviews_property_id_status_idx" ON "reviews"("proper
 CREATE INDEX IF NOT EXISTS "reviews_status_created_at_idx" ON "reviews"("status", "created_at");
 
 -- 4. Add foreign key for reviews
-DO $$ BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.table_constraints 
-        WHERE constraint_name = 'reviews_property_id_fkey'
-    THEN
-        ALTER TABLE "reviews" 
-        ADD CONSTRAINT "reviews_property_id_fkey" 
-        FOREIGN KEY ("property_id") REFERENCES "Property"("id") ON DELETE CASCADE;
-    END IF;
-END $$;
+ALTER TABLE "reviews" 
+    ADD CONSTRAINT "reviews_property_id_fkey" 
+    FOREIGN KEY ("property_id") REFERENCES "Property"("id") ON DELETE CASCADE;
 
 -- 5. Add services column to Property table
-DO $$ BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'Property' AND column_name = 'services'
-    THEN
-        ALTER TABLE "Property" ADD COLUMN services TEXT[] DEFAULT ARRAY[]::TEXT[];
-    END IF;
-END $$;
+ALTER TABLE "Property" ADD COLUMN IF NOT EXISTS services TEXT[] DEFAULT ARRAY[]::TEXT[];
