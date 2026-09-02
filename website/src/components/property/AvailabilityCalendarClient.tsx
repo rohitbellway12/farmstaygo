@@ -43,14 +43,6 @@ function getNextMonthDateKey(dateKey: string): string {
   );
 }
 
-function getFirstOfMonthDateKey(dateKey: string): string {
-  const date = parseDateKey(dateKey);
-
-  return localDateKey(
-    new Date(date.getFullYear(), date.getMonth(), 1)
-  );
-}
-
 function parseDateKey(dateKey: string): Date {
   return new Date(`${dateKey}T00:00:00`);
 }
@@ -199,13 +191,8 @@ export default function AvailabilityCalendarClient({
     []
   );
 
-  const firstOfMonth = useMemo(
-    () => getFirstOfMonthDateKey(today),
-    [today]
-  );
-
   const [startDate, setStartDate] =
-    useState(firstOfMonth);
+    useState(today);
 
   const [availability, setAvailability] =
     useState<
