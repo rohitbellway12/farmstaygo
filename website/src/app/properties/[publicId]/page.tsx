@@ -6,6 +6,7 @@ import { getAssetUrl } from "@/lib/assets";
 import AmenitiesSection from "@/components/property/AmenitiesSection";
 import AvailabilityCalendarClient from "@/components/property/AvailabilityCalendarClient";
 import BookingSection from "@/components/property/BookingSection";
+import ImageGallery from "@/components/property/ImageGallery";
 import PropertyMapClient from "@/components/property/PropertyMapClient";
 import PropertyPoliciesModal from "@/components/property/PropertyPoliciesModal";
 import ReviewsSection from "@/components/property/ReviewsSection";
@@ -324,37 +325,10 @@ export default async function PropertyDetailsPage({
       </section>
 
       <section className="site-container py-6">
-        <div className="grid h-[260px] gap-3 overflow-hidden rounded-xl sm:h-[360px] md:h-[460px] md:grid-cols-[2fr_1fr]">
-          {coverImage ? (
-            <ImageTile
-              image={coverImage}
-              title={property.displayTitle}
-            />
-          ) : (
-            <div className="grid h-full place-items-center bg-brand-50 text-brand-700">
-              No image available
-            </div>
-          )}
-
-          <div className="hidden grid-cols-2 gap-3 md:grid">
-            {galleryImages.length > 0
-              ? galleryImages.map((image) => (
-                  <ImageTile
-                    key={image.id}
-                    image={image}
-                    title={property.displayTitle}
-                  />
-                ))
-              : Array.from({ length: 4 }).map(
-                  (_, index) => (
-                    <div
-                      key={index}
-                      className="bg-brand-50"
-                    />
-                  )
-                )}
-          </div>
-        </div>
+        <ImageGallery
+          images={property.images}
+          title={property.displayTitle}
+        />
       </section>
 
       <section className="site-container grid gap-8 pb-14 lg:grid-cols-[minmax(0,1fr)_340px]">
