@@ -33,11 +33,14 @@ export default function ImageGallery({
   }
 
   const coverImage =
-    images.find((image) => image.isCover) ||
-    images[0];
+    images.find((image) => image.isCover) || images[0];
 
   const remainingImages = images.filter(
-    (image) => image.id !== coverImage?.id
+    (image) => image.id !== coverImage.id
+  );
+
+  const coverIndex = images.findIndex(
+    (image) => image.id === coverImage.id
   );
 
   const openPreview = (index: number) => {
@@ -57,12 +60,17 @@ export default function ImageGallery({
   };
 
   const showNext = () => {
-    if (selectedIndex !== null && selectedIndex < images.length - 1) {
+    if (
+      selectedIndex !== null &&
+      selectedIndex < images.length - 1
+    ) {
       setSelectedIndex(selectedIndex + 1);
     }
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent) => {
+  const handleKeyDown = (
+    event: React.KeyboardEvent<HTMLDivElement>
+  ) => {
     if (event.key === "ArrowLeft") {
       showPrevious();
     } else if (event.key === "ArrowRight") {
@@ -73,38 +81,44 @@ export default function ImageGallery({
   };
 
   const renderMainGrid = () => {
+    /* =====================================================
+       1 IMAGE
+    ===================================================== */
     if (images.length === 1) {
       return (
         <div className="h-[260px] sm:h-[360px] md:h-[460px]">
           <button
             type="button"
             onClick={() => openPreview(0)}
-            className="h-full w-full overflow-hidden rounded-xl"
+            className="block h-full w-full overflow-hidden rounded-xl"
           >
             <img
               src={getAssetUrl(coverImage.image)}
               alt={coverImage.altText || title}
-              className="h-full w-full cursor-pointer object-cover transition hover:scale-105"
+              className="block h-full w-full cursor-pointer object-cover transition hover:scale-105"
             />
           </button>
         </div>
       );
     }
 
+    /* =====================================================
+       2 IMAGES
+    ===================================================== */
     if (images.length === 2) {
       return (
-        <div className="grid h-[260px] grid-cols-2 gap-3 sm:h-[360px] md:h-[460px]">
+        <div className="grid h-[260px] min-h-0 grid-cols-2 gap-3 sm:h-[360px] md:h-[460px]">
           {images.map((image, idx) => (
             <button
               key={image.id}
               type="button"
               onClick={() => openPreview(idx)}
-              className="overflow-hidden rounded-xl"
+              className="h-full min-h-0 w-full overflow-hidden rounded-xl"
             >
               <img
                 src={getAssetUrl(image.image)}
                 alt={image.altText || title}
-                className="h-full w-full cursor-pointer object-cover transition hover:scale-105"
+                className="block h-full w-full cursor-pointer object-cover transition hover:scale-105"
               />
             </button>
           ))}
@@ -112,35 +126,42 @@ export default function ImageGallery({
       );
     }
 
+    /* =====================================================
+       3 IMAGES
+    ===================================================== */
     if (images.length === 3) {
       return (
-        <div className="grid h-[260px] grid-cols-2 gap-3 sm:h-[360px] md:h-[460px]">
+        <div className="grid h-[260px] min-h-0 grid-cols-2 grid-rows-2 gap-3 sm:h-[360px] md:h-[460px]">
+          {/* COVER IMAGE */}
           <button
             type="button"
-            onClick={() => openPreview(0)}
-            className="row-span-2 overflow-hidden rounded-xl"
+            onClick={() => openPreview(coverIndex)}
+            className="row-span-2 h-full min-h-0 w-full overflow-hidden rounded-xl"
           >
             <img
               src={getAssetUrl(coverImage.image)}
               alt={coverImage.altText || title}
-              className="h-full w-full cursor-pointer object-cover transition hover:scale-105"
+              className="block h-full w-full cursor-pointer object-cover transition hover:scale-105"
             />
           </button>
-          {remainingImages.slice(0, 2).map((image, idx) => {
+
+          {/* OTHER 2 IMAGES */}
+          {remainingImages.slice(0, 2).map((image) => {
             const globalIndex = images.findIndex(
               (img) => img.id === image.id
             );
+
             return (
               <button
                 key={image.id}
                 type="button"
                 onClick={() => openPreview(globalIndex)}
-                className="overflow-hidden rounded-xl"
+                className="h-full min-h-0 w-full overflow-hidden rounded-xl"
               >
                 <img
                   src={getAssetUrl(image.image)}
                   alt={image.altText || title}
-                  className="h-full w-full cursor-pointer object-cover transition hover:scale-105"
+                  className="block h-full w-full cursor-pointer object-cover transition hover:scale-105"
                 />
               </button>
             );
@@ -149,20 +170,35 @@ export default function ImageGallery({
       );
     }
 
+    /* =====================================================
+       4 IMAGES
+       2 X 2 EQUAL GRID
+    ===================================================== */
     if (images.length === 4) {
       return (
-        <div className="grid h-[260px] grid-cols-2 gap-3 sm:h-[360px] md:h-[460px]">
+        <div
+          className="
+            grid
+            h-[260px]
+            min-h-0
+            grid-cols-2
+            grid-rows-[minmax(0,1fr)_minmax(0,1fr)]
+            gap-3
+            sm:h-[360px]
+            md:h-[460px]
+          "
+        >
           {images.map((image, idx) => (
             <button
               key={image.id}
               type="button"
               onClick={() => openPreview(idx)}
-              className="overflow-hidden rounded-xl"
+              className="h-full min-h-0 w-full overflow-hidden rounded-xl"
             >
               <img
                 src={getAssetUrl(image.image)}
                 alt={image.altText || title}
-                className="h-full w-full cursor-pointer object-cover transition hover:scale-105"
+                className="block h-full min-h-0 w-full cursor-pointer object-cover transition hover:scale-105"
               />
             </button>
           ))}
@@ -170,21 +206,68 @@ export default function ImageGallery({
       );
     }
 
+    /* =====================================================
+       5+ IMAGES
+       
+       LEFT  = BIG COVER
+       RIGHT = 4 EQUAL IMAGES (2 X 2)
+    ===================================================== */
     return (
-      <div className="grid h-[260px] gap-3 overflow-hidden rounded-xl sm:h-[360px] md:h-[460px] md:grid-cols-[2fr_1fr]">
+      <div
+        className="
+          grid
+          h-[260px]
+          min-h-0
+          grid-cols-1
+          gap-3
+          sm:h-[360px]
+          md:h-[460px]
+          md:grid-cols-[2fr_1fr]
+        "
+      >
+        {/* ================================================
+            LEFT - LARGE COVER IMAGE
+        ================================================= */}
         <button
           type="button"
-          onClick={() => openPreview(0)}
-          className="overflow-hidden rounded-l-xl"
+          onClick={() => openPreview(coverIndex)}
+          className="
+            h-full
+            min-h-0
+            w-full
+            overflow-hidden
+            rounded-xl
+          "
         >
           <img
             src={getAssetUrl(coverImage.image)}
             alt={coverImage.altText || title}
-            className="h-full w-full cursor-pointer object-cover transition hover:scale-105"
+            className="
+              block
+              h-full
+              min-h-0
+              w-full
+              cursor-pointer
+              object-cover
+              transition
+              hover:scale-105
+            "
           />
         </button>
 
-        <div className="hidden grid-cols-2 gap-3 md:grid">
+        {/* ================================================
+            RIGHT - 4 EQUAL IMAGES
+        ================================================= */}
+        <div
+          className="
+            hidden
+            min-h-0
+            grid-cols-2
+            grid-rows-[minmax(0,1fr)_minmax(0,1fr)]
+            gap-3
+            md:grid
+          "
+        >
           {remainingImages.slice(0, 4).map((image) => {
             const globalIndex = images.findIndex(
               (img) => img.id === image.id
@@ -194,15 +277,28 @@ export default function ImageGallery({
               <button
                 key={image.id}
                 type="button"
-                onClick={() =>
-                  openPreview(globalIndex)
-                }
-                className="overflow-hidden"
+                onClick={() => openPreview(globalIndex)}
+                className="
+                  h-full
+                  min-h-0
+                  w-full
+                  overflow-hidden
+                  rounded-xl
+                "
               >
                 <img
                   src={getAssetUrl(image.image)}
                   alt={image.altText || title}
-                  className="h-full w-full cursor-pointer object-cover transition hover:scale-105"
+                  className="
+                    block
+                    h-full
+                    min-h-0
+                    w-full
+                    cursor-pointer
+                    object-cover
+                    transition
+                    hover:scale-105
+                  "
                 />
               </button>
             );
@@ -214,8 +310,12 @@ export default function ImageGallery({
 
   return (
     <>
+      {/* MAIN GALLERY */}
       {renderMainGrid()}
 
+      {/* =====================================================
+          THUMBNAILS
+      ===================================================== */}
       {images.length > 1 && (
         <div className="mt-3 flex gap-3 overflow-x-auto pb-2">
           {images.map((image, index) => (
@@ -223,28 +323,67 @@ export default function ImageGallery({
               key={image.id}
               type="button"
               onClick={() => openPreview(index)}
-              className="h-20 w-28 shrink-0 overflow-hidden rounded-lg border border-ink-100 transition hover:border-brand-300"
+              className="
+                h-20
+                w-28
+                shrink-0
+                overflow-hidden
+                rounded-lg
+                border
+                border-ink-100
+                transition
+                hover:border-brand-300
+              "
             >
               <img
                 src={getAssetUrl(image.image)}
                 alt={image.altText || title}
-                className="h-full w-full object-cover"
+                className="block h-full w-full object-cover"
               />
             </button>
           ))}
         </div>
       )}
 
+      {/* =====================================================
+          IMAGE PREVIEW / LIGHTBOX
+      ===================================================== */}
       {selectedIndex !== null && (
         <div
-          className="fixed inset-0 z-50 grid place-items-center bg-black/90 p-4"
+          className="
+            fixed
+            inset-0
+            z-50
+            grid
+            place-items-center
+            bg-black/90
+            p-4
+          "
           onClick={closePreview}
           onKeyDown={handleKeyDown}
+          role="dialog"
+          aria-modal="true"
         >
+          {/* CLOSE BUTTON */}
           <button
             type="button"
             onClick={closePreview}
-            className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
+            className="
+              absolute
+              right-4
+              top-4
+              z-10
+              grid
+              h-10
+              w-10
+              place-items-center
+              rounded-full
+              bg-white/10
+              text-white
+              backdrop-blur-sm
+              transition
+              hover:bg-white/20
+            "
           >
             <svg
               viewBox="0 0 24 24"
@@ -257,6 +396,7 @@ export default function ImageGallery({
             </svg>
           </button>
 
+          {/* PREVIOUS */}
           {selectedIndex > 0 && (
             <button
               type="button"
@@ -264,7 +404,23 @@ export default function ImageGallery({
                 event.stopPropagation();
                 showPrevious();
               }}
-              className="absolute left-4 top-1/2 z-10 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
+              className="
+                absolute
+                left-4
+                top-1/2
+                z-10
+                grid
+                h-12
+                w-12
+                -translate-y-1/2
+                place-items-center
+                rounded-full
+                bg-white/10
+                text-white
+                backdrop-blur-sm
+                transition
+                hover:bg-white/20
+              "
             >
               <svg
                 viewBox="0 0 24 24"
@@ -278,6 +434,7 @@ export default function ImageGallery({
             </button>
           )}
 
+          {/* NEXT */}
           {selectedIndex < images.length - 1 && (
             <button
               type="button"
@@ -285,7 +442,23 @@ export default function ImageGallery({
                 event.stopPropagation();
                 showNext();
               }}
-              className="absolute right-4 top-1/2 z-10 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
+              className="
+                absolute
+                right-4
+                top-1/2
+                z-10
+                grid
+                h-12
+                w-12
+                -translate-y-1/2
+                place-items-center
+                rounded-full
+                bg-white/10
+                text-white
+                backdrop-blur-sm
+                transition
+                hover:bg-white/20
+              "
             >
               <svg
                 viewBox="0 0 24 24"
@@ -299,16 +472,41 @@ export default function ImageGallery({
             </button>
           )}
 
+          {/* LARGE PREVIEW IMAGE */}
           <img
-            src={getAssetUrl(images[selectedIndex].image)}
-            alt={images[selectedIndex].altText || title}
-            className="max-h-[90vh] max-w-full object-contain"
+            src={getAssetUrl(
+              images[selectedIndex].image
+            )}
+            alt={
+              images[selectedIndex].altText || title
+            }
+            className="
+              max-h-[90vh]
+              max-w-full
+              object-contain
+            "
             onClick={(event) =>
               event.stopPropagation()
             }
           />
 
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-white backdrop-blur-sm">
+          {/* IMAGE COUNTER */}
+          <div
+            className="
+              absolute
+              bottom-4
+              left-1/2
+              -translate-x-1/2
+              rounded-full
+              bg-white/10
+              px-3
+              py-1
+              text-xs
+              font-bold
+              text-white
+              backdrop-blur-sm
+            "
+          >
             {selectedIndex + 1} / {images.length}
           </div>
         </div>
