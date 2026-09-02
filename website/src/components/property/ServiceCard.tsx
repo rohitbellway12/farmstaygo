@@ -12,37 +12,37 @@ type ServiceConfig = {
 const serviceConfigs: Record<string, ServiceConfig> = {
   swiggy: {
     name: "Swiggy",
-    logo: "https://logo.clearbit.com/swiggy.com",
+    logo: "/services/swiggy.png",
     bg: "#fc8019",
     textColor: "#ffffff",
   },
   zomato: {
     name: "Zomato",
-    logo: "https://logo.clearbit.com/zomato.com",
+    logo: "/services/zomato.png",
     bg: "#e23744",
     textColor: "#ffffff",
   },
   uber: {
     name: "Uber",
-    logo: "https://logo.clearbit.com/uber.com",
+    logo: "/services/uber.png",
     bg: "#000000",
     textColor: "#ffffff",
   },
   ola: {
     name: "Ola Cabs",
-    logo: "https://logo.clearbit.com/olacabs.com",
+    logo: "/services/ola.png",
     bg: "#1c9e0f",
     textColor: "#ffffff",
   },
   zepto: {
     name: "Zepto",
-    logo: "https://logo.clearbit.com/zeptonow.com",
+    logo: "/services/zepto.png",
     bg: "#4c1d95",
     textColor: "#ffffff",
   },
   asag_travels: {
     name: "ASAG Travels",
-    logo: "",
+    logo: "/services/asag-travels.png",
     bg: "#1b3a27",
     textColor: "#ffffff",
   },
@@ -65,8 +65,7 @@ export default function ServiceCard({ serviceId }: ServiceCardProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-ink-100 bg-white p-4 text-center shadow-[0_4px_12px_rgba(27,58,39,0.08)] hover:shadow-[0_8px_20px_rgba(27,58,39,0.12)] transition-shadow">
       <span
-        className="grid h-12 w-12 shrink-0 place-items-center rounded-xl overflow-hidden"
-        style={{ backgroundColor: config.bg }}
+        className="grid h-12 w-12 shrink-0 place-items-center rounded-xl overflow-hidden bg-white"
       >
         {config.logo && !imageError ? (
           <img

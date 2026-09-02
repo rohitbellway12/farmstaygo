@@ -476,43 +476,43 @@ const availableServices: Array<{
     id: "swiggy",
     label: "Swiggy",
     alwaysVisible: false,
-    logo: "https://logo.clearbit.com/swiggy.com",
-    bg: "#fc8019",
+    logo: "/services/swiggy.png",
+    bg: "#ffffff",
   },
   {
     id: "zomato",
     label: "Zomato",
     alwaysVisible: false,
-    logo: "https://logo.clearbit.com/zomato.com",
-    bg: "#e23744",
+    logo: "/services/zomato.png",
+    bg: "#ffffff",
   },
   {
     id: "uber",
     label: "Uber",
     alwaysVisible: false,
-    logo: "https://logo.clearbit.com/uber.com",
-    bg: "#000000",
+    logo: "/services/uber.png",
+    bg: "#ffffff",
   },
   {
     id: "ola",
     label: "Ola Cabs",
     alwaysVisible: false,
-    logo: "https://logo.clearbit.com/olacabs.com",
-    bg: "#1c9e0f",
+    logo: "/services/ola.png",
+    bg: "#ffffff",
   },
   {
     id: "zepto",
     label: "Zepto",
     alwaysVisible: false,
-    logo: "https://logo.clearbit.com/zeptonow.com",
-    bg: "#4c1d95",
+    logo: "/services/zepto.png",
+    bg: "#ffffff",
   },
   {
     id: "asag_travels",
     label: "ASAG Travels",
     alwaysVisible: true,
-    logo: "",
-    bg: "#1b3a27",
+    logo: "/services/asag-travels.png",
+    bg: "#ffffff",
   },
 ];
 
@@ -3411,77 +3411,68 @@ const handleMovePropertyImage =
             </p>
           </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {availableServices.map((service) => {
-              const isSelected = form.services.includes(service.id);
+           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+             {availableServices.map((service) => {
+               const isSelected = form.services.includes(service.id);
 
-              return (
-                <button
-                  key={service.id}
-                  type="button"
-                  disabled={editingBlocked}
-                  onClick={() => {
-                    if (service.alwaysVisible) return;
-                    setForm((currentForm) => ({
-                      ...currentForm,
-                      services: isSelected
-                        ? currentForm.services.filter((s) => s !== service.id)
-                        : [...currentForm.services, service.id],
-                    }));
-                  }}
-                  className={`flex items-center gap-3 rounded-xl border p-4 text-left transition ${
-                    isSelected || service.alwaysVisible
-                      ? "border-primary-500 bg-primary-50 ring-2 ring-primary-100"
-                      : "border-border bg-surface hover:border-primary-300 hover:bg-primary-50/40"
-                  }`}
-                >
-                  <span
-                    className="grid h-10 w-10 shrink-0 place-items-center rounded-lg overflow-hidden"
-                    style={{ backgroundColor: service.bg }}
-                  >
-                    {service.logo ? (
-                      <img
-                        src={service.logo}
-                        alt={service.label}
-                        className="h-full w-full object-contain p-1"
-                        onError={(e) => {
-                          const target = e.currentTarget;
-                          target.style.display = "none";
-                          const parent = target.parentElement;
-                          if (parent) {
-                            parent.innerHTML = `<span style="color:#fff;font-weight:900;font-size:13px;">${service.label.slice(0, 2).toUpperCase()}</span>`;
-                          }
-                        }}
-                      />
-                    ) : (
-                      <span style={{ color: "#fff" }} className="font-black text-sm">
-                        {service.label.slice(0, 2).toUpperCase()}
-                      </span>
-                    )}
-                  </span>
+               return (
+                 <button
+                   key={service.id}
+                   type="button"
+                   disabled={editingBlocked}
+                   onClick={() => {
+                     if (service.alwaysVisible) return;
+                     setForm((currentForm) => ({
+                       ...currentForm,
+                       services: isSelected
+                         ? currentForm.services.filter((s) => s !== service.id)
+                         : [...currentForm.services, service.id],
+                     }));
+                   }}
+                   className={`flex items-center gap-3 rounded-xl border p-4 text-left transition ${
+                     isSelected || service.alwaysVisible
+                       ? "border-primary-500 bg-primary-50 ring-2 ring-primary-100"
+                       : "border-border bg-surface hover:border-primary-300 hover:bg-primary-50/40"
+                   }`}
+                 >
+                   <span
+                     className="grid h-10 w-10 shrink-0 place-items-center rounded-lg overflow-hidden bg-white border border-border"
+                   >
+                     {service.logo ? (
+                       <img
+                         src={service.logo}
+                         alt={service.label}
+                         className="h-full w-full object-contain p-1"
+                       />
+                     ) : (
+                       <span style={{ color: "#333" }} className="font-black text-sm">
+                         {service.label.slice(0, 2).toUpperCase()}
+                       </span>
+                     )}
+                   </span>
 
-                  <span className="min-w-0 flex-1">
-                    <strong className="block text-base font-extrabold text-text-main">
-                      {service.label}
-                    </strong>
-                    {service.alwaysVisible && (
-                      <span className="mt-0.5 block text-xs text-text-muted">Always available</span>
-                    )}
-                  </span>
+                   <span className="min-w-0 flex-1">
+                     <strong className="block text-base font-extrabold text-text-main">
+                       {service.label}
+                     </strong>
+                     {service.alwaysVisible && (
+                       <span className="mt-0.5 block text-xs text-text-muted">Always available</span>
+                     )}
+                   </span>
 
-                  <span
-                    className={`grid h-6 w-6 shrink-0 place-items-center rounded-full border ${
-                      isSelected || service.alwaysVisible
-                        ? "border-primary-700 bg-primary-700 text-white"
-                        : "border-border-strong bg-surface"
-                    }`}
-                  >
-                    {(isSelected || service.alwaysVisible) && <CheckIcon />}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+                   <span
+                     className={`grid h-6 w-6 shrink-0 place-items-center rounded-full border ${
+                       isSelected || service.alwaysVisible
+                         ? "border-primary-700 bg-primary-700 text-white"
+                         : "border-border-strong bg-surface"
+                     }`}
+                   >
+                     {(isSelected || service.alwaysVisible) && <CheckIcon />}
+                   </span>
+                 </button>
+               );
+             })}
+           </div>
         </section>
 
         {/* Form Footer */}
