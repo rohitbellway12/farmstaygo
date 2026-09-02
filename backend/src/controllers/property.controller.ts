@@ -31,6 +31,7 @@ interface PropertyBasicInfoBody {
   totalRooms?: unknown;
   cancellationPolicy?: unknown;
   termsConditions?: unknown;
+  services?: unknown;
 }
 
 /*
@@ -983,6 +984,46 @@ export const updatePropertyBasicInfo = async (
     if (body.termsConditions !== undefined) {
       updateData.termsConditions =
         cleanOptionalString(body.termsConditions);
+    }
+
+    if (body.services !== undefined) {
+      if (!Array.isArray(body.services)) {
+        errors.services =
+          "Services must be an array of service IDs.";
+      } else {
+        const validServiceIds = [
+          "swiggy",
+          "zomato",
+          "uber",
+          "ola",
+          "zepto",
+          "asag_travels",
+        ];
+
+        const invalidServices = (
+          body.services as unknown[]
+        ).filter(
+          (service) =>
+            typeof service !== "string" ||
+            !validServiceIds.includes(service)
+        );
+
+        if (invalidServices.length > 0) {
+          errors.services =
+            "One or more selected services are invalid.";
+        } else {
+          const servicesArray =
+            body.services as string[];
+
+          if (
+            !servicesArray.includes("asag_travels")
+          ) {
+            servicesArray.push("asag_travels");
+          }
+
+          updateData.services = servicesArray;
+        }
+      }
     }
 
     const capacityValidation =

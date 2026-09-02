@@ -25,6 +25,10 @@ import {
 } from "../controllers/payment-gateway.controller.js";
 
 import {
+  syncPropertyCalendarImports,
+} from "./calendar.controller.js";
+
+import {
   sendBookingConfirmationEmail,
   sendBookingConfirmedAdminEmail,
   sendBookingConfirmedCustomerEmail,
@@ -523,6 +527,9 @@ const getBookingQuote = async (
   } = input;
 
   const nights = buildNights(checkIn, checkOut);
+
+  // Real-time live verification: fetch latest external iCal availability before locking slot
+  await syncPropertyCalendarImports(propertyId);
 
   return await prisma.$transaction(
     async (transaction) => {

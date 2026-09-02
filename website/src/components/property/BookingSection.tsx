@@ -39,6 +39,30 @@ export default function BookingSection({
   const [checkOut, setCheckOut] = useState(tomorrow);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    const qCheckIn = params.get("checkIn");
+    const qCheckOut = params.get("checkOut");
+
+    if (qCheckIn) setCheckIn(qCheckIn);
+    if (qCheckOut) setCheckOut(qCheckOut);
+
+    if (window.location.hash === "#booking-panel" || (qCheckIn && qCheckOut)) {
+      setTimeout(() => {
+        const el = document.getElementById("booking-panel");
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          el.classList.add("ring-2", "ring-brand-500", "ring-offset-2");
+          setTimeout(() => {
+            el.classList.remove("ring-2", "ring-brand-500", "ring-offset-2");
+          }, 2000);
+        }
+      }, 300);
+    }
+  }, []);
+
+  useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY && e.newValue) {
         try {

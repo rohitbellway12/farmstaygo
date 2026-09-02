@@ -2,12 +2,28 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 
 import { apiFetch } from "@/lib/api";
 import type {
   PropertyBookingType,
   PublicAvailabilityResponse,
 } from "@/types/public";
+
+function getCustomerAuthToken(): string {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  try {
+    const storedAuth = localStorage.getItem("farmstaygo_customer_auth");
+    if (!storedAuth) return "";
+    const parsed = JSON.parse(storedAuth);
+    return parsed?.data?.token || "";
+  } catch {
+    return "";
+  }
+}
 
 type Night =
   PublicAvailabilityResponse["data"]["nightlyAvailability"][number];
@@ -229,12 +245,38 @@ export default function AvailabilityCalendarClient({
     }
   };
 
+  const router = useRouter();
+
   const handleConfirmDates = () => {
-    if (selectedCheckIn && selectedCheckOut && onDateSelect) {
+    if (!selectedCheckIn || !selectedCheckOut) return;
+
+    if (onDateSelect) {
       onDateSelect(selectedCheckIn, selectedCheckOut);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ checkIn: selectedCheckIn, checkOut: selectedCheckOut }));
-      setIsOpen(false);
     }
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ checkIn: selectedCheckIn, checkOut: selectedCheckOut })
+    );
+
+    const token = getCustomerAuthToken();
+    if (!token) {
+      const nextUrl = `/properties/${publicId}?checkIn=${selectedCheckIn}&checkOut=${selectedCheckOut}#booking-panel`;
+      router.push(`/login?next=${encodeURIComponent(nextUrl)}`);
+      return;
+    }
+
+    setIsOpen(false);
+
+    setTimeout(() => {
+      const el = document.getElementById("booking-panel");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-brand-500", "ring-offset-2");
+        setTimeout(() => {
+          el.classList.remove("ring-2", "ring-brand-500", "ring-offset-2");
+        }, 2000);
+      }
+    }, 150);
   };
 
   const handleOpenModal = () => {

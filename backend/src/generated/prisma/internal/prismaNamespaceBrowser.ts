@@ -292,6 +292,7 @@ export const PropertyScalarFieldEnum = {
   instantBook: 'instantBook',
   cancellationPolicy: 'cancellationPolicy',
   termsConditions: 'termsConditions',
+  services: 'services',
   rejectionReason: 'rejectionReason',
   isFeatured: 'isFeatured',
   submittedAt: 'submittedAt',

@@ -2243,6 +2243,9 @@ const mapPublicPropertyCard = (
     isFeatured:
       property.isFeatured,
 
+    services:
+      property.services || [],
+
     category:
       property.category,
 
@@ -2510,6 +2513,9 @@ const mapPublicPropertyDetail = (
       property.amenities.map(
         mapAmenity
       ),
+
+    services:
+      property.services || [],
 
     rules:
       property.ruleAssignments.map(

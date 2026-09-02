@@ -641,6 +641,41 @@ export const syncAllCalendarImports =
 
 /*
 |--------------------------------------------------------------------------
+| On-Demand: Sync All Active Calendar Imports for a Single Property
+|--------------------------------------------------------------------------
+|
+| Called right before calculating booking quote / checkout to ensure 0%
+| double-booking risk in real time.
+|
+*/
+
+export const syncPropertyCalendarImports = async (
+  propertyId: string
+): Promise<void> => {
+  try {
+    const activeImports = await prisma.calendarImport.findMany({
+      where: {
+        propertyId,
+        isActive: true,
+      },
+      select: { id: true },
+    });
+
+    if (activeImports.length === 0) return;
+
+    await Promise.allSettled(
+      activeImports.map((imp) => syncSingleCalendarImport(imp.id))
+    );
+  } catch (error) {
+    console.warn(
+      `[calendarSync] On-demand sync for property ${propertyId} failed:`,
+      error
+    );
+  }
+};
+
+/*
+|--------------------------------------------------------------------------
 | Vendor: Resolve owned property with minimal fields
 |--------------------------------------------------------------------------
 */

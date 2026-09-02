@@ -72,6 +72,7 @@ export interface PublicPropertyCard {
   shortDescription: string | null;
   bookingType: PropertyBookingType;
   isFeatured: boolean;
+  services: string[];
 
   category: {
     id: string;

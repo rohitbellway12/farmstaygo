@@ -217,6 +217,13 @@ export default function BookingRequestPanel({
   const [bankTransferSuccess, setBankTransferSuccess] =
     useState("");
 
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [activePolicyModal, setActivePolicyModal] = useState<{
+    title: string;
+    content: string | null;
+  } | null>(null);
+  const [termsErrorHighlight, setTermsErrorHighlight] = useState(false);
+
   useEffect(() => {
     const loadPaymentMethods = async () => {
       try {
@@ -645,6 +652,15 @@ export default function BookingRequestPanel({
       return;
     }
 
+    if (!termsAccepted) {
+      setTermsErrorHighlight(true);
+      setMessage(
+        "Please accept the host's Cancellation Policy & Terms and Conditions to proceed."
+      );
+      return;
+    }
+    setTermsErrorHighlight(false);
+
     try {
       setSubmitting(true);
 
@@ -891,7 +907,10 @@ export default function BookingRequestPanel({
   };
 
   return (
-    <div className="rounded-xl border border-ink-100 bg-white p-5 shadow-[0_14px_36px_rgba(27,58,39,0.10)]">
+    <div
+      id="booking-panel"
+      className="rounded-xl border border-ink-100 bg-white p-5 shadow-[0_14px_36px_rgba(27,58,39,0.10)] transition-all duration-500"
+    >
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="text-sm font-bold text-ink-500">
@@ -1287,6 +1306,75 @@ export default function BookingRequestPanel({
         </div>
       )}
 
+      {/* Cancellation Policy & Terms and Conditions Agreement Checkbox */}
+      <div
+        className={`mt-4 rounded-xl border p-3.5 transition-all ${
+          termsErrorHighlight && !termsAccepted
+            ? "border-red-300 bg-red-50/80 ring-2 ring-red-100"
+            : termsAccepted
+              ? "border-emerald-200 bg-emerald-50/30"
+              : "border-ink-100 bg-ink-50/60"
+        }`}
+      >
+        <label className="flex items-start gap-3 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={termsAccepted}
+            onChange={(e) => {
+              setTermsAccepted(e.target.checked);
+              if (e.target.checked) {
+                setTermsErrorHighlight(false);
+                if (message?.includes("accept")) {
+                  setMessage("");
+                }
+              }
+            }}
+            className="mt-0.5 h-4 w-4 rounded border-ink-300 text-brand-700 focus:ring-brand-500 cursor-pointer shrink-0"
+          />
+          <span className="text-xs text-ink-700 leading-relaxed">
+            I agree to the{" "}
+            {property.cancellationPolicy ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setActivePolicyModal({
+                    title: "Cancellation Policy",
+                    content: property.cancellationPolicy,
+                  });
+                }}
+                className="font-bold text-brand-700 underline hover:text-brand-800 cursor-pointer"
+              >
+                Cancellation Policy
+              </button>
+            ) : (
+              <span className="font-bold text-ink-800">Cancellation Policy</span>
+            )}
+            {" & "}
+            {property.termsConditions ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setActivePolicyModal({
+                    title: "Terms & Conditions",
+                    content: property.termsConditions,
+                  });
+                }}
+                className="font-bold text-brand-700 underline hover:text-brand-800 cursor-pointer"
+              >
+                Terms & Conditions
+              </button>
+            ) : (
+              <span className="font-bold text-ink-800">Terms & Conditions</span>
+            )}
+            {" "}set by the host.
+          </span>
+        </label>
+      </div>
+
       <button
         type="button"
         disabled={
@@ -1294,12 +1382,13 @@ export default function BookingRequestPanel({
           razorpayPaying ||
           checking ||
           !availability ||
-          !modeAvailable
+          !modeAvailable ||
+          !termsAccepted
         }
         onClick={() =>
           void submitBooking()
         }
-        className="mt-5 h-11 w-full rounded-lg bg-brand-700 text-sm font-extrabold text-white transition hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-4 h-12 w-full rounded-xl bg-brand-700 text-sm font-extrabold text-white transition-all hover:bg-brand-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 shadow-md hover:shadow-lg"
       >
         {submitting
           ? "Submitting..."
@@ -1317,6 +1406,66 @@ export default function BookingRequestPanel({
             </span>
           )}
       </p>
+
+      {/* Policy Viewer Modal */}
+      {activePolicyModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setActivePolicyModal(null)}
+        >
+          <div
+            className="relative max-h-[85vh] w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-ink-100 px-6 py-4">
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700 font-bold">
+                  📜
+                </span>
+                <h3 className="text-lg font-extrabold text-ink-900">
+                  {activePolicyModal.title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActivePolicyModal(null)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-400 hover:bg-ink-100 hover:text-ink-700 font-bold transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="max-h-[calc(85vh-140px)] overflow-y-auto p-6">
+              {activePolicyModal.content ? (
+                <div
+                  className="prose prose-sm max-w-none text-ink-700 leading-relaxed text-sm"
+                  dangerouslySetInnerHTML={{
+                    __html: activePolicyModal.content,
+                  }}
+                />
+              ) : (
+                <p className="text-sm text-ink-500 italic">
+                  Standard property policies apply. Full details will be shared upon booking confirmation.
+                </p>
+              )}
+            </div>
+
+            <div className="border-t border-ink-100 px-6 py-3.5 bg-ink-50 flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setTermsAccepted(true);
+                  setTermsErrorHighlight(false);
+                  setActivePolicyModal(null);
+                }}
+                className="px-5 py-2 rounded-xl bg-brand-700 text-xs font-extrabold text-white hover:bg-brand-800 transition-colors cursor-pointer"
+              >
+                I Understand & Accept
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showSandboxModal && sandboxOrderDetails && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">

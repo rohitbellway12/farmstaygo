@@ -216,8 +216,9 @@ interface PropertyDetails {
   totalRooms: number | null;
   cancellationPolicy: string | null;
   termsConditions: string | null;
+  services: string[];
 
-   addressLine1: string | null;
+  addressLine1: string | null;
   addressLine2: string | null;
   landmark: string | null;
   locality: string | null;
@@ -262,6 +263,7 @@ interface PropertyFormState {
   totalRooms: string;
   cancellationPolicy: string;
   termsConditions: string;
+  services: string[];
 }
 
 interface PropertyLocationFormState {
@@ -311,6 +313,7 @@ const emptyForm: PropertyFormState = {
   totalRooms: "",
   cancellationPolicy: "",
   termsConditions: "",
+  services: ["asag_travels"],
 };
 
 const emptyLocationForm: PropertyLocationFormState = {
@@ -453,6 +456,63 @@ const bookingTypeOptions: Array<{
     title: "Both Booking Types",
     description:
       "Allow complete property and individual room bookings.",
+  },
+];
+
+/*
+|--------------------------------------------------------------------------
+| Available Services
+|--------------------------------------------------------------------------
+*/
+
+const availableServices: Array<{
+  id: string;
+  label: string;
+  alwaysVisible: boolean;
+  logo: string;
+  bg: string;
+}> = [
+  {
+    id: "swiggy",
+    label: "Swiggy",
+    alwaysVisible: false,
+    logo: "https://logo.clearbit.com/swiggy.com",
+    bg: "#fc8019",
+  },
+  {
+    id: "zomato",
+    label: "Zomato",
+    alwaysVisible: false,
+    logo: "https://logo.clearbit.com/zomato.com",
+    bg: "#e23744",
+  },
+  {
+    id: "uber",
+    label: "Uber",
+    alwaysVisible: false,
+    logo: "https://logo.clearbit.com/uber.com",
+    bg: "#000000",
+  },
+  {
+    id: "ola",
+    label: "Ola Cabs",
+    alwaysVisible: false,
+    logo: "https://logo.clearbit.com/olacabs.com",
+    bg: "#1c9e0f",
+  },
+  {
+    id: "zepto",
+    label: "Zepto",
+    alwaysVisible: false,
+    logo: "https://logo.clearbit.com/zeptonow.com",
+    bg: "#4c1d95",
+  },
+  {
+    id: "asag_travels",
+    label: "ASAG Travels",
+    alwaysVisible: true,
+    logo: "",
+    bg: "#1b3a27",
   },
 ];
 
@@ -903,6 +963,11 @@ const editingBlocked = useMemo(() => {
 
             termsConditions:
               property.termsConditions || "",
+
+            services:
+              Array.isArray(property.services) && property.services.length > 0
+                ? property.services
+                : ["asag_travels"],
           });
 
           setLocationForm({
@@ -2051,6 +2116,7 @@ const validateLocationForm = (): boolean => {
           form.cancellationPolicy.trim(),
         termsConditions:
           form.termsConditions.trim(),
+        services: form.services,
       };
 
      if (propertyId) {
@@ -3325,6 +3391,96 @@ const handleMovePropertyImage =
                 disabled={editingBlocked}
               />
             </div>
+          </div>
+        </section>
+
+        {/* Available Services */}
+
+        <section className="rounded-dashboard-large border border-border bg-surface p-5 shadow-dashboard sm:p-6">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.12em] text-primary-700">
+              Services Available
+            </p>
+
+            <h2 className="mt-1 text-xl font-extrabold text-text-main">
+              Available Services at Property
+            </h2>
+
+            <p className="mt-1 text-sm text-text-muted">
+              Select the services available for guests at your property.
+            </p>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {availableServices.map((service) => {
+              const isSelected = form.services.includes(service.id);
+
+              return (
+                <button
+                  key={service.id}
+                  type="button"
+                  disabled={editingBlocked}
+                  onClick={() => {
+                    if (service.alwaysVisible) return;
+                    setForm((currentForm) => ({
+                      ...currentForm,
+                      services: isSelected
+                        ? currentForm.services.filter((s) => s !== service.id)
+                        : [...currentForm.services, service.id],
+                    }));
+                  }}
+                  className={`flex items-center gap-3 rounded-xl border p-4 text-left transition ${
+                    isSelected || service.alwaysVisible
+                      ? "border-primary-500 bg-primary-50 ring-2 ring-primary-100"
+                      : "border-border bg-surface hover:border-primary-300 hover:bg-primary-50/40"
+                  }`}
+                >
+                  <span
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-lg overflow-hidden"
+                    style={{ backgroundColor: service.bg }}
+                  >
+                    {service.logo ? (
+                      <img
+                        src={service.logo}
+                        alt={service.label}
+                        className="h-full w-full object-contain p-1"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          target.style.display = "none";
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.innerHTML = `<span style="color:#fff;font-weight:900;font-size:13px;">${service.label.slice(0, 2).toUpperCase()}</span>`;
+                          }
+                        }}
+                      />
+                    ) : (
+                      <span style={{ color: "#fff" }} className="font-black text-sm">
+                        {service.label.slice(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                  </span>
+
+                  <span className="min-w-0 flex-1">
+                    <strong className="block text-base font-extrabold text-text-main">
+                      {service.label}
+                    </strong>
+                    {service.alwaysVisible && (
+                      <span className="mt-0.5 block text-xs text-text-muted">Always available</span>
+                    )}
+                  </span>
+
+                  <span
+                    className={`grid h-6 w-6 shrink-0 place-items-center rounded-full border ${
+                      isSelected || service.alwaysVisible
+                        ? "border-primary-700 bg-primary-700 text-white"
+                        : "border-border-strong bg-surface"
+                    }`}
+                  >
+                    {(isSelected || service.alwaysVisible) && <CheckIcon />}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </section>
 

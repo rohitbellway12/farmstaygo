@@ -22,14 +22,14 @@ export const startCalendarSyncJob = (
   const resolvedInterval =
     intervalMs ??
     (Number(process.env.CALENDAR_SYNC_INTERVAL) ||
-      15 * 60 * 1000);
+      2 * 60 * 1000);
 
   const run = () => {
     void syncAllCalendarImports();
   };
 
   // Run shortly after startup to sync on server start.
-  setTimeout(run, 10_000);
+  setTimeout(run, 5_000);
 
   setInterval(
     run,
@@ -39,6 +39,6 @@ export const startCalendarSyncJob = (
   console.log(
     `[calendarSync] job started (interval: ${Math.round(
       resolvedInterval / 1000
-    )}s / ${Math.round(resolvedInterval / 60000)}min)`
+    )}s / ${(resolvedInterval / 60000).toFixed(1)}min)`
   );
 };

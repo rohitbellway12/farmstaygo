@@ -9,6 +9,7 @@ import BookingSection from "@/components/property/BookingSection";
 import PropertyMapClient from "@/components/property/PropertyMapClient";
 import PropertyPoliciesModal from "@/components/property/PropertyPoliciesModal";
 import ReviewsSection from "@/components/property/ReviewsSection";
+import ServiceCard from "@/components/property/ServiceCard";
 import type {
   PublicImage,
   PublicPropertyCard,
@@ -419,6 +420,30 @@ export default async function PropertyDetailsPage({
               <AmenitiesSection amenities={property.amenities} />
             </div>
           </section>
+
+          {property.services && property.services.length > 0 && (
+            <section>
+              <div className="flex flex-wrap items-end justify-between gap-3 border-b border-ink-100 pb-3">
+                <div>
+                  <h2 className="text-2xl font-extrabold text-ink-900">
+                    Available Services
+                  </h2>
+                  <p className="mt-1 text-sm text-ink-500">
+                    Services available at this property
+                  </p>
+                </div>
+                <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-extrabold text-brand-700">
+                  {property.services.length} available
+                </span>
+              </div>
+
+              <div className="mt-5 grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+                {property.services.map((serviceId) => (
+                  <ServiceCard key={serviceId} serviceId={serviceId} />
+                ))}
+              </div>
+            </section>
+          )}
 
           {property.rules.length > 0 && (
             <section>

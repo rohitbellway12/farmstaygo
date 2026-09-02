@@ -184,6 +184,7 @@ export type PropertyCountAggregateOutputType = {
   instantBook: number
   cancellationPolicy: number
   termsConditions: number
+  services: number
   rejectionReason: number
   isFeatured: number
   submittedAt: number
@@ -352,6 +353,7 @@ export type PropertyCountAggregateInputType = {
   instantBook?: true
   cancellationPolicy?: true
   termsConditions?: true
+  services?: true
   rejectionReason?: true
   isFeatured?: true
   submittedAt?: true
@@ -483,6 +485,7 @@ export type PropertyGroupByOutputType = {
   instantBook: boolean
   cancellationPolicy: string | null
   termsConditions: string | null
+  services: string[]
   rejectionReason: string | null
   isFeatured: boolean
   submittedAt: Date | null
@@ -550,6 +553,7 @@ export type PropertyWhereInput = {
   instantBook?: Prisma.BoolFilter<"Property"> | boolean
   cancellationPolicy?: Prisma.StringNullableFilter<"Property"> | string | null
   termsConditions?: Prisma.StringNullableFilter<"Property"> | string | null
+  services?: Prisma.StringNullableListFilter<"Property">
   rejectionReason?: Prisma.StringNullableFilter<"Property"> | string | null
   isFeatured?: Prisma.BoolFilter<"Property"> | boolean
   submittedAt?: Prisma.DateTimeNullableFilter<"Property"> | Date | string | null
@@ -605,6 +609,7 @@ export type PropertyOrderByWithRelationInput = {
   instantBook?: Prisma.SortOrder
   cancellationPolicy?: Prisma.SortOrderInput | Prisma.SortOrder
   termsConditions?: Prisma.SortOrderInput | Prisma.SortOrder
+  services?: Prisma.SortOrder
   rejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -663,6 +668,7 @@ export type PropertyWhereUniqueInput = Prisma.AtLeast<{
   instantBook?: Prisma.BoolFilter<"Property"> | boolean
   cancellationPolicy?: Prisma.StringNullableFilter<"Property"> | string | null
   termsConditions?: Prisma.StringNullableFilter<"Property"> | string | null
+  services?: Prisma.StringNullableListFilter<"Property">
   rejectionReason?: Prisma.StringNullableFilter<"Property"> | string | null
   isFeatured?: Prisma.BoolFilter<"Property"> | boolean
   submittedAt?: Prisma.DateTimeNullableFilter<"Property"> | Date | string | null
@@ -718,6 +724,7 @@ export type PropertyOrderByWithAggregationInput = {
   instantBook?: Prisma.SortOrder
   cancellationPolicy?: Prisma.SortOrderInput | Prisma.SortOrder
   termsConditions?: Prisma.SortOrderInput | Prisma.SortOrder
+  services?: Prisma.SortOrder
   rejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -770,6 +777,7 @@ export type PropertyScalarWhereWithAggregatesInput = {
   instantBook?: Prisma.BoolWithAggregatesFilter<"Property"> | boolean
   cancellationPolicy?: Prisma.StringNullableWithAggregatesFilter<"Property"> | string | null
   termsConditions?: Prisma.StringNullableWithAggregatesFilter<"Property"> | string | null
+  services?: Prisma.StringNullableListFilter<"Property">
   rejectionReason?: Prisma.StringNullableWithAggregatesFilter<"Property"> | string | null
   isFeatured?: Prisma.BoolWithAggregatesFilter<"Property"> | boolean
   submittedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Property"> | Date | string | null
@@ -812,6 +820,7 @@ export type PropertyCreateInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -867,6 +876,7 @@ export type PropertyUncheckedCreateInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -918,6 +928,7 @@ export type PropertyUpdateInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -973,6 +984,7 @@ export type PropertyUncheckedUpdateInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1026,6 +1038,7 @@ export type PropertyCreateManyInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -1068,6 +1081,7 @@ export type PropertyUpdateManyMutationInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1112,6 +1126,7 @@ export type PropertyUncheckedUpdateManyInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1128,6 +1143,14 @@ export type PropertyListRelationFilter = {
 
 export type PropertyOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type StringNullableListFilter<$PrismaModel = never> = {
+  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
 }
 
 export type PropertyCountOrderByAggregateInput = {
@@ -1166,6 +1189,7 @@ export type PropertyCountOrderByAggregateInput = {
   instantBook?: Prisma.SortOrder
   cancellationPolicy?: Prisma.SortOrder
   termsConditions?: Prisma.SortOrder
+  services?: Prisma.SortOrder
   rejectionReason?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
@@ -1385,12 +1409,21 @@ export type PropertyUncheckedUpdateManyWithoutCategoryNestedInput = {
   deleteMany?: Prisma.PropertyScalarWhereInput | Prisma.PropertyScalarWhereInput[]
 }
 
+export type PropertyCreateservicesInput = {
+  set: string[]
+}
+
 export type EnumPropertyBookingTypeFieldUpdateOperationsInput = {
   set?: $Enums.PropertyBookingType
 }
 
 export type EnumPropertyStatusFieldUpdateOperationsInput = {
   set?: $Enums.PropertyStatus
+}
+
+export type PropertyUpdateservicesInput = {
+  set?: string[]
+  push?: string | string[]
 }
 
 export type PropertyCreateNestedOneWithoutAmenitiesInput = {
@@ -1553,6 +1586,7 @@ export type PropertyCreateWithoutVendorInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -1606,6 +1640,7 @@ export type PropertyUncheckedCreateWithoutVendorInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -1688,6 +1723,7 @@ export type PropertyScalarWhereInput = {
   instantBook?: Prisma.BoolFilter<"Property"> | boolean
   cancellationPolicy?: Prisma.StringNullableFilter<"Property"> | string | null
   termsConditions?: Prisma.StringNullableFilter<"Property"> | string | null
+  services?: Prisma.StringNullableListFilter<"Property">
   rejectionReason?: Prisma.StringNullableFilter<"Property"> | string | null
   isFeatured?: Prisma.BoolFilter<"Property"> | boolean
   submittedAt?: Prisma.DateTimeNullableFilter<"Property"> | Date | string | null
@@ -1730,6 +1766,7 @@ export type PropertyCreateWithoutCategoryInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -1783,6 +1820,7 @@ export type PropertyUncheckedCreateWithoutCategoryInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -1860,6 +1898,7 @@ export type PropertyCreateWithoutAmenitiesInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -1914,6 +1953,7 @@ export type PropertyUncheckedCreateWithoutAmenitiesInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -1980,6 +2020,7 @@ export type PropertyUpdateWithoutAmenitiesInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2034,6 +2075,7 @@ export type PropertyUncheckedUpdateWithoutAmenitiesInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2084,6 +2126,7 @@ export type PropertyCreateWithoutRuleAssignmentsInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2138,6 +2181,7 @@ export type PropertyUncheckedCreateWithoutRuleAssignmentsInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2204,6 +2248,7 @@ export type PropertyUpdateWithoutRuleAssignmentsInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2258,6 +2303,7 @@ export type PropertyUncheckedUpdateWithoutRuleAssignmentsInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2308,6 +2354,7 @@ export type PropertyCreateWithoutImagesInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2362,6 +2409,7 @@ export type PropertyUncheckedCreateWithoutImagesInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2428,6 +2476,7 @@ export type PropertyUpdateWithoutImagesInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2482,6 +2531,7 @@ export type PropertyUncheckedUpdateWithoutImagesInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2532,6 +2582,7 @@ export type PropertyCreateWithoutRoomTypesInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2586,6 +2637,7 @@ export type PropertyUncheckedCreateWithoutRoomTypesInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2652,6 +2704,7 @@ export type PropertyUpdateWithoutRoomTypesInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2706,6 +2759,7 @@ export type PropertyUncheckedUpdateWithoutRoomTypesInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2756,6 +2810,7 @@ export type PropertyCreateWithoutAvailabilityBlocksInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2810,6 +2865,7 @@ export type PropertyUncheckedCreateWithoutAvailabilityBlocksInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -2876,6 +2932,7 @@ export type PropertyUpdateWithoutAvailabilityBlocksInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2930,6 +2987,7 @@ export type PropertyUncheckedUpdateWithoutAvailabilityBlocksInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2980,6 +3038,7 @@ export type PropertyCreateWithoutWishlistsInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -3034,6 +3093,7 @@ export type PropertyUncheckedCreateWithoutWishlistsInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -3100,6 +3160,7 @@ export type PropertyUpdateWithoutWishlistsInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3154,6 +3215,7 @@ export type PropertyUncheckedUpdateWithoutWishlistsInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3204,6 +3266,7 @@ export type PropertyCreateWithoutBookingsInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -3258,6 +3321,7 @@ export type PropertyUncheckedCreateWithoutBookingsInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -3324,6 +3388,7 @@ export type PropertyUpdateWithoutBookingsInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3378,6 +3443,7 @@ export type PropertyUncheckedUpdateWithoutBookingsInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3428,6 +3494,7 @@ export type PropertyCreateWithoutReviewsInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -3482,6 +3549,7 @@ export type PropertyUncheckedCreateWithoutReviewsInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -3548,6 +3616,7 @@ export type PropertyUpdateWithoutReviewsInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3602,6 +3671,7 @@ export type PropertyUncheckedUpdateWithoutReviewsInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3652,6 +3722,7 @@ export type PropertyCreateWithoutCalendarImportsInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -3706,6 +3777,7 @@ export type PropertyUncheckedCreateWithoutCalendarImportsInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -3772,6 +3844,7 @@ export type PropertyUpdateWithoutCalendarImportsInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3826,6 +3899,7 @@ export type PropertyUncheckedUpdateWithoutCalendarImportsInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3877,6 +3951,7 @@ export type PropertyCreateManyVendorInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -3919,6 +3994,7 @@ export type PropertyUpdateWithoutVendorInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3972,6 +4048,7 @@ export type PropertyUncheckedUpdateWithoutVendorInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4024,6 +4101,7 @@ export type PropertyUncheckedUpdateManyWithoutVendorInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4067,6 +4145,7 @@ export type PropertyCreateManyCategoryInput = {
   instantBook?: boolean
   cancellationPolicy?: string | null
   termsConditions?: string | null
+  services?: Prisma.PropertyCreateservicesInput | string[]
   rejectionReason?: string | null
   isFeatured?: boolean
   submittedAt?: Date | string | null
@@ -4109,6 +4188,7 @@ export type PropertyUpdateWithoutCategoryInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4162,6 +4242,7 @@ export type PropertyUncheckedUpdateWithoutCategoryInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4214,6 +4295,7 @@ export type PropertyUncheckedUpdateManyWithoutCategoryInput = {
   instantBook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cancellationPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsConditions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  services?: Prisma.PropertyUpdateservicesInput | string[]
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4361,6 +4443,7 @@ export type PropertySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   instantBook?: boolean
   cancellationPolicy?: boolean
   termsConditions?: boolean
+  services?: boolean
   rejectionReason?: boolean
   isFeatured?: boolean
   submittedAt?: boolean
@@ -4417,6 +4500,7 @@ export type PropertySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   instantBook?: boolean
   cancellationPolicy?: boolean
   termsConditions?: boolean
+  services?: boolean
   rejectionReason?: boolean
   isFeatured?: boolean
   submittedAt?: boolean
@@ -4463,6 +4547,7 @@ export type PropertySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   instantBook?: boolean
   cancellationPolicy?: boolean
   termsConditions?: boolean
+  services?: boolean
   rejectionReason?: boolean
   isFeatured?: boolean
   submittedAt?: boolean
@@ -4509,6 +4594,7 @@ export type PropertySelectScalar = {
   instantBook?: boolean
   cancellationPolicy?: boolean
   termsConditions?: boolean
+  services?: boolean
   rejectionReason?: boolean
   isFeatured?: boolean
   submittedAt?: boolean
@@ -4517,7 +4603,7 @@ export type PropertySelectScalar = {
   updatedAt?: boolean
 }
 
-export type PropertyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "vendorId" | "categoryId" | "title" | "slug" | "shortDescription" | "description" | "bookingType" | "status" | "maxGuests" | "bedrooms" | "bathrooms" | "beds" | "totalRooms" | "addressLine1" | "addressLine2" | "landmark" | "locality" | "city" | "state" | "country" | "postalCode" | "latitude" | "longitude" | "basePrice" | "weekendPrice" | "cleaningFee" | "securityDeposit" | "reservationAmount" | "checkInTime" | "checkOutTime" | "minimumStay" | "instantBook" | "cancellationPolicy" | "termsConditions" | "rejectionReason" | "isFeatured" | "submittedAt" | "approvedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["property"]>
+export type PropertyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "vendorId" | "categoryId" | "title" | "slug" | "shortDescription" | "description" | "bookingType" | "status" | "maxGuests" | "bedrooms" | "bathrooms" | "beds" | "totalRooms" | "addressLine1" | "addressLine2" | "landmark" | "locality" | "city" | "state" | "country" | "postalCode" | "latitude" | "longitude" | "basePrice" | "weekendPrice" | "cleaningFee" | "securityDeposit" | "reservationAmount" | "checkInTime" | "checkOutTime" | "minimumStay" | "instantBook" | "cancellationPolicy" | "termsConditions" | "services" | "rejectionReason" | "isFeatured" | "submittedAt" | "approvedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["property"]>
 export type PropertyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   vendor?: boolean | Prisma.VendorDefaultArgs<ExtArgs>
   category?: boolean | Prisma.PropertyCategoryDefaultArgs<ExtArgs>
@@ -4634,6 +4720,13 @@ export type $PropertyPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
      */
     cancellationPolicy: string | null
     termsConditions: string | null
+    /**
+     * *
+     *     * |--------------------------------------------------------------------------
+     *     * | Services
+     *     * |--------------------------------------------------------------------------
+     */
+    services: string[]
     /**
      * *
      *     * |--------------------------------------------------------------------------
@@ -5115,6 +5208,7 @@ export interface PropertyFieldRefs {
   readonly instantBook: Prisma.FieldRef<"Property", 'Boolean'>
   readonly cancellationPolicy: Prisma.FieldRef<"Property", 'String'>
   readonly termsConditions: Prisma.FieldRef<"Property", 'String'>
+  readonly services: Prisma.FieldRef<"Property", 'String[]'>
   readonly rejectionReason: Prisma.FieldRef<"Property", 'String'>
   readonly isFeatured: Prisma.FieldRef<"Property", 'Boolean'>
   readonly submittedAt: Prisma.FieldRef<"Property", 'DateTime'>

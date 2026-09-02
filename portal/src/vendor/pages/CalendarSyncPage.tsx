@@ -449,7 +449,7 @@ export default function CalendarSyncPage() {
             </h1>
             <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              Live 15-Min Auto Sync
+              Live 2-Min Auto Sync
             </span>
           </div>
           <p className="mt-1.5 text-sm text-text-muted">
@@ -829,13 +829,13 @@ export default function CalendarSyncPage() {
                   </span>
                 </h2>
                 <p className="text-xs text-text-muted mt-0.5">
-                  FarmStayGo automatically pulls latest booked dates from these calendars every 15 minutes.
+                  FarmStayGo automatically pulls latest booked dates from these calendars every 2 minutes.
                 </p>
               </div>
 
               {imports.length > 0 && (
                 <span className="text-2xs font-bold text-text-muted bg-ink-50 px-3 py-1.5 rounded-lg border border-border/60 self-start sm:self-auto">
-                  Automatic Sync Interval: Every 15 mins
+                  Automatic Sync Interval: Every 2 mins
                 </span>
               )}
             </div>
