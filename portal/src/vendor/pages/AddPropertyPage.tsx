@@ -1129,10 +1129,10 @@ const changeStep = (
   if (
     step >= 4 &&
     (!propertyId ||
-      propertyImages.length === 0)
+      propertyImages.length < 5)
   ) {
     setPageError(
-      "Please upload at least one property photo first."
+      "Please upload at least 5 property photos before continuing."
     );
 
     return;
@@ -4143,6 +4143,7 @@ const handleMovePropertyImage =
         <p className="mt-2 text-sm leading-6 text-text-muted">
           JPG, JPEG, PNG or WEBP. Maximum 8 MB
           per image and 10 images per upload.
+          Please upload at least 5 photos.
         </p>
 
         <label className="mt-5 inline-flex h-11 cursor-pointer items-center justify-center rounded-control bg-primary-700 px-5 text-sm font-bold text-white transition hover:bg-primary-800">
@@ -4434,8 +4435,8 @@ const handleMovePropertyImage =
           </h3>
 
           <p className="mt-2 text-sm text-text-muted">
-            Upload at least one clear property
-            photo. The first uploaded photo will
+            Upload at least 5 clear property
+            photos. The first uploaded photo will
             become the cover photo.
           </p>
         </div>
@@ -4474,7 +4475,7 @@ const handleMovePropertyImage =
           <button
   type="button"
   disabled={
-    propertyImages.length === 0 ||
+    propertyImages.length < 5 ||
     uploadingImages ||
     Boolean(imageActionId)
   }
