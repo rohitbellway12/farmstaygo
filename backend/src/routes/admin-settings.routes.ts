@@ -11,7 +11,7 @@ import {
   updateMapSettings,
   updateHomeSettings,
   updateSmtpSettings,
-  syncEnvSmtpSettings,
+  testSmtpSettings,
 } from "../controllers/settings.controller.js";
 
 import { authenticate } from "../middleware/auth.middleware.js";
@@ -91,9 +91,6 @@ adminSettingsRoutes.put(
   updateSmtpSettings
 );
 
-adminSettingsRoutes.post(
-  "/smtp/sync-env",
-  syncEnvSmtpSettings
-);
+adminSettingsRoutes.post("/smtp/test", testSmtpSettings);
 
 export { adminSettingsRoutes };

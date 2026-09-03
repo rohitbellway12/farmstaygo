@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 
 import prisma from "../config/database.js";
 
+import { sendEmail } from "../services/email.js";
+
 import type {
   AuthenticatedRequest,
 } from "../middleware/auth.middleware.js";
@@ -846,73 +848,39 @@ export const updateSmtpSettings = async (
   }
 };
 
-export const syncEnvSmtpSettings = async (
-  _req: AuthenticatedRequest,
+export const testSmtpSettings = async (
+  req: AuthenticatedRequest,
   res: Response
 ): Promise<Response> => {
-  try {
-    const smtpHost = process.env.MAIL_HOST || "";
-    const smtpPort = process.env.MAIL_PORT || "587";
-    const smtpUsername = process.env.MAIL_USERNAME || "";
-    const smtpPassword = process.env.MAIL_PASSWORD || "";
-    const smtpFromAddress = process.env.MAIL_FROM_ADDRESS || "noreply@farmstaygo.com";
-    const smtpEncryption = process.env.MAIL_ENCRYPTION?.toLowerCase() || "none";
+  const recipient =
+    typeof req.body?.recipient === "string"
+      ? req.body.recipient.trim()
+      : "";
 
-    if (!smtpHost || !smtpUsername || !smtpPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "Required SMTP environment variables (MAIL_HOST, MAIL_USERNAME, MAIL_PASSWORD) are missing",
-      });
-    }
-
-    await prisma.$transaction(async (tx) => {
-      await tx.setting.upsert({
-        where: { key: "smtp_host" },
-        update: { value: smtpHost },
-        create: { key: "smtp_host", value: smtpHost },
-      });
-
-      await tx.setting.upsert({
-        where: { key: "smtp_port" },
-        update: { value: smtpPort },
-        create: { key: "smtp_port", value: smtpPort },
-      });
-
-      await tx.setting.upsert({
-        where: { key: "smtp_username" },
-        update: { value: smtpUsername },
-        create: { key: "smtp_username", value: smtpUsername },
-      });
-
-      await tx.setting.upsert({
-        where: { key: "smtp_password" },
-        update: { value: smtpPassword },
-        create: { key: "smtp_password", value: smtpPassword },
-      });
-
-      await tx.setting.upsert({
-        where: { key: "smtp_from_address" },
-        update: { value: smtpFromAddress },
-        create: { key: "smtp_from_address", value: smtpFromAddress },
-      });
-
-      await tx.setting.upsert({
-        where: { key: "smtp_encryption" },
-        update: { value: smtpEncryption },
-        create: { key: "smtp_encryption", value: smtpEncryption },
-      });
+  if (!recipient || !/^([^\s@]+)@([^\s@]+)\.([^\s@]+)$/.test(recipient)) {
+    return res.status(422).json({
+      success: false,
+      message: "Please enter a valid test recipient email address",
     });
+  }
+
+  try {
+    await sendEmail(
+      recipient,
+      "FarmStayGo SMTP Test",
+      "<p>This is a test email from FarmStayGo.</p><p>Your database SMTP settings are working correctly.</p>"
+    );
 
     return res.status(200).json({
       success: true,
-      message: "SMTP settings synced from environment successfully",
+      message: `Test email sent successfully to ${recipient}`,
     });
   } catch (error) {
-    console.error("Sync env SMTP settings error:", error);
+    console.error("Send SMTP test email error:", error);
 
     return res.status(500).json({
       success: false,
-      message: "Unable to sync SMTP settings from environment",
+      message: error instanceof Error ? error.message : "Unable to send SMTP test email",
     });
   }
 };

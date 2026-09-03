@@ -2,23 +2,7 @@ import nodemailer from "nodemailer";
 
 import prisma from "../config/database.js";
 
-const SMTP_HOST = process.env.MAIL_HOST || "";
-const SMTP_PORT = parseInt(process.env.MAIL_PORT || "587", 10);
-const SMTP_USER = process.env.MAIL_USERNAME || "";
-const SMTP_PASS = process.env.MAIL_PASSWORD || "";
-const SMTP_FROM = process.env.MAIL_FROM_ADDRESS || "noreply@farmstaygo.com";
-const SMTP_SECURE = process.env.MAIL_ENCRYPTION === "ssl";
-
-const FROM_ADDRESS = `FarmStayGo <${process.env.MAIL_FROM_ADDRESS || "noreply@farmstaygo.com"}>`;
-
-let cachedSmtpSettings: {
-  host: string;
-  port: number;
-  secure: boolean;
-  user: string;
-  pass: string;
-  from: string;
-} | null = null;
+const FROM_ADDRESS = undefined;
 
 const getSmtpSettingsFromDb = async (): Promise<{
   host: string;
@@ -42,7 +26,7 @@ const getSmtpSettingsFromDb = async (): Promise<{
     const smtpPort = parseInt(port?.value?.trim() || "587", 10);
     const smtpUser = user?.value?.trim() || "";
     const smtpPass = pass?.value?.trim() || "";
-    const smtpFrom = from?.value?.trim() || SMTP_FROM;
+    const smtpFrom = from?.value?.trim() || smtpUser;
     const smtpEncryption = encryption?.value?.trim()?.toLowerCase() || "";
     const smtpSecure = smtpEncryption === "ssl";
 
@@ -68,20 +52,11 @@ const getTransporter = async (): Promise<{
   transporter: nodemailer.Transporter<nodemailer.SentMessageInfo>;
   from: string;
 }> => {
-  const dbSettings = await getSmtpSettingsFromDb();
+  const settings = await getSmtpSettingsFromDb();
 
-  if (dbSettings) {
-    cachedSmtpSettings = dbSettings;
+  if (!settings) {
+    throw new Error("SMTP settings are not configured in the database");
   }
-
-  const settings = cachedSmtpSettings || {
-    host: SMTP_HOST,
-    port: SMTP_PORT,
-    secure: SMTP_SECURE,
-    user: SMTP_USER,
-    pass: SMTP_PASS,
-    from: SMTP_FROM,
-  };
 
   const transporter = nodemailer.createTransport({
     host: settings.host,
@@ -97,10 +72,6 @@ const getTransporter = async (): Promise<{
     transporter,
     from: settings.from,
   };
-};
-
-export const clearSmtpCache = (): void => {
-  cachedSmtpSettings = null;
 };
 
 export const sendEmail = async (
@@ -1415,10 +1386,10 @@ const LOGIN_URL = `${WEBSITE_URL}/login`;
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "support@farmstaygo.com";
 export { SUPPORT_EMAIL };
 const SUPPORT_PHONE = process.env.SUPPORT_PHONE || "";
-const BOOKING_EMAIL = process.env.BOOKING_EMAIL || process.env.MAIL_FROM_ADDRESS || "noreply@farmstaygo.com";
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || process.env.MAIL_FROM_ADDRESS || "noreply@farmstaygo.com";
-const HOST_EMAIL = process.env.HOST_EMAIL || process.env.MAIL_FROM_ADDRESS || "noreply@farmstaygo.com";
-const CUSTOMER_EMAIL = process.env.MAIL_FROM_ADDRESS || "noreply@farmstaygo.com";
+const BOOKING_EMAIL = process.env.BOOKING_EMAIL || "booking@farmstaygo.com";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "noreply@farmstaygo.com";
+const HOST_EMAIL = process.env.HOST_EMAIL || "noreply@farmstaygo.com";
+const CUSTOMER_EMAIL = "noreply@farmstaygo.com";
 
 export const sendAccountCreatedEmail = async (params: {
   firstName: string;

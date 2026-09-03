@@ -347,14 +347,14 @@ export async function updateSmtpSettings(
   return response.data;
 }
 
-export async function syncEnvSmtpSettings(): Promise<{
+export async function testSmtpSettings(recipient: string): Promise<{
   success: boolean;
   message: string;
 }> {
   const response = await api.post<{
     success: boolean;
     message: string;
-  }>("/admin/settings/smtp/sync-env");
+  }>("/admin/settings/smtp/test", { recipient });
 
   return response.data;
 }

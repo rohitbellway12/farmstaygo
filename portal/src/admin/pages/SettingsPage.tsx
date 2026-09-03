@@ -20,7 +20,7 @@ import {
   updateMapSettings,
   updateHomeSettings,
   updateSmtpSettings,
-  syncEnvSmtpSettings,
+  testSmtpSettings,
   uploadContactImage,
   deleteContactImage,
 } from "../../shared/api/contactApi";
@@ -150,6 +150,8 @@ export default function SettingsPage() {
 
   const [loadingSmtp, setLoadingSmtp] = useState(true);
   const [savingSmtp, setSavingSmtp] = useState(false);
+  const [testingSmtp, setTestingSmtp] = useState(false);
+  const [smtpTestRecipient, setSmtpTestRecipient] = useState("");
 
   const [smtpForm, setSmtpForm] = useState<SmtpSettings>({
     smtpHost: "",
@@ -1730,42 +1732,6 @@ export default function SettingsPage() {
               >
                 {savingSmtp ? "Saving..." : "Save SMTP Settings"}
               </button>
-              <button
-                type="button"
-                onClick={async () => {
-                  setSavingSmtp(true);
-                  setPageError("");
-                  try {
-                    await syncEnvSmtpSettings();
-                    await loadSmtpSettings();
-                    setToast({
-                      type: "success",
-                      message:
-                        "SMTP settings loaded from environment.",
-                    });
-                  } catch (error) {
-                    setPageError(
-                      getApiErrorMessage(
-                        error,
-                        "Unable to sync SMTP settings from environment."
-                      )
-                    );
-                    setToast({
-                      type: "error",
-                      message: getApiErrorMessage(
-                        error,
-                        "Unable to sync SMTP settings from environment."
-                      ),
-                    });
-                  } finally {
-                    setSavingSmtp(false);
-                  }
-                }}
-                disabled={savingSmtp}
-                className="inline-flex h-11 items-center justify-center rounded-control border border-border bg-surface-soft px-5 text-sm font-bold text-text-main hover:bg-surface-muted disabled:opacity-60"
-              >
-                Sync from Environment
-              </button>
             </div>
           </div>
 
@@ -1889,6 +1855,45 @@ export default function SettingsPage() {
                   placeholder="noreply@farmstaygo.com"
                   className={inputClass}
                 />
+              </div>
+
+              <div className="md:col-span-2 rounded-control border border-border bg-surface-soft p-4">
+                <label className="mb-1.5 block text-sm font-bold text-text-main">
+                  Test Recipient Email
+                </label>
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <input
+                    type="email"
+                    value={smtpTestRecipient}
+                    onChange={(event) => setSmtpTestRecipient(event.target.value)}
+                    placeholder="your-email@example.com"
+                    className={inputClass}
+                  />
+                  <button
+                    type="button"
+                    disabled={testingSmtp || !smtpTestRecipient.trim()}
+                    onClick={async () => {
+                      setTestingSmtp(true);
+                      setPageError("");
+                      try {
+                        const response = await testSmtpSettings(smtpTestRecipient.trim());
+                        setToast({ type: "success", message: response.message });
+                      } catch (error) {
+                        const message = getApiErrorMessage(error, "Unable to send SMTP test email.");
+                        setPageError(message);
+                        setToast({ type: "error", message });
+                      } finally {
+                        setTestingSmtp(false);
+                      }
+                    }}
+                    className="inline-flex h-11 shrink-0 items-center justify-center rounded-control border border-border bg-surface px-5 text-sm font-bold text-text-main hover:bg-surface-muted disabled:opacity-60"
+                  >
+                    {testingSmtp ? "Sending..." : "Send Test Email"}
+                  </button>
+                </div>
+                <p className="mt-2 text-xs text-text-muted">
+                  Save the SMTP settings first, then send a test using the database configuration.
+                </p>
               </div>
             </div>
           )}
