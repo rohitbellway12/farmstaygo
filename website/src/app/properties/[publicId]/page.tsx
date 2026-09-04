@@ -210,8 +210,8 @@ export default async function PropertyDetailsPage({
   const relatedProperties =
     await getRelatedProperties(publicId);
   const origin =
-    (await headers()).get("origin") ||
     process.env.NEXT_PUBLIC_APP_URL ||
+    (await headers()).get("origin") ||
     "http://localhost:3000";
 
   const coverImage =
