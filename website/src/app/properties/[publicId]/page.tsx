@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 
 import { ApiRequestError, apiFetch } from "@/lib/api";
 import { getAssetUrl } from "@/lib/assets";
@@ -12,6 +13,7 @@ import PropertyPoliciesModal from "@/components/property/PropertyPoliciesModal";
 import ReviewsSection from "@/components/property/ReviewsSection";
 import RoomImageCarousel from "@/components/property/RoomImageCarousel";
 import ServiceCard from "@/components/property/ServiceCard";
+import ShareButton from "@/components/property/ShareButton";
 import type {
   PublicPropertyCard,
   PublicPropertyDetail,
@@ -207,6 +209,10 @@ export default async function PropertyDetailsPage({
   const property = await getProperty(publicId, query);
   const relatedProperties =
     await getRelatedProperties(publicId);
+  const origin =
+    (await headers()).get("origin") ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    "http://localhost:3000";
 
   const coverImage =
     property.images.find((image) => image.isCover) ||
@@ -256,9 +262,16 @@ export default async function PropertyDetailsPage({
                 </span>
               </div>
 
-              <h1 className="mt-4 max-w-3xl text-3xl font-extrabold leading-tight text-ink-900 md:text-5xl">
-                {property.displayTitle}
-              </h1>
+              <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
+                <h1 className="max-w-3xl text-3xl font-extrabold leading-tight text-ink-900 md:text-5xl">
+                  {property.displayTitle}
+                </h1>
+
+                <ShareButton
+                  url={`${origin}/properties/${property.publicId}`}
+                  title={property.displayTitle}
+                />
+              </div>
 
               <p className="mt-3 flex flex-wrap items-center gap-3 text-sm leading-6 text-ink-600 md:text-base">
                 <span>{location}</span>
