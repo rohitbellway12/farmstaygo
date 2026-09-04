@@ -127,7 +127,11 @@ interface PricingFormState {
 interface RoomType {
   id: string;
   name: string;
+  description: string | null;
   totalRooms: number;
+  maxGuests: number;
+  beds: number;
+  bathrooms: number;
   basePrice: string | number;
   weekendPrice: string | number | null;
   reservationAmount:
@@ -135,6 +139,12 @@ interface RoomType {
     | number
     | null;
   isActive: boolean;
+  amenities: Array<{
+    amenityId: string;
+    amenity: {
+      name: string;
+    };
+  }>;
 }
 
 interface RoomInventoryResponse {
@@ -1452,6 +1462,37 @@ export default function PropertyFinalSteps({
                               Deposit Rs. {room.reservationAmount || 0}
                             </span>
                           </div>
+
+                          {room.description && (
+                            <p className="mt-3 text-sm leading-6 text-text-muted">
+                              {room.description}
+                            </p>
+                          )}
+
+                          <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-text-secondary">
+                            <span className="rounded-full bg-white px-3 py-1">
+                              {room.maxGuests} guests
+                            </span>
+                            <span className="rounded-full bg-white px-3 py-1">
+                              {room.beds} beds
+                            </span>
+                            <span className="rounded-full bg-white px-3 py-1">
+                              {room.bathrooms} baths
+                            </span>
+                          </div>
+
+                          {room.amenities.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {room.amenities.map(({ amenityId, amenity }) => (
+                                <span
+                                  key={amenityId}
+                                  className="rounded-full bg-primary-50 px-3 py-1 text-xs font-bold text-primary-700"
+                                >
+                                  {amenity.name}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

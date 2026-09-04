@@ -10,9 +10,9 @@ import ImageGallery from "@/components/property/ImageGallery";
 import PropertyMapClient from "@/components/property/PropertyMapClient";
 import PropertyPoliciesModal from "@/components/property/PropertyPoliciesModal";
 import ReviewsSection from "@/components/property/ReviewsSection";
+import RoomImageCarousel from "@/components/property/RoomImageCarousel";
 import ServiceCard from "@/components/property/ServiceCard";
 import type {
-  PublicImage,
   PublicPropertyCard,
   PublicPropertyDetail,
   PublicPropertyDetailResponse,
@@ -123,24 +123,6 @@ function getLocation(
   ]
     .filter(Boolean)
     .join(", ");
-}
-
-function ImageTile({
-  image,
-  title,
-  className = "",
-}: {
-  image: PublicImage;
-  title: string;
-  className?: string;
-}) {
-  return (
-    <img
-      src={getAssetUrl(image.image)}
-      alt={image.altText || title}
-      className={`h-full w-full object-cover ${className}`}
-    />
-  );
 }
 
 function StatItem({
@@ -383,15 +365,14 @@ export default async function PropertyDetailsPage({
                   Facilities included with this stay
                 </p>
               </div>
-              {property.amenities.length > 0 && (
-                <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-extrabold text-brand-700">
-                  {property.amenities.length} available
-                </span>
-              )}
             </div>
 
             <div className="mt-5">
-              <AmenitiesSection amenities={property.amenities} />
+              <AmenitiesSection
+                amenities={property.amenities}
+                roomTypes={property.roomTypes}
+                bookingType={property.bookingType}
+              />
             </div>
           </section>
 
@@ -497,14 +478,10 @@ export default async function PropertyDetailsPage({
                     key={room.id}
                     className="grid overflow-hidden rounded-xl border border-ink-100 bg-white md:grid-cols-[220px_minmax(0,1fr)]"
                   >
-                    <div className="h-48 bg-brand-50 md:h-full">
-                      {room.images[0] ? (
-                        <ImageTile
-                          image={room.images[0]}
-                          title={room.name}
-                        />
-                      ) : null}
-                    </div>
+                    <RoomImageCarousel
+                      images={room.images}
+                      title={room.name}
+                    />
                     <div className="p-5">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
@@ -531,6 +508,24 @@ export default async function PropertyDetailsPage({
                         <p className="mt-3 text-sm leading-6 text-ink-600">
                           {room.description}
                         </p>
+                      )}
+
+                      {room.amenities.length > 0 && (
+                        <div className="mt-4">
+                          <h4 className="text-xs font-extrabold uppercase tracking-[0.13em] text-ink-500">
+                            Room amenities
+                          </h4>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {room.amenities.map((amenity) => (
+                              <span
+                                key={amenity.id}
+                                className="rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-brand-800"
+                              >
+                                {amenity.name}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       )}
 
                       <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold text-ink-600">

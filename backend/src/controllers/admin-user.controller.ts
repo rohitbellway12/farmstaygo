@@ -134,3 +134,56 @@ export const getAdminUsers = async (
     });
   }
 };
+
+export const updateAdminUserStatus = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    const userId = Number(req.params.id);
+    const status = String(req.body?.status || "").trim().toUpperCase();
+
+    if (!Number.isInteger(userId) || !["ACTIVE", "INACTIVE", "BLOCKED"].includes(status)) {
+      return res.status(422).json({ success: false, message: "Invalid user ID or status" });
+    }
+
+    if (userId === req.user?.id) {
+      return res.status(400).json({ success: false, message: "You cannot change your own admin status" });
+    }
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { status: status as UserStatus },
+      select: { id: true, status: true },
+    });
+
+    return res.status(200).json({ success: true, message: "User status updated successfully", data: user });
+  } catch (error) {
+    console.error("Update admin user status error:", error);
+    return res.status(500).json({ success: false, message: "Unable to update user status" });
+  }
+};
+
+export const deleteAdminUser = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<Response> => {
+  try {
+    const userId = Number(req.params.id);
+
+    if (!Number.isInteger(userId)) {
+      return res.status(422).json({ success: false, message: "Invalid user ID" });
+    }
+
+    if (userId === req.user?.id) {
+      return res.status(400).json({ success: false, message: "You cannot delete your own admin account" });
+    }
+
+    await prisma.user.delete({ where: { id: userId } });
+
+    return res.status(200).json({ success: true, message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Delete admin user error:", error);
+    return res.status(500).json({ success: false, message: "Unable to delete user" });
+  }
+};

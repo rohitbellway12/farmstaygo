@@ -8,6 +8,7 @@ import {
 
 import {
   Link,
+  useLocation,
   useNavigate,
 } from "react-router-dom";
 
@@ -120,6 +121,7 @@ const getApiErrorMessage = (
 
 export default function ManageRoomsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [properties, setProperties] = useState<
     VendorProperty[]
   >([]);
@@ -158,6 +160,19 @@ export default function ManageRoomsPage() {
   useEffect(() => {
     void loadProperties();
   }, [loadProperties]);
+
+  useEffect(() => {
+    const propertyId = new URLSearchParams(
+      location.search
+    ).get("propertyId");
+
+    if (propertyId) {
+      navigate(
+        `/vendor/properties/${propertyId}/rooms`,
+        { replace: true }
+      );
+    }
+  }, [location.search, navigate]);
 
   const roomEnabledProperties = useMemo(
     () =>
@@ -413,9 +428,22 @@ export default function ManageRoomsPage() {
                     </div>
 
                     {property.roomTypes.length === 0 ? (
-                      <p className="mt-2 text-sm text-text-muted">
-                        No room types added yet.
-                      </p>
+                      <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-sm text-text-muted">
+                          No room types added yet.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            navigate(
+                              `/vendor/properties/${property.id}/rooms/new`
+                            )
+                          }
+                          className="inline-flex h-10 items-center justify-center rounded-control bg-primary-700 px-4 text-sm font-bold text-white hover:bg-primary-800"
+                        >
+                          Add Room Type
+                        </button>
+                      </div>
                     ) : (
                       <div className="mt-3 flex flex-wrap gap-2">
                         {property.roomTypes.map((room) => (

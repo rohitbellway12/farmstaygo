@@ -1,6 +1,10 @@
 import { Router } from "express";
 
-import { getAdminUsers } from "../controllers/admin-user.controller.js";
+import {
+  deleteAdminUser,
+  getAdminUsers,
+  updateAdminUserStatus,
+} from "../controllers/admin-user.controller.js";
 
 import {
   authenticate,
@@ -18,5 +22,7 @@ adminUserRoutes.use(
 );
 
 adminUserRoutes.get("/", getAdminUsers);
+adminUserRoutes.patch("/:id/status", updateAdminUserStatus);
+adminUserRoutes.delete("/:id", deleteAdminUser);
 
 export { adminUserRoutes };

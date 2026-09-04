@@ -151,6 +151,14 @@ export default function BookingRequestPanel({
       property.roomTypes[0]?.id || ""
     );
 
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("farmstay-booking-selection", {
+        detail: { bookingMode, roomTypeId },
+      })
+    );
+  }, [bookingMode, roomTypeId]);
+
   
 
   const [guests, setGuests] =

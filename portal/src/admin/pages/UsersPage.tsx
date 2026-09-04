@@ -182,6 +182,8 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("ALL");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [toast, setToast] = useState<ToastState | null>(null);
+  const [actionUserId, setActionUserId] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -220,6 +222,36 @@ export default function UsersPage() {
   }, [users]);
 
   const clearFilters = () => { setSearch(""); setRoleFilter("ALL"); setStatusFilter("ALL"); };
+
+  const updateStatus = async (user: AdminUser, status: UserStatus) => {
+    try {
+      setActionUserId(user.id);
+      await api.patch(`/admin/users/${user.id}/status`, { status });
+      setUsers((currentUsers) => currentUsers.map((currentUser) => currentUser.id === user.id ? { ...currentUser, status } : currentUser));
+      setToast({ type: "success", message: `User marked ${status.toLowerCase()}.` });
+    } catch (error) {
+      setToast({ type: "error", message: getApiErrorMessage(error, "Unable to update user status.") });
+    } finally {
+      setActionUserId(null);
+    }
+  };
+
+  const deleteUser = async (user: AdminUser) => {
+    try {
+      setActionUserId(user.id);
+      await api.delete(`/admin/users/${user.id}`);
+      setUsers((currentUsers) => currentUsers.filter((currentUser) => currentUser.id !== user.id));
+      setToast({ type: "success", message: "User deleted successfully." });
+    } catch (error) {
+      setToast({ type: "error", message: getApiErrorMessage(error, "Unable to delete user.") });
+    } finally {
+      setActionUserId(null);
+    }
+  };
+
+  const deleteTargetName = deleteTarget
+    ? [deleteTarget.firstName, deleteTarget.lastName].filter(Boolean).join(" ") || deleteTarget.email
+    : "";
 
   return (
     <div className="space-y-5">
@@ -318,10 +350,16 @@ export default function UsersPage() {
                     <td className="px-5 py-4"><StatusBadge config={statusConfig[user.status] || statusConfig.ACTIVE} /></td>
                     <td className="px-5 py-4"><span className="flex items-center gap-1.5 text-sm text-text-secondary"><CalendarIcon />{formatDate(user.createdAt)}</span></td>
                     <td className="px-5 py-4">
-                      <div className="flex items-center justify-end">
-                        <span className="text-xs font-semibold text-text-muted">
-                          {user.emailVerified ? "Email verified" : "Email unverified"} · {user.mobileVerified ? "Mobile verified" : "Mobile unverified"}
-                        </span>
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <button type="button" disabled={actionUserId === user.id} onClick={() => void updateStatus(user, user.status === "ACTIVE" ? "INACTIVE" : "ACTIVE")} className="rounded-control border border-border bg-surface px-3 py-2 text-xs font-bold text-text-secondary hover:bg-surface-soft disabled:cursor-not-allowed disabled:opacity-50">
+                          {user.status === "ACTIVE" ? "Deactivate" : "Activate"}
+                        </button>
+                        <button type="button" disabled={actionUserId === user.id} onClick={() => void updateStatus(user, user.status === "BLOCKED" ? "ACTIVE" : "BLOCKED")} className="rounded-control border border-warning/30 bg-warning-soft px-3 py-2 text-xs font-bold text-warning hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50">
+                          {user.status === "BLOCKED" ? "Unblock" : "Block"}
+                        </button>
+                        <button type="button" disabled={actionUserId === user.id} onClick={() => setDeleteTarget(user)} className="rounded-control border border-danger/20 bg-danger-soft px-3 py-2 text-xs font-bold text-danger hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50">
+                          Delete
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -351,6 +389,17 @@ export default function UsersPage() {
                       <StatusBadge config={roleConfig[user.role] || roleConfig.USER} />
                       <StatusBadge config={statusConfig[user.status] || statusConfig.ACTIVE} />
                     </div>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button type="button" disabled={actionUserId === user.id} onClick={() => void updateStatus(user, user.status === "ACTIVE" ? "INACTIVE" : "ACTIVE")} className="rounded-control border border-border bg-surface px-3 py-2 text-xs font-bold text-text-secondary disabled:opacity-50">
+                          {user.status === "ACTIVE" ? "Deactivate" : "Activate"}
+                        </button>
+                        <button type="button" disabled={actionUserId === user.id} onClick={() => void updateStatus(user, user.status === "BLOCKED" ? "ACTIVE" : "BLOCKED")} className="rounded-control border border-warning/30 bg-warning-soft px-3 py-2 text-xs font-bold text-warning disabled:opacity-50">
+                          {user.status === "BLOCKED" ? "Unblock" : "Block"}
+                        </button>
+                        <button type="button" disabled={actionUserId === user.id} onClick={() => setDeleteTarget(user)} className="rounded-control border border-danger/20 bg-danger-soft px-3 py-2 text-xs font-bold text-danger disabled:opacity-50">
+                          Delete
+                        </button>
+                      </div>
                   </div>
                 </div>
               </article>
@@ -358,6 +407,35 @@ export default function UsersPage() {
           )}
         </div>
       </section>
+
+      {deleteTarget && (
+        <div className="fixed inset-0 z-[75] flex items-center justify-center bg-slate-950/45 p-4">
+          <button
+            type="button"
+            className="absolute inset-0"
+            onClick={() => {
+              if (actionUserId === null) setDeleteTarget(null);
+            }}
+            aria-label="Close delete confirmation"
+          />
+          <section className="relative z-10 w-full max-w-md rounded-dashboard-large border border-border bg-surface p-6 shadow-dashboard-dropdown">
+            <span className="grid h-12 w-12 place-items-center rounded-full bg-danger-soft text-danger">
+              <CloseIcon />
+            </span>
+            <h2 className="mt-4 text-xl font-extrabold text-text-main">Delete user?</h2>
+            <p className="mt-2 text-sm leading-6 text-text-muted">
+              Delete <strong className="text-text-main">{deleteTargetName}</strong>? This action cannot be undone.
+            </p>
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button type="button" disabled={actionUserId !== null} onClick={() => setDeleteTarget(null)} className="h-11 rounded-control border border-border px-5 text-sm font-bold text-text-secondary hover:bg-surface-muted disabled:opacity-60">Cancel</button>
+              <button type="button" disabled={actionUserId !== null} onClick={() => { void deleteUser(deleteTarget).then(() => setDeleteTarget(null)); }} className="inline-flex h-11 items-center justify-center gap-2 rounded-control bg-danger px-5 text-sm font-bold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60">
+                {actionUserId !== null && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
+                {actionUserId !== null ? "Deleting..." : "Delete User"}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }

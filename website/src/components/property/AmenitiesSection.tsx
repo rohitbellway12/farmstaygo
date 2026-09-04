@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { getAssetUrl } from "@/lib/assets";
+import type { PublicRoomType } from "@/types/public";
 
 type Amenity = {
   id: string;
@@ -14,6 +15,8 @@ type Amenity = {
 
 type AmenitiesSectionProps = {
   amenities: Amenity[];
+  roomTypes?: PublicRoomType[];
+  bookingType?: string;
 };
 
 function getAmenityInitial(name: string): string {
@@ -25,9 +28,46 @@ function getAmenityInitial(name: string): string {
     .join("");
 }
 
-export default function AmenitiesSection({ amenities }: AmenitiesSectionProps) {
+export default function AmenitiesSection({
+  amenities: propertyAmenities,
+  roomTypes = [],
+  bookingType,
+}: AmenitiesSectionProps) {
   const [showAll, setShowAll] = useState(false);
+  const [bookingMode, setBookingMode] = useState(
+    bookingType === "ROOM_WISE" ? "ROOM_WISE" : "ENTIRE_PROPERTY"
+  );
+  const [roomTypeId, setRoomTypeId] = useState(roomTypes[0]?.id || "");
   const INITIAL_COUNT = 6;
+
+  useEffect(() => {
+    const handleBookingSelection = (event: Event) => {
+      const detail = (event as CustomEvent<{
+        bookingMode?: string;
+        roomTypeId?: string;
+      }>).detail;
+
+      if (detail.bookingMode) setBookingMode(detail.bookingMode);
+      if (detail.roomTypeId) setRoomTypeId(detail.roomTypeId);
+    };
+
+    window.addEventListener("farmstay-booking-selection", handleBookingSelection);
+    return () =>
+      window.removeEventListener(
+        "farmstay-booking-selection",
+        handleBookingSelection
+      );
+  }, []);
+
+  const selectedRoom = roomTypes.find((room) => room.id === roomTypeId);
+  const amenities =
+    bookingMode === "ROOM_WISE" && selectedRoom
+      ? selectedRoom.amenities
+      : propertyAmenities;
+
+  useEffect(() => {
+    setShowAll(false);
+  }, [bookingMode, roomTypeId]);
 
   const hasMore = amenities.length > INITIAL_COUNT;
   const visibleAmenities = showAll ? amenities : amenities.slice(0, INITIAL_COUNT);

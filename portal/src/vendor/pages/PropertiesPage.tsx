@@ -727,7 +727,7 @@ function PropertyCard({
               property.bookingType ===
                 "BOTH") && (
               <Link
-                to={`/vendor/properties/${property.id}/rooms`}
+                to={`/vendor/rooms?propertyId=${property.id}`}
                 className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
               >
                 <RoomIcon />
