@@ -6,6 +6,7 @@ import {
 } from "react";
 
 import { apiFetch, ApiRequestError } from "@/lib/api";
+import { trackEvent } from "@/lib/metaPixel";
 
 interface ContactFormProps {
   title?: string;
@@ -92,6 +93,12 @@ export default function ContactForm({
       });
 
       setSubmitted(true);
+      trackEvent("Contact", {
+        content_name: subject.trim(),
+      });
+      trackEvent("Lead", {
+        content_name: `Contact Form - ${subject.trim()}`,
+      });
       onSuccess?.(name.trim());
     } catch (error) {
       if (error instanceof ApiRequestError) {

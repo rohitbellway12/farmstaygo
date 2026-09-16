@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, type KeyboardEvent } from "react";
 
 import { getAssetUrl } from "@/lib/assets";
 import { apiFetch, ApiRequestError } from "@/lib/api";
+import { trackEvent } from "@/lib/metaPixel";
 import type {
   PublicPropertyCard as Property,
 } from "@/types/public";
@@ -207,6 +208,18 @@ export default function PropertyCard({
           body: JSON.stringify({ propertyId: property.publicId }),
         });
         setIsWishlisted(true);
+
+        trackEvent("AddToWishlist", {
+          content_name: property.displayTitle,
+          content_category: property.category?.name || property.bookingType,
+          content_ids: [property.publicId],
+          content_type: "product",
+          value:
+            property.pricing?.startingPrice ??
+            property.pricing?.basePrice ??
+            0,
+          currency: property.pricing?.currency || "INR",
+        });
 
         if (pathname !== "/wishlist") {
           router.push("/wishlist");

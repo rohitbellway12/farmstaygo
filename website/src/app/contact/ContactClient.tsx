@@ -6,6 +6,7 @@ import {
   apiFetch,
   ApiRequestError,
 } from "@/lib/api";
+import { trackEvent, trackCustomEvent } from "@/lib/metaPixel";
 
 import { getAssetUrl } from "@/lib/assets";
 
@@ -439,6 +440,13 @@ export default function ContactClient({
       setSubmitStatus("success");
       setSubmitMessage(response.message);
 
+      trackEvent("Contact", {
+        content_name: form.subject || "General Inquiry",
+      });
+      trackEvent("Lead", {
+        content_name: `Contact Page - ${form.subject || "General Inquiry"}`,
+      });
+
       setForm({
         name: "",
         email: "",
@@ -662,6 +670,21 @@ export default function ContactClient({
                                 href={link.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                onClick={() => {
+                                  if (normalizedPlatform.includes("whatsapp")) {
+                                    trackCustomEvent("WhatsAppClick", {
+                                      platform: link.platform,
+                                      url: link.url,
+                                    });
+                                    trackEvent("Contact", {
+                                      content_name: "WhatsApp",
+                                    });
+                                  } else {
+                                    trackEvent("Contact", {
+                                      content_name: link.platform,
+                                    });
+                                  }
+                                }}
                                 aria-label={
                                   link.platform
                                 }

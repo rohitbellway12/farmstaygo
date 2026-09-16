@@ -7,6 +7,7 @@ import {
   apiFetch,
   ApiRequestError,
 } from "@/lib/api";
+import { trackEvent } from "@/lib/metaPixel";
 
 type PaymentMethod = "ONLINE" | "CASH" | "BANK_TRANSFER";
 type PaymentType = "RESERVATION" | "INSTALLMENT" | "BALANCE" | "REFUND";
@@ -249,6 +250,14 @@ export default function BookingPaymentPage() {
         }
       );
 
+      trackEvent("InitiateCheckout", {
+        content_name: booking?.property?.title || "Booking Payment",
+        content_ids: booking?.property?.id ? [booking.property.id] : [bookingId],
+        content_type: "product",
+        value: payAmount,
+        currency: res.data.currency || "INR",
+      });
+
       if (res.sandbox) {
         // Show interactive sandbox mock modal
         setSandboxOrderDetails(res.data);
@@ -294,6 +303,15 @@ export default function BookingPaymentPage() {
 
             setSuccess(verifyRes.message || "Payment completed successfully!");
             setAmount("");
+
+            trackEvent("Purchase", {
+              content_name: booking?.property?.title || "Booking Payment",
+              content_ids: booking?.property?.id ? [booking.property.id] : [bookingId],
+              content_type: "product",
+              value: payAmount,
+              currency: res.data.currency || "INR",
+            });
+
             await loadData();
           } catch (vErr) {
             setError(
@@ -353,6 +371,15 @@ export default function BookingPaymentPage() {
 
       setSuccess(verifyRes.message || "Sandbox payment recorded successfully!");
       setAmount("");
+
+      trackEvent("Purchase", {
+        content_name: booking?.property?.title || "Booking Payment",
+        content_ids: booking?.property?.id ? [booking.property.id] : [bookingId],
+        content_type: "product",
+        value: payAmount,
+        currency: "INR",
+      });
+
       await loadData();
     } catch (err) {
       setError(

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { apiFetch } from "@/lib/api";
+import { trackEvent } from "@/lib/metaPixel";
 import type {
   PublicAvailabilityResponse,
   PublicPropertyDetail,
@@ -138,6 +139,14 @@ export default function BookingRequestPanel({
     () => localDateKey(addDays(new Date(), 1)),
     []
   );
+
+  const nightsCount = useMemo(() => {
+    if (!checkIn || !checkOut) return 1;
+    const diff =
+      (new Date(checkOut).getTime() - new Date(checkIn).getTime()) /
+      (1000 * 60 * 60 * 24);
+    return diff > 0 ? Math.round(diff) : 1;
+  }, [checkIn, checkOut]);
 
   const [bookingMode, setBookingMode] =
     useState<BookingMode>(
@@ -494,6 +503,16 @@ export default function BookingRequestPanel({
       setMessage("");
       setSuccessMessage("");
 
+      trackEvent("InitiateCheckout", {
+        content_name: property.displayTitle,
+        content_category: property.category?.name || property.bookingType,
+        content_ids: [property.publicId],
+        content_type: "product",
+        value: order.amount / 100,
+        currency: order.currency || "INR",
+        num_items: nightsCount,
+      });
+
       if (order.sandbox) {
         setSandboxOrderDetails({
           orderId: order.orderId,
@@ -556,6 +575,19 @@ export default function BookingRequestPanel({
                 "Payment completed successfully!"
             );
             setMessage("");
+
+            trackEvent("Purchase", {
+              content_name: property.displayTitle,
+              content_category:
+                property.category?.name ||
+                property.bookingType,
+              content_ids: [property.publicId],
+              content_type: "product",
+              value: order.amount / 100,
+              currency: order.currency || "INR",
+              num_items: nightsCount,
+            });
+
             router.push(
               `/bookings`
             );
@@ -625,6 +657,20 @@ export default function BookingRequestPanel({
           "Sandbox payment recorded successfully!"
       );
       setMessage("");
+
+      trackEvent("Purchase", {
+        content_name: property.displayTitle,
+        content_category:
+          property.category?.name ||
+          property.bookingType,
+        content_ids: [property.publicId],
+        content_type: "product",
+        value: sandboxOrderDetails.amount / 100,
+        currency:
+          sandboxOrderDetails.currency || "INR",
+        num_items: nightsCount,
+      });
+
       router.push(
         `/bookings`
       );
@@ -795,6 +841,17 @@ export default function BookingRequestPanel({
             response.message ||
               "Booking request submitted successfully."
           );
+
+          trackEvent("Lead", {
+            content_name: `Booking Request - ${property.displayTitle}`,
+            content_category:
+              property.category?.name ||
+              property.bookingType,
+            content_ids: [property.publicId],
+            value:
+              response.data.estimatedTotal || undefined,
+            currency: "INR",
+          });
         }
       } else {
         const response =
@@ -840,6 +897,17 @@ export default function BookingRequestPanel({
             response.message ||
               "Booking request submitted successfully."
           );
+
+          trackEvent("Lead", {
+            content_name: `Booking Request - ${property.displayTitle}`,
+            content_category:
+              property.category?.name ||
+              property.bookingType,
+            content_ids: [property.publicId],
+            value:
+              response.data.estimatedTotal || undefined,
+            currency: "INR",
+          });
         }
       }
     } catch (error) {

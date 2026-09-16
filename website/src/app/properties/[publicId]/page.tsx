@@ -14,6 +14,7 @@ import ReviewsSection from "@/components/property/ReviewsSection";
 import RoomImageCarousel from "@/components/property/RoomImageCarousel";
 import ServiceCard from "@/components/property/ServiceCard";
 import ShareButton from "@/components/property/ShareButton";
+import PropertyPixelTracker from "@/components/property/PropertyPixelTracker";
 import type {
   PublicPropertyCard,
   PublicPropertyDetail,
@@ -229,6 +230,7 @@ export default async function PropertyDetailsPage({
 
   return (
     <div className="bg-[#f8faf8]">
+      <PropertyPixelTracker property={property} />
       <section className="border-b border-ink-100 bg-white">
         <div className="site-container py-7">
           <div className="flex flex-wrap items-center gap-2 text-sm text-ink-500">

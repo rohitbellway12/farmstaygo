@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 
 import SiteFooter from "@/components/layout/SiteFooter";
 import SiteHeader from "@/components/layout/SiteHeader";
+import MetaPixel from "@/components/analytics/MetaPixel";
 
 import { apiBaseUrl } from "@/lib/config";
 
@@ -106,6 +107,7 @@ export default function RootLayout({
             `,
           }}
         />
+        <MetaPixel />
       </head>
       <body
         className="flex min-h-full flex-col bg-white text-ink-900"

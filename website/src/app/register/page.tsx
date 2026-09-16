@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { apiFetch, ApiRequestError } from "@/lib/api";
+import { trackEvent } from "@/lib/metaPixel";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -67,6 +68,10 @@ export default function RegisterPage() {
       });
 
       localStorage.setItem("farmstaygo_customer_auth", JSON.stringify(response));
+
+      trackEvent("CompleteRegistration", {
+        status: true,
+      });
 
       window.dispatchEvent(new Event("auth-change"));
 

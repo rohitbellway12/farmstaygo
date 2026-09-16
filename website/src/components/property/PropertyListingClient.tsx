@@ -17,6 +17,7 @@ import {
 
 import PropertyCard from "./PropertyCard";
 import { apiFetch } from "@/lib/api";
+import { trackEvent } from "@/lib/metaPixel";
 import type {
   PublicCategoriesResponse,
   PublicCategory,
@@ -710,7 +711,17 @@ export default function PropertyListingClient() {
 
   useEffect(() => {
     void loadListing();
-  }, [loadListing]);
+
+    const searchCity = currentSearchParams.get("city") || "";
+    const searchCategory = currentSearchParams.get("category") || "";
+    const searchKeyword = currentSearchParams.get("search") || "";
+    if (searchCity || searchCategory || searchKeyword) {
+      trackEvent("Search", {
+        search_string: searchKeyword || searchCity || searchCategory,
+        content_category: searchCategory || undefined,
+      });
+    }
+  }, [loadListing, currentSearchParams]);
 
   const replaceQuery = (parameters: URLSearchParams) => {
     const nextQuery = parameters.toString();
@@ -784,6 +795,11 @@ export default function PropertyListingClient() {
     parameters.set("page", "1");
     replaceQuery(parameters);
     setMobileFiltersOpen(false);
+
+    trackEvent("Search", {
+      search_string: filters.city || filters.category || undefined,
+      content_category: filters.category || undefined,
+    });
   };
 
   const clearFilters = () => {
