@@ -54,14 +54,29 @@ export function pageview(): void {
   }
 }
 
+let lastEventKey = "";
+let lastEventTime = 0;
+
 /**
  * Triggers a standard Meta Pixel event.
+ * Automatically deduplicates identical events fired in rapid succession (<1.5s)
+ * which commonly happens in React Strict Mode (dev) or on accidental double-clicks.
  */
 export function trackEvent(
   name: MetaStandardEvent,
   params?: MetaEventParams
 ): void {
   if (typeof window !== "undefined" && typeof window.fbq === "function") {
+    const currentKey = `${name}:${JSON.stringify(params || {})}`;
+    const now = Date.now();
+
+    if (currentKey === lastEventKey && now - lastEventTime < 1500) {
+      return;
+    }
+
+    lastEventKey = currentKey;
+    lastEventTime = now;
+
     if (params && Object.keys(params).length > 0) {
       window.fbq("track", name, params);
     } else {
@@ -78,6 +93,16 @@ export function trackCustomEvent(
   params?: Record<string, unknown>
 ): void {
   if (typeof window !== "undefined" && typeof window.fbq === "function") {
+    const currentKey = `custom_${name}:${JSON.stringify(params || {})}`;
+    const now = Date.now();
+
+    if (currentKey === lastEventKey && now - lastEventTime < 1500) {
+      return;
+    }
+
+    lastEventKey = currentKey;
+    lastEventTime = now;
+
     if (params && Object.keys(params).length > 0) {
       window.fbq("trackCustom", name, params);
     } else {

@@ -11,6 +11,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type FormEvent,
 } from "react";
@@ -709,17 +710,24 @@ export default function PropertyListingClient() {
     }
   }, [currentSearchParams]);
 
+  const lastTrackedSearchRef = useRef<string | null>(null);
+
   useEffect(() => {
     void loadListing();
 
     const searchCity = currentSearchParams.get("city") || "";
     const searchCategory = currentSearchParams.get("category") || "";
     const searchKeyword = currentSearchParams.get("search") || "";
+    const searchKey = `${searchCity}|${searchCategory}|${searchKeyword}`;
+
     if (searchCity || searchCategory || searchKeyword) {
-      trackEvent("Search", {
-        search_string: searchKeyword || searchCity || searchCategory,
-        content_category: searchCategory || undefined,
-      });
+      if (lastTrackedSearchRef.current !== searchKey) {
+        lastTrackedSearchRef.current = searchKey;
+        trackEvent("Search", {
+          search_string: searchKeyword || searchCity || searchCategory,
+          content_category: searchCategory || undefined,
+        });
+      }
     }
   }, [loadListing, currentSearchParams]);
 

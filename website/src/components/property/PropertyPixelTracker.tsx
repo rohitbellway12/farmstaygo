@@ -9,11 +9,25 @@ interface PropertyPixelTrackerProps {
   property: PublicPropertyDetail;
 }
 
+let lastTrackedPublicId = "";
+let lastTrackedTime = 0;
+
 export default function PropertyPixelTracker({
   property,
 }: PropertyPixelTrackerProps) {
   useEffect(() => {
-    if (!property) return;
+    if (!property?.publicId) return;
+
+    const now = Date.now();
+    // Prevent duplicate event firing in React Strict Mode or re-renders
+    if (
+      lastTrackedPublicId === property.publicId &&
+      now - lastTrackedTime < 2000
+    ) {
+      return;
+    }
+    lastTrackedPublicId = property.publicId;
+    lastTrackedTime = now;
 
     const price =
       property.pricing?.startingPrice ??
