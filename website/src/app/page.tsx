@@ -77,7 +77,7 @@ async function getHomeData(): Promise<{
     ),
 
     apiFetch<PublicPropertiesResponse>(
-      "/public/properties?featured=true&limit=4"
+      "/public/properties?featured=true&limit=12"
     ),
 
     apiFetch<{ success: boolean; data: BlogPost[] }>(
@@ -112,7 +112,7 @@ async function getHomeData(): Promise<{
     try {
       const fallback =
         await apiFetch<PublicPropertiesResponse>(
-          "/public/properties?limit=4&sort=RECOMMENDED"
+          "/public/properties?limit=12&sort=RECOMMENDED"
         );
 
       properties = fallback.data;
@@ -368,7 +368,7 @@ export default async function Home() {
           </div>
 
           {properties.length > 0 ? (
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {properties.map((property) => (
                 <PropertyCard
                   key={property.publicId}
