@@ -56,7 +56,16 @@ export async function generateMetadata(): Promise<Metadata> {
       ]
     : undefined;
 
+  const appUrl = (
+    process.env.NEXT_PUBLIC_APP_URL || "https://www.farmstaygo.com"
+  ).replace(/\/+$/, "");
+
   return {
+    metadataBase: new URL(appUrl),
+    alternates: {
+      canonical: "/",
+    },
+
     title: {
       default: `${siteName} | Farmhouses, Villas & Nature Stays`,
       template: "%s | FarmStayGo",

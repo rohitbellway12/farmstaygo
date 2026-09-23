@@ -9,7 +9,7 @@ export const revalidate = 3600; // Auto re-generate every 1 hour
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = (
-    process.env.NEXT_PUBLIC_APP_URL || "https://farmstaygo.com"
+    process.env.NEXT_PUBLIC_APP_URL || "https://www.farmstaygo.com"
   ).replace(/\/+$/, "");
 
   // 1. Static Main Pages
