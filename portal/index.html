@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
     <link id="favicon" rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>portal</title>
@@ -14,13 +15,22 @@
           : '';
         var apiBase = localStorage.getItem('farmstaygo_api_base') ||
           (envApiBase && envApiBase.indexOf('%') !== 0 ? envApiBase : derivedApiBase || 'http://localhost:5000/api');
+
+        if (window.location.protocol === 'https:' && apiBase.indexOf('http://') === 0 && apiBase.indexOf('localhost') === -1 && apiBase.indexOf('127.0.0.1') === -1) {
+          apiBase = apiBase.replace(/^http:\/\//, 'https://');
+        }
+
         fetch(apiBase + '/public/settings/platform')
           .then(function(res) { return res.ok ? res.json() : Promise.reject(); })
           .then(function(data) {
             if (data && data.success && data.data && data.data.siteFaviconUrl) {
               var link = document.getElementById('favicon');
               if (link) {
-                link.href = data.data.siteFaviconUrl;
+                var faviconUrl = data.data.siteFaviconUrl;
+                if (window.location.protocol === 'https:' && faviconUrl.indexOf('http://') === 0) {
+                  faviconUrl = faviconUrl.replace(/^http:\/\//, 'https://');
+                }
+                link.href = faviconUrl;
               }
             }
           })

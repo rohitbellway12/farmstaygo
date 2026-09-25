@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 
 import prisma from "../config/database.js";
+import { resolveAssetUrl } from "../config/url.js";
 
 export const getPublicPaymentSettings = async (
   _req: Request,
@@ -174,36 +175,13 @@ export const getPublicPlatformSettings = async (
       }),
     ]);
 
-    const host = req.get("host");
-    const isLocalhost = host?.startsWith("localhost") || host?.startsWith("127.0.0.1");
-    const protocol = isLocalhost ? "http" : req.protocol;
-    const baseUrl = `${protocol}://${host}`;
-
-    const resolveUrl = (url: string | null | undefined): string | null => {
-      if (!url) {
-        return null;
-      }
-
-      if (url.startsWith("http://") || url.startsWith("https://")) {
-        if (isLocalhost) {
-          return url.replace("https://", "http://");
-        }
-        if (url.startsWith("http://")) {
-          return url.replace("http://", "https://");
-        }
-        return url;
-      }
-
-      return `${baseUrl}${url}`;
-    };
-
     return res.status(200).json({
       success: true,
       message: "Public platform settings fetched successfully",
       data: {
         siteName: siteName?.value || "FarmStay",
-        siteLogoUrl: resolveUrl(siteLogoUrl?.value),
-        siteFaviconUrl: resolveUrl(siteFaviconUrl?.value),
+        siteLogoUrl: resolveAssetUrl(siteLogoUrl?.value, req),
+        siteFaviconUrl: resolveAssetUrl(siteFaviconUrl?.value, req),
         defaultCurrency: defaultCurrency?.value || "INR",
         timezone: timezone?.value || "Asia/Kolkata",
         mapProvider: mapProvider?.value || "GOOGLE",

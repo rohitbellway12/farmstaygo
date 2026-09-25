@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 
 import prisma from "../config/database.js";
+import { resolveAssetUrl } from "../config/url.js";
 
 import { sendEmail } from "../services/email.js";
 
@@ -92,33 +93,10 @@ export const getPlatformSettings = async (
       getSetting("timezone"),
     ]);
 
-    const host = req.get("host");
-    const isLocalhost = host?.startsWith("localhost") || host?.startsWith("127.0.0.1");
-    const protocol = isLocalhost ? "http" : req.protocol;
-    const baseUrl = `${protocol}://${host}`;
-
-    const resolveUrl = (url: string | null | undefined): string | null => {
-      if (!url) {
-        return null;
-      }
-
-      if (url.startsWith("http://") || url.startsWith("https://")) {
-        if (isLocalhost) {
-          return url.replace("https://", "http://");
-        }
-        if (url.startsWith("http://")) {
-          return url.replace("http://", "https://");
-        }
-        return url;
-      }
-
-      return `${baseUrl}${url}`;
-    };
-
     const settings: PlatformSettings = {
       siteName: siteName || "FarmStay",
-      siteLogoUrl: resolveUrl(siteLogoUrl),
-      siteFaviconUrl: resolveUrl(siteFaviconUrl),
+      siteLogoUrl: resolveAssetUrl(siteLogoUrl, req),
+      siteFaviconUrl: resolveAssetUrl(siteFaviconUrl, req),
       defaultCurrency: defaultCurrency || "INR",
       timezone: timezone || "Asia/Kolkata",
     };
@@ -193,14 +171,17 @@ export const updatePlatformSettings = async (
         typeof body.siteName === "string"
           ? body.siteName.trim()
           : "";
-      siteLogoUrl =
-        typeof body.siteLogoUrl === "string"
-          ? body.siteLogoUrl.trim() || null
-          : null;
-      siteFaviconUrl =
-        typeof body.siteFaviconUrl === "string"
-          ? body.siteFaviconUrl.trim() || null
-          : null;
+
+      const normalizeStoredPath = (val: unknown): string | null => {
+        if (typeof val !== "string") return null;
+        const trimmed = val.trim();
+        if (!trimmed) return null;
+        const storageMatch = trimmed.match(/\/storage\/.*$/);
+        return storageMatch ? storageMatch[0] : trimmed;
+      };
+
+      siteLogoUrl = normalizeStoredPath(body.siteLogoUrl);
+      siteFaviconUrl = normalizeStoredPath(body.siteFaviconUrl);
       defaultCurrency =
         typeof body.defaultCurrency === "string"
           ? body.defaultCurrency.trim().toUpperCase() || "INR"
@@ -279,33 +260,10 @@ export const updatePlatformSettings = async (
       });
     });
 
-    const host = req.get("host");
-    const isLocalhost = host?.startsWith("localhost") || host?.startsWith("127.0.0.1");
-    const protocol = isLocalhost ? "http" : req.protocol;
-    const baseUrl = `${protocol}://${host}`;
-
-    const resolveUrl = (url: string | null | undefined): string | null => {
-      if (!url) {
-        return null;
-      }
-
-      if (url.startsWith("http://") || url.startsWith("https://")) {
-        if (isLocalhost) {
-          return url.replace("https://", "http://");
-        }
-        if (url.startsWith("http://")) {
-          return url.replace("http://", "https://");
-        }
-        return url;
-      }
-
-      return `${baseUrl}${url}`;
-    };
-
     const settings: PlatformSettings = {
       siteName,
-      siteLogoUrl: resolveUrl(siteLogoUrl || existingLogoUrl),
-      siteFaviconUrl: resolveUrl(siteFaviconUrl || existingFaviconUrl),
+      siteLogoUrl: resolveAssetUrl(siteLogoUrl || existingLogoUrl, req),
+      siteFaviconUrl: resolveAssetUrl(siteFaviconUrl || existingFaviconUrl, req),
       defaultCurrency,
       timezone,
     };
@@ -569,20 +527,7 @@ const resolveSettingUrl = (
   req: Request,
   url: string | null | undefined
 ): string | null => {
-  if (!url) {
-    return null;
-  }
-
-  if (url.startsWith("http://") || url.startsWith("https://")) {
-    return url;
-  }
-
-  const host = req.get("host");
-  const isLocalhost = host?.startsWith("localhost") || host?.startsWith("127.0.0.1");
-  const protocol = isLocalhost ? "http" : req.protocol;
-  const baseUrl = `${protocol}://${host}`;
-
-  return `${baseUrl}${url}`;
+  return resolveAssetUrl(url, req);
 };
 
 export const getHomeSettings = async (

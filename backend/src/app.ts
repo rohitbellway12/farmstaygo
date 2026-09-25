@@ -14,15 +14,23 @@ import routes from "./routes/index.js";
 
 const app = express();
 
+// Trust reverse proxy (Nginx, Cloudflare, etc.) for correct req.protocol and secure HTTPS detection
+app.set("trust proxy", 1);
+
 /*
 |--------------------------------------------------------------------------
-| Allowed Origins
+| Allowed Origins & CORS Configuration
 |--------------------------------------------------------------------------
 */
 
-const allowedOrigins = [
+const configuredOrigins = [
   process.env.WEBSITE_URL,
   process.env.PORTAL_URL,
+  "https://www.farmstaygo.com",
+  "https://farmstaygo.com",
+  "https://portal.farmstaygo.com",
+  "http://localhost:3000",
+  "http://localhost:5173",
 ].filter(Boolean) as string[];
 
 /*
@@ -47,7 +55,24 @@ app.use(
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl, or same-origin static requests)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const isAllowed =
+        configuredOrigins.includes(origin) ||
+        /^https:\/\/([a-z0-9-]+\.)?farmstaygo\.com$/.test(origin) ||
+        /^http:\/\/localhost(:[0-9]+)?$/.test(origin) ||
+        /^http:\/\/127\.0\.0\.1(:[0-9]+)?$/.test(origin);
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked for origin: ${origin}`));
+      }
+    },
     credentials: true,
   })
 );

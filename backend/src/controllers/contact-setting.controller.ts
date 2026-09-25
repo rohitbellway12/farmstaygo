@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 
 import prisma from "../config/database.js";
+import { resolveAssetUrl } from "../config/url.js";
 import {
   createSettingsImageUpload,
   getSettingsImageStoragePath,
@@ -30,25 +31,7 @@ const resolveSettingUrl = (
   req: Request | AuthenticatedRequest,
   url: string | null | undefined
 ): string | null => {
-  if (!url) {
-    return null;
-  }
-
-  if (url.startsWith("http://") || url.startsWith("https://")) {
-    const host = req.get("host") || "localhost:5000";
-    const isLocalhost = host.startsWith("localhost") || host.startsWith("127.0.0.1");
-    if (isLocalhost) {
-      return url.replace("https://", "http://");
-    }
-    return url.replace("http://", "https://");
-  }
-
-  const host = req.get("host") || "localhost:5000";
-  const isLocalhost = host.startsWith("localhost") || host.startsWith("127.0.0.1");
-  const protocol = isLocalhost ? "http" : req.protocol;
-  const baseUrl = `${protocol}://${host}`;
-
-  return `${baseUrl}${url}`;
+  return resolveAssetUrl(url, req as Request);
 };
 
 const cleanText = (value: unknown): string =>

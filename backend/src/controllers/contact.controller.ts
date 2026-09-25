@@ -5,6 +5,7 @@ import {
 } from "../generated/prisma/client.js";
 
 import prisma from "../config/database.js";
+import { resolveAssetUrl } from "../config/url.js";
 
 import { sendContactMessageNotificationEmail } from "../services/email.js";
 import { SUPPORT_EMAIL } from "../services/email.js";
@@ -92,19 +93,7 @@ export const getPublicContactInfo = async (
     ]);
 
     const resolveUrl = (url: string | null | undefined): string | null => {
-      if (!url) return null;
-      if (url.startsWith("http://") || url.startsWith("https://")) {
-        const host = req.get("host") || "localhost:5000";
-        const isLocalhost = host.startsWith("localhost") || host.startsWith("127.0.0.1");
-        if (isLocalhost) {
-          return url.replace("https://", "http://");
-        }
-        return url.replace("http://", "https://");
-      }
-      const host = req.get("host") || "localhost:5000";
-      const isLocalhost = host.startsWith("localhost") || host.startsWith("127.0.0.1");
-      const protocol = isLocalhost ? "http" : req.protocol;
-      return `${protocol}://${host}${url}`;
+      return resolveAssetUrl(url, req);
     };
 
     return res.json({
