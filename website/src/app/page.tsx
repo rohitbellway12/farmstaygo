@@ -77,7 +77,7 @@ async function getHomeData(): Promise<{
     ),
 
     apiFetch<PublicPropertiesResponse>(
-      "/public/properties?featured=true&limit=12"
+      "/public/properties?featured=true&limit=16"
     ),
 
     apiFetch<{ success: boolean; data: BlogPost[] }>(
@@ -112,7 +112,7 @@ async function getHomeData(): Promise<{
     try {
       const fallback =
         await apiFetch<PublicPropertiesResponse>(
-          "/public/properties?limit=12&sort=RECOMMENDED"
+          "/public/properties?limit=16&sort=RECOMMENDED"
         );
 
       properties = fallback.data;
