@@ -64,7 +64,7 @@ async function getHomeData(): Promise<{
   const [
     categoriesResult,
     citiesResult,
-    featuredResult,
+    propertiesResult,
     blogResult,
     homeResult,
   ] = await Promise.allSettled([
@@ -77,7 +77,7 @@ async function getHomeData(): Promise<{
     ),
 
     apiFetch<PublicPropertiesResponse>(
-      "/public/properties?featured=true&limit=16"
+      "/public/properties?limit=16&sort=RECOMMENDED"
     ),
 
     apiFetch<{ success: boolean; data: BlogPost[] }>(
@@ -104,15 +104,15 @@ async function getHomeData(): Promise<{
       : [];
 
   let properties =
-    featuredResult.status === "fulfilled"
-      ? featuredResult.value.data
+    propertiesResult.status === "fulfilled"
+      ? propertiesResult.value.data
       : [];
 
   if (properties.length === 0) {
     try {
       const fallback =
         await apiFetch<PublicPropertiesResponse>(
-          "/public/properties?limit=16&sort=RECOMMENDED"
+          "/public/properties?limit=16"
         );
 
       properties = fallback.data;
